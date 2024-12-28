@@ -1,0 +1,47 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "LATEST_TAG=${LATEST_TAG}" >> $GITHUB_ENV
+          
+      - name: Update version in HTML
+        run: |
+          sed -i "s|<div class=\"version-badge\">.*</div>|<div class=\"version-badge\"><a href=\"https://github.com/Sudo-Ivan/LXMFy/releases/tag/${LATEST_TAG}\">${LATEST_TAG}</a></div>|" docs/index.html
+          
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'docs'
+          
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4 

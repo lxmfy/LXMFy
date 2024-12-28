@@ -25,7 +25,7 @@ poetry add lxmfy
 **CLI Tool**
 
 ```bash
-lxmfy create <bot_name>
+lxmfy create
 ```
 
 **Python**
