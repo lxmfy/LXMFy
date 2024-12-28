@@ -2,8 +2,9 @@ import os
 import argparse
 import sys
 
+
 def create_bot_file(name, output_file):
-    template = f'''from lxmfy import LXMFBot, load_cogs_from_directory
+    template = f"""from lxmfy import LXMFBot, load_cogs_from_directory
 
 bot = LXMFBot(
     name="{name}",
@@ -27,21 +28,22 @@ def ping(ctx):
 
 if __name__ == "__main__":
     bot.run()
-'''
-    
-    with open(output_file, 'w') as f:
+"""
+
+    with open(output_file, "w") as f:
         f.write(template)
 
+
 def create_example_cog():
-    if not os.path.exists('cogs'):
-        os.makedirs('cogs')
-        
+    if not os.path.exists("cogs"):
+        os.makedirs("cogs")
+
     # Create __init__.py
-    with open('cogs/__init__.py', 'w') as f:
-        f.write('')
-    
+    with open("cogs/__init__.py", "w") as f:
+        f.write("")
+
     # Create example cog
-    template = '''from lxmfy import Command
+    template = """from lxmfy import Command
 
 class BasicCommands:
     def __init__(self, bot):
@@ -57,24 +59,26 @@ class BasicCommands:
 
 def setup(bot):
     bot.add_cog(BasicCommands(bot))
-'''
-    
-    with open('cogs/basic.py', 'w') as f:
+"""
+
+    with open("cogs/basic.py", "w") as f:
         f.write(template)
 
+
 def main():
-    parser = argparse.ArgumentParser(description='LXMFy Bot Creator')
-    parser.add_argument('command', choices=['create'], help='Create a new LXMF bot')
-    parser.add_argument('--name', default='MyLXMFBot', help='Name of the bot')
-    parser.add_argument('--output', default='mybot.py', help='Output file name')
-    
+    parser = argparse.ArgumentParser(description="LXMFy Bot Creator")
+    parser.add_argument("command", choices=["create"], help="Create a new LXMF bot")
+    parser.add_argument("--name", default="MyLXMFBot", help="Name of the bot")
+    parser.add_argument("--output", default="mybot.py", help="Output file name")
+
     args = parser.parse_args()
-    
-    if args.command == 'create':
+
+    if args.command == "create":
         try:
             create_bot_file(args.name, args.output)
             create_example_cog()
-            print(f"""
+            print(
+                f"""
 ✨ Successfully created new LXMFy bot!
 
 Files created:
@@ -87,10 +91,12 @@ To start your bot:
   python {args.output}
 
 To add admin rights, edit {args.output} and add your LXMF hash to the admins list.
-            """)
+            """
+            )
         except Exception as e:
             print(f"Error creating bot: {e}", file=sys.stderr)
             sys.exit(1)
 
+
 if __name__ == "__main__":
-    main() 
+    main()
