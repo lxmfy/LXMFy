@@ -13,22 +13,22 @@ Easily create LXMF bots with this framework. Very similar to Discord.py.
 ## Installation
 
 ```bash
-pip install git+https://gitlab.com/ivans-reticulum-bots/LXMF-Bot-Framework.git
+pip install git+https://github.com/Sudo-Ivan/LXMFy.git
 ```
 
 or Poetry:
 
 ```bash
-poetry add git+https://gitlab.com/ivans-reticulum-bots/LXMF-Bot-Framework.git
+poetry add git+https://github.com/Sudo-Ivan/LXMFy.git
 ```
 
 ## Usage
 
 ```python
-from lxmfbot import LXMFBot
+from lxmfy import LXMFBot, load_cogs_from_directory
 
 bot = LXMFBot(
-    name="LXMF Test Bot", # Name of the bot that appears on the network.
+    name="LXMFy Test Bot", # Name of the bot that appears on the network.
     announce=600, # Announce every 600 seconds, set to 0 to disable.
     admins=["your_lxmf_hash_here"], # List of admin hashes.
     hot_reloading=True # Enable hot reloading.
