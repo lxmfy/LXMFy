@@ -1,3 +1,10 @@
+"""
+CLI module for LXMFy bot framework.
+
+This module provides command-line interface functionality for creating and managing
+LXMF bots, including bot file creation and example cog generation.
+"""
+
 import os
 import argparse
 import sys
@@ -5,21 +12,40 @@ import re
 from pathlib import Path
 
 
-def sanitize_filename(filename):
-    """Sanitize the filename"""
-    filename = os.path.basename(filename)
-    
-    filename = re.sub(r'[^a-zA-Z0-9\-_.]', '', filename)
-    
-    if not filename.endswith('.py'):
-        filename += '.py'
-    
-    return filename
+def sanitize_filename(filename: str) -> str:
+    """
+    Sanitize the filename while preserving the extension.
+
+    Args:
+        filename: The filename to sanitize
+
+    Returns:
+        str: Sanitized filename with proper extension
+    """
+    base, ext = os.path.splitext(os.path.basename(filename))
+
+    base = re.sub(r"[^a-zA-Z0-9\-_]", "", base)
+
+    if not ext or ext != ".py":
+        ext = ".py"
+
+    return f"{base}{ext}"
 
 
-def validate_bot_name(name):
-    """Validate bot name to ensure it's safe."""
-    if not re.match(r'^[a-zA-Z0-9][a-zA-Z0-9 \-_]*$', name):
+def validate_bot_name(name: str) -> str:
+    """
+    Validate bot name to ensure it's safe.
+
+    Args:
+        name: The bot name to validate
+
+    Returns:
+        str: The validated bot name
+
+    Raises:
+        ValueError: If the bot name is invalid
+    """
+    if not re.match(r"^[a-zA-Z0-9][a-zA-Z0-9 \-_]*$", name):
         raise ValueError(
             "Bot name must start with alphanumeric character and can only contain "
             "alphanumeric characters, spaces, dashes, and underscores"
@@ -27,14 +53,35 @@ def validate_bot_name(name):
     return name
 
 
-def create_bot_file(name, output_file):
-    """Create the bot file with validated inputs."""
+def create_bot_file(name: str, output_path: str) -> str:
+    """
+    Create the bot file with validated inputs.
+
+    Args:
+        name: Name of the bot
+        output_path: Desired output path and filename
+
+    Returns:
+        str: The actual filename used
+
+    Raises:
+        RuntimeError: If file creation fails
+    """
     try:
         name = validate_bot_name(name)
-        safe_filename = sanitize_filename(output_file)
-        
-        safe_path = os.path.join(os.getcwd(), safe_filename)
-        
+
+        output_dir = os.path.dirname(output_path)
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+
+        if output_path.endswith("/") or output_path.endswith("\\"):
+            base_name = "bot.py"
+            output_path = os.path.join(output_path, base_name)
+        elif not output_path.endswith(".py"):
+            output_path += ".py"
+
+        safe_path = os.path.abspath(output_path)
+
         template = f"""from lxmfy import LXMFBot, load_cogs_from_directory
 
 bot = LXMFBot(
@@ -60,24 +107,29 @@ def ping(ctx):
 if __name__ == "__main__":
     bot.run()
 """
-        with open(safe_path, "w") as f:
+        with open(safe_path, "w", encoding="utf-8") as f:
             f.write(template)
-            
-        return safe_filename
-            
+
+        return os.path.relpath(safe_path)
+
     except Exception as e:
-        raise RuntimeError(f"Failed to create bot file: {str(e)}")
+        raise RuntimeError(f"Failed to create bot file: {str(e)}") from e
 
 
-def create_example_cog():
-    """Create example cog."""
+def create_example_cog(bot_path: str) -> None:
+    """
+    Create example cog and necessary directory structure.
+
+    Args:
+        bot_path: Path to the bot file to determine cogs location
+    """
     try:
-        cogs_dir = os.path.join(os.getcwd(), "cogs")
-        
+        bot_dir = os.path.dirname(os.path.abspath(bot_path))
+        cogs_dir = os.path.join(bot_dir, "cogs")
         os.makedirs(cogs_dir, exist_ok=True)
 
         init_path = os.path.join(cogs_dir, "__init__.py")
-        with open(init_path, "w") as f:
+        with open(init_path, "w", encoding="utf-8") as f:
             f.write("")
 
         template = """from lxmfy import Command
@@ -98,61 +150,57 @@ def setup(bot):
     bot.add_cog(BasicCommands(bot))
 """
         basic_path = os.path.join(cogs_dir, "basic.py")
-        with open(basic_path, "w") as f:
+        with open(basic_path, "w", encoding="utf-8") as f:
             f.write(template)
-            
+
     except Exception as e:
-        raise RuntimeError(f"Failed to create example cog: {str(e)}")
+        raise RuntimeError(f"Failed to create example cog: {str(e)}") from e
 
 
-def main():
+def main() -> None:
+    """Main CLI entry point."""
     parser = argparse.ArgumentParser(
         description="LXMFy Bot Creator",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  lxmfy create                          # Create bot with default name
+  lxmfy create                          # Create bot in current directory
   lxmfy create --name "My Cool Bot"     # Create bot with custom name
-  lxmfy create --output custom_bot.py   # Create bot with custom filename
-        """
+  lxmfy create --output path/to/bot.py  # Create bot in specific location
+  lxmfy create --output path/to/dir/    # Create bot in directory
+        """,
     )
-    
+
+    parser.add_argument("command", choices=["create"], help="Create a new LXMF bot")
     parser.add_argument(
-        "command", 
-        choices=["create"], 
-        help="Create a new LXMF bot"
-    )
-    parser.add_argument(
-        "--name", 
+        "--name",
         default="MyLXMFBot",
-        help="Name of the bot (alphanumeric, spaces, dash, underscore)"
+        help="Name of the bot (alphanumeric, spaces, dash, underscore)",
     )
     parser.add_argument(
-        "--output", 
-        default="mybot.py",
-        help="Output file name (will be sanitized)"
+        "--output", default="bot.py", help="Output file path or directory"
     )
 
     args = parser.parse_args()
 
     if args.command == "create":
         try:
-            safe_filename = create_bot_file(args.name, args.output)
-            create_example_cog()
+            bot_path = create_bot_file(args.name, args.output)
+            create_example_cog(bot_path)
             print(
                 f"""
 ✨ Successfully created new LXMFy bot!
 
 Files created:
-  - {safe_filename} (main bot file)
-  - cogs/
+  - {bot_path} (main bot file)
+  - {os.path.join(os.path.dirname(bot_path), 'cogs')}
     - __init__.py
     - basic.py (example cog)
 
 To start your bot:
-  python {safe_filename}
+  python {bot_path}
 
-To add admin rights, edit {safe_filename} and add your LXMF hash to the admins list.
+To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
             """
             )
         except Exception as e:

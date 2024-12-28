@@ -66,4 +66,37 @@ cd lxmfy
 poetry install
 ```
 
+### Dev Scripts
+
+Run Black, Pylint, and Bandit.
+
+```
+./scripts/dev.sh
+```
+
+### Docker
+
+```
+docker run -d \
+    --name lxmfy-test-bot \
+    -v $(pwd)/config:/bot/config \
+    -v $(pwd)/.reticulum:/root/.reticulum \
+    --restart unless-stopped \
+    lxmfy-test
+```
+
+Auto-Interface support:
+
+```
+docker run -d \
+    --name lxmfy-test-bot \
+    --network host \
+    -v $(pwd)/config:/bot/config \
+    -v $(pwd)/.reticulum:/root/.reticulum \
+    --restart unless-stopped \
+    lxmfy-test
+```
+
+
+
 Credit to https://github.com/randogoth/lxmf-bot, helped me learning to create LXMF bots. - Sudo-Ivan

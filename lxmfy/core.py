@@ -1,87 +1,138 @@
-import os, time
-import RNS
-from LXMF import LXMRouter, LXMessage
+"""
+Core module for LXMFy bot framework.
+
+This module provides the main LXMFBot class that handles message routing,
+command processing, and bot lifecycle management for LXMF-based bots on
+the Reticulum Network.
+"""
+
+# Standard library imports
+import os
+import sys
+import time
+import inspect
+import importlib
+import logging
 from queue import Queue
 from types import SimpleNamespace
+from typing import Optional, Dict, Any
+from dataclasses import dataclass
+
+# Reticulum and LXMF imports
+import RNS
+from LXMF import LXMRouter, LXMessage
+
+# Local imports
 from .commands import Command
-import sys
-import importlib
-import inspect
 from .moderation import SpamProtection
 from .transport import Transport
-from typing import Optional, Dict
 from .storage import JSONStorage, Storage
 
 
+@dataclass
+class BotConfig:
+    """Configuration settings for LXMFBot."""
+
+    name: str = "LXMFBot"
+    announce: int = 600
+    announce_immediately: bool = True
+    admins: set = None
+    hot_reloading: bool = False
+    rate_limit: int = 5
+    cooldown: int = 60
+    max_warnings: int = 3
+    warning_timeout: int = 300
+    command_prefix: str = "/"
+    cogs_dir: str = "cogs"
+
+
 class LXMFBot:
+    """
+    Main bot class for handling LXMF messages and commands.
+
+    This class manages the bot's lifecycle, including:
+    - Message routing and delivery
+    - Command registration and execution
+    - Cog (extension) loading and management
+    - Spam protection
+    - Admin privileges
+    """
+
     delivery_callbacks = []
     receipts = []
     queue = Queue(maxsize=5)
     announce_time = 600
+    logger = logging.getLogger(__name__)
 
-    def __init__(
-        self,
-        name="LXMFBot",
-        announce=600,
-        announce_immediately=True,
-        admins=None,
-        hot_reloading=False,
-        rate_limit=5,
-        cooldown=60,
-        max_warnings=3,
-        warning_timeout=300,
-        command_prefix="/",
-        cogs_dir="cogs",
-    ):
+    def __init__(self, **kwargs):
+        """
+        Initialize a new LXMFBot instance.
+
+        Args:
+            **kwargs: Override default configuration settings
+        """
+        config = BotConfig(**kwargs)
+
+        # Setup paths
         self.config_path = os.path.join(os.getcwd(), "config")
-        if not os.path.isdir(self.config_path):
-            os.mkdir(self.config_path)
+        os.makedirs(self.config_path, exist_ok=True)
 
-        # Setup cogs directory
-        self.cogs_dir = os.path.join(self.config_path, cogs_dir)
-        if not os.path.exists(self.cogs_dir):
-            os.makedirs(self.cogs_dir)
+        # Setup cogs
+        self.cogs_dir = os.path.join(self.config_path, config.cogs_dir)
+        os.makedirs(self.cogs_dir, exist_ok=True)
 
         # Create __init__.py if it doesn't exist
         init_file = os.path.join(self.cogs_dir, "__init__.py")
         if not os.path.exists(init_file):
-            open(init_file, "a").close()
+            with open(init_file, "w", encoding="utf-8") as f:
+                pass
 
-        idfile = os.path.join(self.config_path, "identity")
-        if not os.path.isfile(idfile):
+        # Setup identity
+        identity_file = os.path.join(self.config_path, "identity")
+        if not os.path.isfile(identity_file):
             RNS.log("No Primary Identity file found, creating new...", RNS.LOG_INFO)
-            id = RNS.Identity(True)
-            id.to_file(idfile)
-        self.id = RNS.Identity.from_file(idfile)
+            identity = RNS.Identity(True)
+            identity.to_file(identity_file)
+        self.identity = RNS.Identity.from_file(identity_file)
         RNS.log("Loaded identity from file", RNS.LOG_INFO)
-        if announce_immediately:
-            af = os.path.join(self.config_path, "announce")
-            if os.path.isfile(af):
-                os.remove(af)
+
+        # Handle immediate announce
+        if config.announce_immediately:
+            announce_file = os.path.join(self.config_path, "announce")
+            if os.path.isfile(announce_file):
+                os.remove(announce_file)
                 RNS.log("Announcing now. Timer reset.", RNS.LOG_INFO)
+
+        # Initialize LXMF router
         RNS.Reticulum(loglevel=RNS.LOG_VERBOSE)
-        self.router = LXMRouter(identity=self.id, storagepath=self.config_path)
-        self.local = self.router.register_delivery_identity(self.id, display_name=name)
+        self.router = LXMRouter(identity=self.identity, storagepath=self.config_path)
+        self.local = self.router.register_delivery_identity(
+            self.identity, display_name=config.name
+        )
         self.router.register_delivery_callback(self._message_received)
         RNS.log(
             f"LXMF Router ready to receive on: {RNS.prettyhexrep(self.local.hash)}",
             RNS.LOG_INFO,
         )
+
+        # Initialize bot state
         self._announce()
         self.commands = {}
         self.cogs = {}
-        self.admins = set(admins) if admins else set()
-        self.hot_reloading = hot_reloading
-        self.announce_time = announce
+        self.admins = set(config.admins) if config.admins else set()
+        self.hot_reloading = config.hot_reloading
+        self.announce_time = config.announce
+        self.command_prefix = config.command_prefix
+
+        # Initialize services
         self.storage = Storage(JSONStorage(os.path.join(self.config_path, "storage")))
         self.spam_protection = SpamProtection(
             storage=self.storage,
-            rate_limit=rate_limit,
-            cooldown=cooldown,
-            max_warnings=max_warnings,
-            warning_timeout=warning_timeout,
+            rate_limit=config.rate_limit,
+            cooldown=config.cooldown,
+            max_warnings=config.max_warnings,
+            warning_timeout=config.warning_timeout,
         )
-        self.command_prefix = command_prefix
         self.transport = Transport(storage=self.storage)
 
     def command(self, *args, **kwargs):
