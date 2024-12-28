@@ -64,13 +64,13 @@ def setup(bot):
 
 def main():
     parser = argparse.ArgumentParser(description='LXMFy Bot Creator')
-    parser.add_argument('command', choices=['starter'], help='Command to execute')
+    parser.add_argument('command', choices=['create'], help='Create a new LXMF bot')
     parser.add_argument('--name', default='MyLXMFBot', help='Name of the bot')
     parser.add_argument('--output', default='mybot.py', help='Output file name')
     
     args = parser.parse_args()
     
-    if args.command == 'starter':
+    if args.command == 'create':
         try:
             create_bot_file(args.name, args.output)
             create_example_cog()
