@@ -9,15 +9,12 @@ Easily create LXMF bots for the Reticulum Network with this framework. Very simi
 - Spam protection (rate limiting, command cooldown, warnings, banning)
 - Command prefix (set to None to process all messages as commands)
 - Announcements (announce in seconds, set to 0 to disable)
+- Extensible Storage Backend
 
 ## Installation
 
 ```bash
 pip install lxmfy
-```
-
-```
-poetry add lxmfy
 ```
 
 ## Usage
@@ -61,4 +58,12 @@ def echo(ctx, message: str):
 bot.run()
 ```
 
-Credit to https://github.com/randogoth/lxmf-bot, helped me learning to create LXMF bots.
+## Framework Development
+
+```
+git clone https://github.com/lxmfy/lxmfy.git
+cd lxmfy
+poetry install
+```
+
+Credit to https://github.com/randogoth/lxmf-bot, helped me learning to create LXMF bots. - Sudo-Ivan

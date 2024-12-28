@@ -3,27 +3,37 @@ from collections import defaultdict
 
 
 class SpamProtection:
-    def __init__(self, rate_limit=5, cooldown=60, max_warnings=3, warning_timeout=300):
-        self.rate_limit = rate_limit  # Max messages per cooldown period
-        self.cooldown = cooldown  # Cooldown period in seconds
-        self.max_warnings = max_warnings  # Max warnings before ban
-        self.warning_timeout = warning_timeout  # Warning reset time
+    def __init__(
+        self, storage, rate_limit=5, cooldown=60, max_warnings=3, warning_timeout=300
+    ):
+        self.storage = storage
+        self.rate_limit = rate_limit
+        self.cooldown = cooldown
+        self.max_warnings = max_warnings
+        self.warning_timeout = warning_timeout
+        self.load_data()
 
-        self.message_counts = defaultdict(list)  # {user: [timestamp, timestamp, ...]}
-        self.warnings = defaultdict(int)  # {user: warning_count}
-        self.banned_users = set()  # Set of banned user hashes
-        self.warning_times = defaultdict(float)  # {user: last_warning_time}
+    def load_data(self):
+        self.message_counts = self.storage.get("spam:message_counts", defaultdict(list))
+        self.warnings = self.storage.get("spam:warnings", defaultdict(int))
+        self.banned_users = set(self.storage.get("spam:banned_users", []))
+        self.warning_times = self.storage.get("spam:warning_times", defaultdict(float))
 
-    def check_spam(self, sender, current_time=None):
-        if current_time is None:
-            current_time = time()
+    def save_data(self):
+        self.storage.set("spam:message_counts", dict(self.message_counts))
+        self.storage.set("spam:warnings", dict(self.warnings))
+        self.storage.set("spam:banned_users", list(self.banned_users))
+        self.storage.set("spam:warning_times", dict(self.warning_times))
 
+    def check_spam(self, sender):
         if sender in self.banned_users:
-            return False, "You are banned for spam"
+            return False, "You are banned from using this bot."
 
-        # Clear old messages
+        current_time = time()
+
+        # Clean old messages
         self.message_counts[sender] = [
-            t for t in self.message_counts[sender] if current_time - t < self.cooldown
+            t for t in self.message_counts[sender] if current_time - t <= self.cooldown
         ]
 
         # Check rate limit
@@ -33,8 +43,10 @@ class SpamProtection:
 
             if self.warnings[sender] >= self.max_warnings:
                 self.banned_users.add(sender)
-                return False, "You have been banned for spam"
+                self.save_data()
+                return False, "You have been banned for spamming."
 
+            self.save_data()
             return (
                 False,
                 f"Rate limit exceeded. Warning {self.warnings[sender]}/{self.max_warnings}",
@@ -47,6 +59,7 @@ class SpamProtection:
         if (current_time - self.warning_times.get(sender, 0)) > self.warning_timeout:
             self.warnings[sender] = 0
 
+        self.save_data()
         return True, None
 
     def unban(self, sender):

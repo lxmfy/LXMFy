@@ -1,5 +1,5 @@
 from .core import LXMFBot
-from .commands import Command, Cog
-from .cogs_core import load_cogs_from_directory
+from .storage import Storage, JSONStorage
+from .commands import Command, command
 
-__version__ = "0.1.0"
+__all__ = ["LXMFBot", "Storage", "JSONStorage", "Command", "command"]
