@@ -47,7 +47,7 @@ jobs:
             let html = fs.readFileSync(filePath, 'utf8');
             
             // Update version badge
-            const newBadge = `<div class="version-badge"><a href="https://github.com/Sudo-Ivan/LXMFy/releases/tag/${tag}">${tag}</a></div>`;
+            const newBadge = `<div class="version-badge"><a href="https://github.com/lxmfy/lxmfy/releases/tag/${tag}">${tag}</a></div>`;
             html = html.replace(/<div class="version-badge">.*?<\/div>/s, newBadge);
             
             // Write back to file
