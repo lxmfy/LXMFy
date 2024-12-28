@@ -64,9 +64,7 @@ class LXMFBot:
         self.local = self.router.register_delivery_identity(self.id, display_name=name)
         self.router.register_delivery_callback(self._message_received)
         RNS.log(
-            "LXMF Router ready to receive on: {}".format(
-                RNS.prettyhexrep(self.local.hash)
-            ),
+            f"LXMF Router ready to receive on: {RNS.prettyhexrep(self.local.hash)}",
             RNS.LOG_INFO,
         )
         self._announce()
