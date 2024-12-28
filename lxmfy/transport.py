@@ -58,7 +58,7 @@ class Transport:
             raise Exception("Path lookup timed out")
 
         except Exception as e:
-            self.logger.error(f"Error establishing link: {str(e)}")
+            self.logger.error("Error establishing link: %s", str(e))
             raise
         finally:
             self.save_paths()
@@ -90,7 +90,7 @@ class Transport:
             raise Exception("Link establishment timed out")
 
         except Exception as e:
-            self.logger.error(f"Error creating link: {str(e)}")
+            self.logger.error("Error creating link: %s", str(e))
             raise
 
     def cleanup(self):

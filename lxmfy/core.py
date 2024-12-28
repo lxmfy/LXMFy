@@ -314,7 +314,7 @@ class LXMFBot:
             dest_hash_bytes = bytes.fromhex(destination_hash)
             return self.transport.request_page(dest_hash_bytes, page_path, field_data)
         except Exception as e:
-            self.logger.error(f"Error requesting page: {str(e)}")
+            self.logger.error("Error requesting page: %s", str(e))
             raise
 
     def cleanup(self):
