@@ -23,16 +23,42 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
         
-      - name: Get latest tag
-        id: get_tag
-        run: |
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "LATEST_TAG=${LATEST_TAG}" >> $GITHUB_ENV
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
           
-      - name: Update version in HTML
+      - name: Update version
         run: |
-          sed -i "s|<div class=\"version-badge\">.*</div>|<div class=\"version-badge\"><a href=\"https://github.com/Sudo-Ivan/LXMFy/releases/tag/${LATEST_TAG}\">${LATEST_TAG}</a></div>|" docs/index.html
+          cat > update-version.js << 'EOF'
+          const fs = require('fs');
+          const { execSync } = require('child_process');
+          
+          try {
+            // Get latest tag
+            const tag = execSync('git describe --tags --abbrev=0').toString().trim() || 'v0.0.0';
+            console.log('Latest tag:', tag);
+            
+            // Read HTML file
+            const filePath = 'docs/index.html';
+            let html = fs.readFileSync(filePath, 'utf8');
+            
+            // Update version badge
+            const newBadge = `<div class="version-badge"><a href="https://github.com/Sudo-Ivan/LXMFy/releases/tag/${tag}">${tag}</a></div>`;
+            html = html.replace(/<div class="version-badge">.*?<\/div>/s, newBadge);
+            
+            // Write back to file
+            fs.writeFileSync(filePath, html);
+            console.log('Version updated successfully');
+          } catch (error) {
+            console.error('Error:', error);
+            process.exit(1);
+          }
+          EOF
+          node update-version.js
           
       - name: Setup Pages
         uses: actions/configure-pages@v4
