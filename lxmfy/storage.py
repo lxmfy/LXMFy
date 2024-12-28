@@ -47,7 +47,7 @@ class JSONStorage(StorageBackend):
                     self.cache[key] = data
                     return data
         except Exception as e:
-            self.logger.error(f"Error reading {key}: {str(e)}")
+            self.logger.error("Error reading %s: %s", key, str(e))
         return default
 
     def set(self, key: str, value: Any) -> None:
@@ -57,7 +57,7 @@ class JSONStorage(StorageBackend):
                 json.dump(value, f, indent=2)
             self.cache[key] = value
         except Exception as e:
-            self.logger.error(f"Error writing {key}: {str(e)}")
+            self.logger.error("Error writing %s: %s", key, str(e))
             raise
 
     def delete(self, key: str) -> None:
@@ -67,7 +67,7 @@ class JSONStorage(StorageBackend):
                 file_path.unlink()
             self.cache.pop(key, None)
         except Exception as e:
-            self.logger.error(f"Error deleting {key}: {str(e)}")
+            self.logger.error("Error deleting %s: %s", key, str(e))
             raise
 
     def exists(self, key: str) -> bool:
@@ -82,7 +82,7 @@ class JSONStorage(StorageBackend):
                 if key.startswith(prefix):
                     results.append(key)
         except Exception as e:
-            self.logger.error(f"Error scanning with prefix {prefix}: {str(e)}")
+            self.logger.error("Error scanning with prefix %s: %s", prefix, str(e))
         return results
 
 
