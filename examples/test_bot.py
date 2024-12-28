@@ -3,7 +3,7 @@ from lxmfy import LXMFBot, load_cogs_from_directory
 bot = LXMFBot(
     name="Test LXMFy Bot",
     announce=600,
-    admins=["3832c4ec19ac161a6c6e18baa5cff5cb"],
+    admins=["lxmf_hash"],
     hot_reloading=True,
     # Moderation settings
     rate_limit=5,  # 5 messages per minute

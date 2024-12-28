@@ -8,6 +8,9 @@ import sys
 import importlib
 import inspect
 from .moderation import SpamProtection
+from .transport import Transport
+from typing import Optional, Dict
+from .storage import JSONStorage, Storage
 
 
 class LXMFBot:
@@ -72,17 +75,19 @@ class LXMFBot:
         self.admins = set(admins) if admins else set()
         self.hot_reloading = hot_reloading
         self.announce_time = announce
+        self.storage = Storage(JSONStorage(os.path.join(self.config_path, "storage")))
         self.spam_protection = SpamProtection(
+            storage=self.storage,
             rate_limit=rate_limit,
             cooldown=cooldown,
             max_warnings=max_warnings,
             warning_timeout=warning_timeout,
         )
         self.command_prefix = command_prefix
+        self.transport = Transport(storage=self.storage)
 
     def command(self, *args, **kwargs):
         def decorator(func):
-            # Create a new Command instance
             if len(args) > 0:
                 name = args[0]
             else:
@@ -94,17 +99,13 @@ class LXMFBot:
             cmd = Command(name=name, description=description, admin_only=admin_only)
             cmd.callback = func
             self.commands[name] = cmd
-            return func  # Return the original function, not the command object
+            return func
 
         return decorator
 
     def load_extension(self, name):
-        if self.hot_reloading:
-            # Reload module if it's already loaded
-            if name in sys.modules:
-                module = importlib.reload(sys.modules[name])
-            else:
-                module = importlib.import_module(name)
+        if self.hot_reloading and name in sys.modules:
+            module = importlib.reload(sys.modules[name])
         else:
             module = importlib.import_module(name)
 
@@ -139,7 +140,6 @@ class LXMFBot:
 
             content = message.content.decode("utf-8").strip()
 
-            # Create context object
             obj = {
                 "lxmf": message,
                 "reply": reply,
@@ -149,14 +149,12 @@ class LXMFBot:
             }
             msg = SimpleNamespace(**obj)
 
-            # Skip spam check for admins
             if not self.is_admin(sender):
                 allowed, reason = self.spam_protection.check_spam(sender)
                 if not allowed:
                     self.send(sender, reason)
                     return
 
-            # Handle commands if prefix is set, otherwise process all messages
             if self.command_prefix is None or content.startswith(self.command_prefix):
                 command_name = (
                     content.split()[0][len(self.command_prefix) :]
@@ -188,7 +186,6 @@ class LXMFBot:
                         )
                         self.send(sender, f"Error executing command: {str(e)}")
 
-            # Call legacy delivery callbacks
             for callback in self.delivery_callbacks:
                 callback(msg)
 
@@ -249,6 +246,7 @@ class LXMFBot:
             f"LXMF Bot `{self.local.display_name}` reporting for duty and awaiting messages...",
             RNS.LOG_INFO,
         )
+
         while True:
             for i in list(self.queue.queue):
                 lxm = self.queue.get()
@@ -257,6 +255,18 @@ class LXMFBot:
             time.sleep(delay)
 
     def received(self, function):
-        """Legacy decorator for backward compatibility"""
         self.delivery_callbacks.append(function)
         return function
+
+    def request_page(
+        self, destination_hash: str, page_path: str, field_data: Optional[Dict] = None
+    ) -> Dict:
+        try:
+            dest_hash_bytes = bytes.fromhex(destination_hash)
+            return self.transport.request_page(dest_hash_bytes, page_path, field_data)
+        except Exception as e:
+            self.logger.error(f"Error requesting page: {str(e)}")
+            raise
+
+    def cleanup(self):
+        self.transport.cleanup()
