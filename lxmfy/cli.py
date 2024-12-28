@@ -3,31 +3,36 @@ import argparse
 import sys
 import re
 
+
 def sanitize_filename(filename):
     """Sanitize the filename"""
     filename = os.path.basename(filename)
-    
-    filename = re.sub(r'[^a-zA-Z0-9\-_.]', '', filename)
-    
-    if not filename.endswith('.py'):
-        filename += '.py'
-    
+
+    filename = re.sub(r"[^a-zA-Z0-9\-_.]", "", filename)
+
+    if not filename.endswith(".py"):
+        filename += ".py"
+
     return filename
+
 
 def validate_bot_name(name):
     """Validate bot name"""
-    if not re.match(r'^[a-zA-Z0-9\s-_]+$', name):
-        raise ValueError("Bot name can only contain alphanumeric characters, spaces, dash, and underscore")
+    if not re.match(r"^[a-zA-Z0-9\s-_]+$", name):
+        raise ValueError(
+            "Bot name can only contain alphanumeric characters, spaces, dash, and underscore"
+        )
     return name
+
 
 def create_bot_file(name, output_file):
     """Create the bot file."""
     try:
         name = validate_bot_name(name)
         safe_filename = sanitize_filename(output_file)
-        
+
         safe_path = os.path.join(os.getcwd(), safe_filename)
-        
+
         template = f"""from lxmfy import LXMFBot, load_cogs_from_directory
 
 bot = LXMFBot(
@@ -55,17 +60,18 @@ if __name__ == "__main__":
 """
         with open(safe_path, "w") as f:
             f.write(template)
-            
+
         return safe_filename
-            
+
     except Exception as e:
         raise RuntimeError(f"Failed to create bot file: {str(e)}")
+
 
 def create_example_cog():
     """Create example cog."""
     try:
         cogs_dir = os.path.join(os.getcwd(), "cogs")
-        
+
         os.makedirs(cogs_dir, exist_ok=True)
 
         init_path = os.path.join(cogs_dir, "__init__.py")
@@ -92,9 +98,10 @@ def setup(bot):
         basic_path = os.path.join(cogs_dir, "basic.py")
         with open(basic_path, "w") as f:
             f.write(template)
-            
+
     except Exception as e:
         raise RuntimeError(f"Failed to create example cog: {str(e)}")
+
 
 def main():
     parser = argparse.ArgumentParser(description="LXMFy Bot Creator")
@@ -127,6 +134,7 @@ To add admin rights, edit {safe_filename} and add your LXMF hash to the admins l
         except Exception as e:
             print(f"Error creating bot: {e}", file=sys.stderr)
             sys.exit(1)
+
 
 if __name__ == "__main__":
     main()
