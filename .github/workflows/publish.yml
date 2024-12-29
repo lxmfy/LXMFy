@@ -2,16 +2,23 @@ name: Publish Python 🐍 distribution 📦 to PyPI
 
 on: push
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   build:
     name: Build distribution 📦
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout
       with:
         persist-credentials: false
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python
       with:
         python-version: "3.13"
     - name: Install pypa/build
@@ -19,7 +26,7 @@ jobs:
     - name: Build a binary wheel and a source tarball
       run: python3 -m build
     - name: Store the distribution packages
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact
       with:
         name: python-package-distributions
         path: dist/
@@ -35,15 +42,16 @@ jobs:
       url: https://pypi.org/p/lxmfy
     permissions:
       id-token: write
+      contents: read
 
     steps:
     - name: Download all the dists
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact
       with:
         name: python-package-distributions
         path: dist/
     - name: Publish distribution 📦 to PyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
+      uses: pypa/gh-action-pypi-publish
 
   github-release:
     name: Sign the Python 🐍 distribution 📦 and create GitHub Release
@@ -56,12 +64,12 @@ jobs:
 
     steps:
     - name: Download all the dists
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact
       with:
         name: python-package-distributions
         path: dist/
     - name: Sign the dists with Sigstore
-      uses: sigstore/gh-action-sigstore-python@v3.0.0
+      uses: sigstore/gh-action-sigstore-python
       with:
         inputs: >-
           ./dist/*.tar.gz
