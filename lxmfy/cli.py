@@ -9,7 +9,10 @@ import os
 import argparse
 import sys
 import re
+import json
+import hashlib
 from pathlib import Path
+from glob import glob
 
 
 def sanitize_filename(filename: str) -> str:
@@ -157,6 +160,50 @@ def setup(bot):
         raise RuntimeError(f"Failed to create example cog: {str(e)}") from e
 
 
+def verify_wheel_signature(whl_path: str, sigstore_path: str) -> bool:
+    """
+    Verify the signature of a wheel file.
+
+    Args:
+        whl_path: Path to the wheel file
+        sigstore_path: Path to the sigstore file
+
+    Returns:
+        bool: True if the signature is valid, False otherwise
+    """
+    try:
+        with open(sigstore_path, "r") as f:
+            sigstore_data = json.load(f)
+
+        with open(whl_path, "rb") as f:
+            whl_content = f.read()
+            whl_hash = hashlib.sha256(whl_content).hexdigest()
+
+        if "hash" not in sigstore_data:
+            print(f"Error: No hash found in {sigstore_path}")
+            return False
+
+        if whl_hash != sigstore_data["hash"]:
+            print(f"Hash verification failed!")
+            print(f"Wheel hash: {whl_hash}")
+            print(f"Sigstore hash: {sigstore_data['hash']}")
+            return False
+
+        print("✓ Signature verification successful!")
+        return True
+
+    except Exception as e:
+        print(f"Error during verification: {str(e)}")
+        return False
+
+
+def find_latest_wheel():
+    wheels = glob("*.whl")
+    if not wheels:
+        return None
+    return sorted(wheels)[-1]
+
+
 def main() -> None:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -166,25 +213,27 @@ def main() -> None:
 Examples:
   lxmfy create                          # Create bot in current directory
   lxmfy create mybot                    # Create bot with name 'mybot'
-  lxmfy create mybot .                  # Create bot in current directory
-  lxmfy create --name "My Cool Bot"     # Create bot with custom name
-  lxmfy create --output path/to/bot.py  # Create bot in specific location
-  lxmfy create --output path/to/dir/    # Create bot in directory
+  lxmfy verify                          # Verify latest wheel in current directory
+  lxmfy verify package.whl sigstore.json # Verify specific wheel and signature
         """,
     )
 
-    parser.add_argument("command", choices=["create"], help="Create a new LXMF bot")
+    parser.add_argument(
+        "command",
+        choices=["create", "verify"],
+        help="Create a new LXMF bot or verify wheel signature",
+    )
     parser.add_argument(
         "name",
         nargs="?",
         default=None,
-        help="Name of the bot (optional)",
+        help="Name of the bot or path to wheel file (optional)",
     )
     parser.add_argument(
         "directory",
         nargs="?",
         default=None,
-        help="Output directory (optional)",
+        help="Output directory or path to sigstore file (optional)",
     )
     parser.add_argument(
         "--name",
@@ -233,6 +282,30 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
             )
         except Exception as e:
             print(f"Error: {str(e)}", file=sys.stderr)
+            sys.exit(1)
+
+    elif args.command == "verify":
+        whl_path = args.name
+        sigstore_path = args.directory
+
+        if not whl_path:
+            whl_path = find_latest_wheel()
+            if not whl_path:
+                print("Error: No wheel files found in current directory")
+                sys.exit(1)
+
+        if not sigstore_path:
+            sigstore_path = "sigstore.json"
+
+        if not os.path.exists(whl_path):
+            print(f"Error: Wheel file not found: {whl_path}")
+            sys.exit(1)
+
+        if not os.path.exists(sigstore_path):
+            print(f"Error: Sigstore file not found: {sigstore_path}")
+            sys.exit(1)
+
+        if not verify_wheel_signature(whl_path, sigstore_path):
             sys.exit(1)
 
 
