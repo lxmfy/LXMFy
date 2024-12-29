@@ -203,7 +203,7 @@ Examples:
     if args.command == "create":
         try:
             bot_name = args.name_opt or args.name or "MyLXMFBot"
-            
+
             if args.output:
                 output_path = args.output
             elif args.directory:
