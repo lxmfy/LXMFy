@@ -204,6 +204,67 @@ def find_latest_wheel():
     return sorted(wheels)[-1]
 
 
+def create_from_template(template_name: str, output_path: str, bot_name: str) -> str:
+    """
+    Create a bot from a template.
+
+    Args:
+        template_name: Name of the template to use
+        output_path: Desired output path
+        bot_name: Name for the bot
+
+    Returns:
+        str: Path to created bot file
+
+    Raises:
+        ValueError: If template is invalid
+    """
+    templates = {
+        "basic": create_bot_file,
+        "full": create_full_bot,
+    }
+
+    if template_name not in templates:
+        raise ValueError(
+            f"Invalid template: {template_name}. Available templates: {', '.join(templates.keys())}"
+        )
+
+    return templates[template_name](bot_name, output_path)
+
+
+def create_full_bot(name: str, output_path: str) -> str:
+    """Create a full-featured bot with storage and admin commands."""
+    try:
+        name = validate_bot_name(name)
+
+        output_dir = os.path.dirname(output_path)
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+
+        if output_path.endswith("/") or output_path.endswith("\\"):
+            base_name = "bot.py"
+            output_path = os.path.join(output_path, base_name)
+        elif not output_path.endswith(".py"):
+            output_path += ".py"
+
+        safe_path = os.path.abspath(output_path)
+
+        template = f"""from lxmfy.templates import FullBot
+
+if __name__ == "__main__":
+    bot = FullBot()
+    bot.bot.name = "{name}"  # Set custom name
+    bot.run()
+"""
+        with open(safe_path, "w", encoding="utf-8") as f:
+            f.write(template)
+
+        return os.path.relpath(safe_path)
+
+    except Exception as e:
+        raise RuntimeError(f"Failed to create full bot: {str(e)}") from e
+
+
 def main() -> None:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -211,8 +272,9 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  lxmfy create                          # Create bot in current directory
-  lxmfy create mybot                    # Create bot with name 'mybot'
+  lxmfy create                          # Create basic bot in current directory
+  lxmfy create mybot                    # Create basic bot with name 'mybot'
+  lxmfy create --template full mybot    # Create full-featured bot
   lxmfy verify                          # Verify latest wheel in current directory
   lxmfy verify package.whl sigstore.json # Verify specific wheel and signature
         """,
@@ -234,6 +296,12 @@ Examples:
         nargs="?",
         default=None,
         help="Output directory or path to sigstore file (optional)",
+    )
+    parser.add_argument(
+        "--template",
+        choices=["basic", "full"],
+        default="basic",
+        help="Bot template to use (default: basic)",
     )
     parser.add_argument(
         "--name",
@@ -262,10 +330,13 @@ Examples:
             else:
                 output_path = "bot.py"
 
-            bot_path = create_bot_file(bot_name, output_path)
-            create_example_cog(bot_path)
-            print(
-                f"""
+            bot_path = create_from_template(args.template, output_path, bot_name)
+
+            # Only create example cog for basic template
+            if args.template == "basic":
+                create_example_cog(bot_path)
+                print(
+                    f"""
 ✨ Successfully created new LXMFy bot!
 
 Files created:
@@ -278,8 +349,22 @@ To start your bot:
   python {bot_path}
 
 To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
-            """
-            )
+                """
+                )
+            else:
+                print(
+                    f"""
+✨ Successfully created new LXMFy bot!
+
+Files created:
+  - {bot_path} (main bot file)
+
+To start your bot:
+  python {bot_path}
+
+To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
+                """
+                )
         except Exception as e:
             print(f"Error: {str(e)}", file=sys.stderr)
             sys.exit(1)
