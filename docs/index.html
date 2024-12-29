@@ -7,46 +7,45 @@
     <!-- Primary Meta Tags -->
     <title>LXMFy - LXMF Bot Framework</title>
     <meta name="title" content="LXMFy - LXMF Bot Framework">
-    <meta name="description" content="Create LXMF bots for the Reticulum Network with a Discord.py-like framework. Features hot reloading, moderation tools, and spam protection.">
+    <meta name="description" content="Create LXMF bots for the Reticulum Network. Features hot reloading, moderation tools, and spam protection.">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://lxmfy.github.io/">
     <meta property="og:title" content="LXMFy - LXMF Bot Framework">
-    <meta property="og:description" content="Create LXMF bots for the Reticulum Network with a Discord.py-like framework. Features hot reloading, moderation tools, and spam protection.">
+    <meta property="og:description" content="Create LXMF bots for the Reticulum Network. Features hot reloading, moderation tools, and spam protection.">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://lxmfy.github.io/">
     <meta property="twitter:title" content="LXMFy - LXMF Bot Framework">
-    <meta property="twitter:description" content="Create LXMF bots for the Reticulum Network with a Discord.py-like framework. Features hot reloading, moderation tools, and spam protection.">
+    <meta property="twitter:description" content="Create LXMF bots for the Reticulum Network. Features hot reloading, moderation tools, and spam protection.">
 
     <!-- Theme Color -->
     <meta name="theme-color" content="#0d1117">
     
+    <!-- Add Prism CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <nav>
-        <div class="nav-content">
-            <h1>LXMFy</h1>
-            <div class="nav-links">
-                <a href="#features">Features</a>
-                <a href="#installation">Installation</a>
-                <a href="#usage">Usage</a>
-                <a href="#developers">Developers</a>
-                <a href="https://github.com/lxmfy/lxmfy">GitHub</a>
-                <a href="https://pypi.org/project/lxmfy/">PyPI</a>
-            </div>
-        </div>
-    </nav>
+    <!-- Include navbar -->
+    <div id="navbar-placeholder"></div>
 
     <main>
         <section class="hero">
             <h1>LXMFy</h1>
-            <p>Easily create LXMF bots for the Reticulum Network with this framework. Very similar to Discord.py.</p>
+            <p>Easily create LXMF bots for the <a class="link" href="https://reticulum.network">Reticulum Network</a> with this framework.</p>
             <div class="version-badge">
                 <a href="https://github.com/lxmfy/lxmfy/releases/tag/v0.0.0">v0.0.0</a>
+            </div>
+            <div class="hero-commands">
+                <div class="code-block small">
+                    <pre><code class="language-python">pip install lxmfy</code></pre>
+                </div>
+                <div class="code-block small">
+                    <pre><code class="language-python">lxmfy create mybot</code></pre>
+                </div>
             </div>
         </section>
 
@@ -69,58 +68,89 @@
                     <h3>Flexible Commands</h3>
                     <p>Customizable command prefix and announcement intervals</p>
                 </div>
+                <div class="feature-card">
+                    <h3>Persistent Storage</h3>
+                    <p>Built-in JSON storage system with extensible backend support</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Transport Layer</h3>
+                    <p>Path discovery, link caching, and request handling</p>
+                </div>
             </div>
         </section>
 
-        <section id="installation">
-            <h2>Installation</h2>
-            <div class="code-block">
-                <pre><code>pip install lxmfy</code></pre>
-            </div>
-            <div class="code-block">
-                <pre><code>poetry add lxmfy</code></pre>
+        <section id="projects">
+            <h2>Projects Using LXMFy</h2>
+            <div class="slider">
+                <div class="slide-track">
+                    <div class="slide">
+                        <a href="https://github.com/lxmfy/ollama-bot" target="_blank">
+                            <h3>Ollama Bot</h3>
+                            <p>Query LLM models</p>
+                        </a>
+                    </div>
+                    <div class="slide">
+                        <a href="https://github.com/lxmfy/weather-bot" target="_blank">
+                            <h3>Weather Bot</h3>
+                            <p>OpenWeatherMap Bot</p>
+                        </a>
+                    </div>
+                    <div class="slide">
+                        <a href="https://github.com/lxmfy/js8call-bot" target="_blank">
+                            <h3>JS8Call Bot</h3>
+                            <p>Receive JS8Call messages</p>
+                        </a>
+                    </div>
+                    <div class="slide">
+                        <a href="https://github.com/lxmfy/group-distrobution-bot" target="_blank">
+                            <h3>Group Distribute Bot</h3>
+                            <p>Distribute messages to a group</p>
+                        </a>
+                    </div>
+                    <div class="slide">
+                        <a href="https://github.com/lxmfy/ollama-bot" target="_blank">
+                            <h3>Ollama Bot</h3>
+                            <p>Query LLM models</p>
+                        </a>
+                    </div>
+                    <div class="slide">
+                        <a href="https://github.com/lxmfy/weather-bot" target="_blank">
+                            <h3>Weather Bot</h3>
+                            <p>OpenWeatherMap Bot</p>
+                        </a>
+                    </div>
+                    <div class="slide">
+                        <a href="https://github.com/lxmfy/js8call-bot" target="_blank">
+                            <h3>JS8Call Bot</h3>
+                            <p>Receive JS8Call messages</p>
+                        </a>
+                    </div>
+                    <div class="slide">
+                        <a href="https://github.com/lxmfy/group-distrobution-bot" target="_blank">
+                            <h3>Group Distribute Bot</h3>
+                            <p>Distribute messages to a group</p>
+                        </a>
+                    </div>
+                </div>
             </div>
         </section>
 
         <section id="usage">
-            <h2>Usage</h2>
-            <h3>CLI Tool</h3>
-            <div class="code-block">
-                <pre><code>lxmfy create</code></pre>
-            </div>
-
             <h3>Python Example</h3>
             <div class="code-block">
-<pre><code>from lxmfy import LXMFBot, load_cogs_from_directory
+                <pre><code class="language-python">from lxmfy import LXMFBot
 
-# Initialize the bot with configuration
 bot = LXMFBot(
-    name="LXMFy Test Bot",          # Name that appears on the network
-    announce=600,                    # Announce every 600 seconds (0 to disable)
-    admins=["your_lxmf_hash_here"], # List of admin LXMF hashes
-    hot_reloading=True,             # Enable hot reloading for cogs
-    command_prefix="/",              # Command prefix (None for all messages)
-    cogs_dir="cogs",                # Directory for cog modules
-    rate_limit=5,                   # Max messages per minute
-    cooldown=5,                     # Seconds between commands
-    max_warnings=3,                 # Warnings before ban
-    warning_timeout=300             # Warning reset time in seconds
+    name="MyBot",
+    command_prefix="/",
+    admins=["your_hash_here"],
+    announce=600
 )
 
-# Load all cogs from the cogs directory
-load_cogs_from_directory(bot)
+@bot.command(name="hello", description="Say hello")
+def hello(ctx):
+    ctx.reply("Hello!")
 
-# Basic command example
-@bot.command(name="ping", description="Test if bot is responsive")
-def ping(ctx):
-    ctx.reply("Pong!")
-
-# Admin-only command example
-@bot.command(name="echo", description="Echo a message", admin_only=True)
-def echo(ctx, message: str):
-    ctx.reply(message)
-
-# Start the bot
 bot.run()</code></pre>
             </div>
         </section>
@@ -132,56 +162,53 @@ bot.run()</code></pre>
             <div class="reference-grid">
                 <div class="reference-card">
                     <h4>Core Module</h4>
-                    <p>Core bot functionality and message routing system.</p>
+                    <p>Core bot functionality, message routing and transport system.</p>
                     <div class="code-block">
-<pre><code>class LXMFBot:
-    delivery_callbacks = []
-    receipts = []
-    queue = Queue(maxsize=5)
-
-    def _message_received(self, message):
-        # Message handling pipeline
-        sender = RNS.hexrep(message.source_hash)
-        content = message.content.decode()
+                        <pre><code class="language-python">class LXMFBot:
+    def __init__(self):
+        self.transport = Transport()
+        self.storage = Storage()
         
-        # 1. Spam check
-        # 2. Command parsing
-        # 3. Context creation
-        # 4. Command execution</code></pre>
+    async def request_page(self, dest_hash, path):
+        return await self.transport.request_page(
+            dest_hash, path
+        )</code></pre>
                     </div>
                     <h5>Key Components</h5>
                     <ul>
                         <li><code>RNS/LXMF Integration</code> - Network handling</li>
-                        <li><code>Message Queue</code> - Async message processing</li>
-                        <li><code>Identity Management</code> - Bot identity and storage</li>
+                        <li><code>Transport Layer</code> - Page requests and path handling</li>
+                        <li><code>Storage System</code> - Persistent data handling</li>
                         <li><code>Extension System</code> - Hot-reloadable modules</li>
                     </ul>
                 </div>
 
                 <div class="reference-card">
-                    <h4>Command System</h4>
-                    <p>Decorator-based command registration and context handling.</p>
+                    <h4>Storage System</h4>
+                    <p>Extensible storage backend for persistent data.</p>
                     <div class="code-block">
-<pre><code>class Command:
-    def __init__(self, name, description, admin_only):
-        self.name = name
-        self.callback = None
-    
-    def __call__(self, func):
-        self.callback = func
-        func._command = self
-        return func
-
-    def __get__(self, obj, objtype=None):
-        # Support instance methods
-        if obj is None:
-            return self</code></pre>
+                        <pre><code class="language-python">class StorageBackend:
+    def get(self, key: str, default=None):
+        pass
+        
+    def set(self, key: str, value):
+        pass
+        
+    def delete(self, key: str):
+        pass
+        
+    def exists(self, key: str) -> bool:
+        pass
+        
+    def scan(self, prefix: str) -> list:
+        pass</code></pre>
                     </div>
-                    <h5>Extension Points</h5>
+                    <h5>Features</h5>
                     <ul>
-                        <li><code>Command Attributes</code> - Custom command metadata</li>
-                        <li><code>Context Injection</code> - Dynamic context building</li>
-                        <li><code>Decorator System</code> - Command registration</li>
+                        <li><code>Custom Backends</code> - Pluggable storage systems</li>
+                        <li><code>JSON Storage</code> - Built-in file-based storage</li>
+                        <li><code>Key Scanning</code> - Prefix-based key lookup</li>
+                        <li><code>Cache Layer</code> - Memory caching support</li>
                     </ul>
                 </div>
 
@@ -189,22 +216,23 @@ bot.run()</code></pre>
                     <h4>Framework Architecture</h4>
                     <p>Core systems and extension points for framework development.</p>
                     <div class="code-block">
-<pre><code>Framework Components:
+                        <pre><code class="language-python">Framework Components:
 ├── core.py         # Message routing & bot core
+├── transport.py    # Extensible transport layer
+├── storage.py      # Storage backends
 ├── commands.py     # Command system
 ├── moderation.py   # Spam protection
-├── cogs_core.py    # Extension loading
-└── utils/          # Helper utilities
+└── cogs_core.py    # Extension loading
 
 Extension Points:
-- Command Registration
+- Custom Request Handlers
 - Message Pipeline
-- Cog Loading
+- Storage Backend
 - Event System</code></pre>
                     </div>
                     <h5>Development Areas</h5>
                     <ul>
-                        <li><code>Message Pipeline</code> - Custom message processors</li>
+                        <li><code>Request Types</code> - Custom network protocols</li>
                         <li><code>Event System</code> - Additional event types</li>
                         <li><code>Storage Systems</code> - Persistent data handling</li>
                         <li><code>Network Layer</code> - RNS/LXMF integration</li>
@@ -216,6 +244,66 @@ Extension Points:
 
     <footer>
         <p>Created by Sudo-Ivan • Licensed under MIT</p>
+        <p>Contact Me: <code>870462b40219a8123ffd2eb17e60b091</code> (LXMF)</p>
+        <p>A <a href="https://quad4.io/lxmfy" class="link">Quad4 Project</a></p>
     </footer>
+
+    <!-- Add Prism JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    
+    <!-- Add clipboard.js before other scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.11/clipboard.min.js"></script>
+    
+    <script>
+        // Initialize clipboard for code blocks
+        document.querySelectorAll('.code-block.small').forEach(block => {
+            const code = block.querySelector('code');
+            
+            block.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(code.textContent);
+                    block.classList.add('copied');
+                    setTimeout(() => {
+                        block.classList.remove('copied');
+                    }, 1000);
+                } catch (err) {
+                    console.error('Failed to copy:', err);
+                }
+            });
+        });
+
+        // Load navbar
+        fetch('_includes/navbar.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('navbar-placeholder').innerHTML = data;
+                // Add burger menu functionality after navbar is loaded
+                const burgerMenu = document.querySelector('.burger-menu');
+                const navLinks = document.querySelector('.nav-links');
+                
+                burgerMenu.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    burgerMenu.classList.toggle('active');
+                    navLinks.classList.toggle('active');
+                });
+
+                // Close menu when clicking a link
+                document.querySelectorAll('.nav-links a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        burgerMenu.classList.remove('active');
+                        navLinks.classList.remove('active');
+                    });
+                });
+
+                // Close menu when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.nav-content')) {
+                        burgerMenu.classList.remove('active');
+                        navLinks.classList.remove('active');
+                    }
+                });
+            });
+    </script>
 </body>
 </html>
