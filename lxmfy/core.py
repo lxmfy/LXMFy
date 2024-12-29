@@ -71,14 +71,27 @@ class LXMFBot:
         Args:
             **kwargs: Override default configuration settings
         """
-        config = BotConfig(**kwargs)
+        self.config = BotConfig(**kwargs)
+        
+        # Set up storage with default directory
+        storage_dir = kwargs.get('storage_dir', 'data')
+        self.storage = Storage(JSONStorage(storage_dir))
+        
+        # Initialize spam protection with config values
+        self.spam_protection = SpamProtection(
+            self.storage,
+            rate_limit=self.config.rate_limit,
+            cooldown=self.config.cooldown,
+            max_warnings=self.config.max_warnings,
+            warning_timeout=self.config.warning_timeout
+        )
 
         # Setup paths
         self.config_path = os.path.join(os.getcwd(), "config")
         os.makedirs(self.config_path, exist_ok=True)
 
         # Setup cogs
-        self.cogs_dir = os.path.join(self.config_path, config.cogs_dir)
+        self.cogs_dir = os.path.join(self.config_path, self.config.cogs_dir)
         os.makedirs(self.cogs_dir, exist_ok=True)
 
         # Create __init__.py if it doesn't exist
@@ -97,7 +110,7 @@ class LXMFBot:
         RNS.log("Loaded identity from file", RNS.LOG_INFO)
 
         # Handle immediate announce
-        if config.announce_immediately:
+        if self.config.announce_immediately:
             announce_file = os.path.join(self.config_path, "announce")
             if os.path.isfile(announce_file):
                 os.remove(announce_file)
@@ -107,7 +120,7 @@ class LXMFBot:
         RNS.Reticulum(loglevel=RNS.LOG_VERBOSE)
         self.router = LXMRouter(identity=self.identity, storagepath=self.config_path)
         self.local = self.router.register_delivery_identity(
-            self.identity, display_name=config.name
+            self.identity, display_name=self.config.name
         )
         self.router.register_delivery_callback(self._message_received)
         RNS.log(
@@ -119,20 +132,12 @@ class LXMFBot:
         self._announce()
         self.commands = {}
         self.cogs = {}
-        self.admins = set(config.admins) if config.admins else set()
-        self.hot_reloading = config.hot_reloading
-        self.announce_time = config.announce
-        self.command_prefix = config.command_prefix
+        self.admins = set(self.config.admins or [])
+        self.hot_reloading = self.config.hot_reloading
+        self.announce_time = self.config.announce
+        self.command_prefix = self.config.command_prefix
 
         # Initialize services
-        self.storage = Storage(JSONStorage(os.path.join(self.config_path, "storage")))
-        self.spam_protection = SpamProtection(
-            storage=self.storage,
-            rate_limit=config.rate_limit,
-            cooldown=config.cooldown,
-            max_warnings=config.max_warnings,
-            warning_timeout=config.warning_timeout,
-        )
         self.transport = Transport(storage=self.storage)
 
     def command(self, *args, **kwargs):
@@ -177,66 +182,74 @@ class LXMFBot:
     def _message_received(self, message):
         sender = RNS.hexrep(message.source_hash, delimit=False)
         receipt = RNS.hexrep(message.hash, delimit=False)
-        RNS.log(f"Message receipt <{receipt}>", RNS.LOG_INFO)
 
-        def reply(msg):
-            self.send(sender, msg)
+        if hasattr(self, 'spam_protection') and not self.is_admin(sender):
+            if sender in self.spam_protection.banned_users:
+                RNS.log(f"Dropping message from banned user: {sender[:8]}", RNS.LOG_DEBUG)
+                return
 
-        if receipt not in self.receipts:
-            self.receipts.append(receipt)
-            if len(self.receipts) > 100:
-                self.receipts.pop(0)
+        if receipt in self.receipts:
+            return
 
-            content = message.content.decode("utf-8").strip()
+        self.receipts.append(receipt)
+        if len(self.receipts) > 100:
+            self.receipts.pop(0)
 
-            obj = {
-                "lxmf": message,
-                "reply": reply,
-                "sender": sender,
-                "content": content,
-                "hash": receipt,
-            }
-            msg = SimpleNamespace(**obj)
+        # Define reply function
+        def reply(content, title="Reply"):
+            self.send(sender, content, title)
 
-            if not self.is_admin(sender):
-                allowed, reason = self.spam_protection.check_spam(sender)
-                if not allowed:
-                    self.send(sender, reason)
+        content = message.content.decode("utf-8").strip()
+
+        # Check spam protection for non-admin users
+        if not self.is_admin(sender):
+            allowed, reason = self.spam_protection.check_spam(sender)
+            if not allowed:
+                reply(reason)  # Send one last message about the ban/warning
+                return
+
+        obj = {
+            "lxmf": message,
+            "reply": reply,
+            "sender": sender,
+            "content": content,
+            "hash": receipt,
+        }
+        msg = SimpleNamespace(**obj)
+
+        if self.command_prefix is None or content.startswith(self.command_prefix):
+            command_name = (
+                content.split()[0][len(self.command_prefix) :]
+                if self.command_prefix
+                else content.split()[0]
+            )
+            if command_name in self.commands:
+                cmd = self.commands[command_name]
+                if getattr(cmd, "admin_only", False) and not self.is_admin(sender):
+                    self.send(sender, "This command is for administrators only.")
                     return
 
-            if self.command_prefix is None or content.startswith(self.command_prefix):
-                command_name = (
-                    content.split()[0][len(self.command_prefix) :]
-                    if self.command_prefix
-                    else content.split()[0]
+                ctx = SimpleNamespace(
+                    bot=self,
+                    sender=sender,
+                    content=content,
+                    args=content.split()[1:],
+                    is_admin=self.is_admin(sender),
+                    reply=reply,
+                    message=msg,
                 )
-                if command_name in self.commands:
-                    cmd = self.commands[command_name]
-                    if getattr(cmd, "admin_only", False) and not self.is_admin(sender):
-                        self.send(sender, "This command is for administrators only.")
-                        return
 
-                    ctx = SimpleNamespace(
-                        bot=self,
-                        sender=sender,
-                        content=content,
-                        args=content.split()[1:],
-                        is_admin=self.is_admin(sender),
-                        reply=reply,
-                        message=msg,
+                try:
+                    cmd.callback(ctx)
+                except Exception as e:
+                    RNS.log(
+                        f"Error executing command {command_name}: {str(e)}",
+                        RNS.LOG_ERROR,
                     )
+                    self.send(sender, f"Error executing command: {str(e)}")
 
-                    try:
-                        cmd.callback(ctx)
-                    except Exception as e:
-                        RNS.log(
-                            f"Error executing command {command_name}: {str(e)}",
-                            RNS.LOG_ERROR,
-                        )
-                        self.send(sender, f"Error executing command: {str(e)}")
-
-            for callback in self.delivery_callbacks:
-                callback(msg)
+        for callback in self.delivery_callbacks:
+            callback(msg)
 
     def _announce(self):
         announce_path = os.path.join(self.config_path, "announce")
