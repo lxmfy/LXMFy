@@ -14,6 +14,7 @@
 - **Fix Rate Limiting and Spam Protection**
   - Dont process recieved messages at all if banned.
 
+
 ## [0.3.3] - 2024-12-28
 
 ### Major Features
@@ -64,3 +65,4 @@
 - Fixed documentation link accessibility
 
 [0.3.3]: https://github.com/lxmfy/lxmfy/releases/tag/v0.3.3
+[0.4.0]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.0
