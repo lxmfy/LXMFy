@@ -1,3 +1,11 @@
+"""
+Storage module for LXMFy bot framework.
+
+This module provides abstract and concrete storage implementations for persistent data storage.
+It includes a base StorageBackend interface and a JSON file-based implementation.
+The Storage class serves as a facade for the underlying storage backend.
+"""
+
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
 import json

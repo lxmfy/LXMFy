@@ -1,3 +1,13 @@
+"""
+Transport module for LXMFy bot framework.
+
+This module provides transport layer functionality for establishing and managing
+network connections using Reticulum Network Stack (RNS). It handles path discovery,
+link establishment, and caching of active connections. The Transport class serves
+as the main interface for network operations, with support for path and request
+handlers.
+"""
+
 from typing import Optional, Dict, List, Callable, Any
 import RNS
 import logging
