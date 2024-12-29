@@ -5,10 +5,9 @@ WORKDIR /bot
 # Create necessary directories for Reticulum and bot
 RUN mkdir -p /root/.reticulum /bot/config
 
-COPY examples/test_bot.py /bot/test_bot.py
-COPY requirements.txt .
+RUN pip3 install --no-cache-dir lxmfy
 
-RUN pip3 install --no-cache-dir -r requirements.txt
+CMD ["lxmfy", "create", "mybot"]
 
-# Default command
-CMD ["python3", "test_bot.py"]
+# Run bot
+CMD ["python3", "mybot.py"]
