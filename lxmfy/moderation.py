@@ -47,14 +47,21 @@ class SpamProtection:
         """
         self.storage = storage
         self.config = SpamConfig(**kwargs)
+        self.message_counts = defaultdict(list)  # Initialize as defaultdict
+        self.warnings = defaultdict(int)
+        self.banned_users = set()
+        self.warning_times = defaultdict(float)
         self.load_data()
 
     def load_data(self):
         """Load spam protection data from storage."""
-        self.message_counts = self.storage.get("spam:message_counts", defaultdict(list))
-        self.warnings = self.storage.get("spam:warnings", defaultdict(int))
+        stored_counts = self.storage.get("spam:message_counts", {})
+        self.message_counts = defaultdict(list, stored_counts)
+        stored_warnings = self.storage.get("spam:warnings", {})
+        self.warnings = defaultdict(int, stored_warnings)
         self.banned_users = set(self.storage.get("spam:banned_users", []))
-        self.warning_times = self.storage.get("spam:warning_times", defaultdict(float))
+        stored_times = self.storage.get("spam:warning_times", {})
+        self.warning_times = defaultdict(float, stored_times)
 
     def save_data(self):
         """Save current spam protection data to storage."""
