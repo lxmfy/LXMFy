@@ -165,6 +165,8 @@ def main() -> None:
         epilog="""
 Examples:
   lxmfy create                          # Create bot in current directory
+  lxmfy create mybot                    # Create bot with name 'mybot'
+  lxmfy create mybot .                  # Create bot in current directory
   lxmfy create --name "My Cool Bot"     # Create bot with custom name
   lxmfy create --output path/to/bot.py  # Create bot in specific location
   lxmfy create --output path/to/dir/    # Create bot in directory
@@ -173,19 +175,45 @@ Examples:
 
     parser.add_argument("command", choices=["create"], help="Create a new LXMF bot")
     parser.add_argument(
+        "name",
+        nargs="?",
+        default=None,
+        help="Name of the bot (optional)",
+    )
+    parser.add_argument(
+        "directory",
+        nargs="?",
+        default=None,
+        help="Output directory (optional)",
+    )
+    parser.add_argument(
         "--name",
-        default="MyLXMFBot",
+        dest="name_opt",
+        default=None,
         help="Name of the bot (alphanumeric, spaces, dash, underscore)",
     )
     parser.add_argument(
-        "--output", default="bot.py", help="Output file path or directory"
+        "--output",
+        default=None,
+        help="Output file path or directory",
     )
 
     args = parser.parse_args()
 
     if args.command == "create":
         try:
-            bot_path = create_bot_file(args.name, args.output)
+            bot_name = args.name_opt or args.name or "MyLXMFBot"
+            
+            if args.output:
+                output_path = args.output
+            elif args.directory:
+                output_path = os.path.join(args.directory, "bot.py")
+            elif args.name:
+                output_path = f"{args.name}.py"
+            else:
+                output_path = "bot.py"
+
+            bot_path = create_bot_file(bot_name, output_path)
             create_example_cog(bot_path)
             print(
                 f"""
