@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.0] - 2024-12-29
+
+### Major Features
+- **CLI Templates Command**
+  - Basic bot template with example cogs
+  - Full-featured bot template with storage and admin commands
+  - Template selection via CLI: `lxmfy create --template full mybot`
+
+- **CLI Verification Command**
+  - Using `lxmfy verify` to verify a .whl file using a sigstore hash.
+
+- **Fix Rate Limiting and Spam Protection**
+  - Dont process recieved messages at all if banned.
+
 ## [0.3.3] - 2024-12-28
 
 ### Major Features
