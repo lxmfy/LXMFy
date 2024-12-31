@@ -5,6 +5,21 @@ This module provides the core command handling functionality for LXMFy bots,
 including command registration, method decoration, and cog support.
 """
 
+from typing import Optional, Dict, List, Callable
+from dataclasses import dataclass
+
+
+@dataclass
+class CommandHelp:
+    """Help metadata for a command"""
+
+    name: str
+    description: str
+    usage: Optional[str] = None
+    examples: List[str] = None
+    category: Optional[str] = None
+    aliases: List[str] = None
+
 
 class Command:
     """
@@ -20,7 +35,16 @@ class Command:
         callback (callable): The function that implements the command
     """
 
-    def __init__(self, name, description="No description provided", admin_only=False):
+    def __init__(
+        self,
+        name,
+        description="No description provided",
+        admin_only=False,
+        usage=None,
+        examples=None,
+        category=None,
+        aliases=None,
+    ):
         """
         Initialize a new Command.
 
@@ -33,6 +57,14 @@ class Command:
         self.description = description
         self.admin_only = admin_only
         self.callback = None
+        self.help = CommandHelp(
+            name=name,
+            description=description,
+            usage=usage,
+            examples=examples or [],
+            category=category,
+            aliases=aliases or [],
+        )
 
     def __call__(self, func):
         """

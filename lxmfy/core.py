@@ -27,6 +27,7 @@ from .commands import Command
 from .moderation import SpamProtection
 from .transport import Transport
 from .storage import JSONStorage, Storage
+from .help import HelpSystem
 
 
 @dataclass
@@ -72,18 +73,18 @@ class LXMFBot:
             **kwargs: Override default configuration settings
         """
         self.config = BotConfig(**kwargs)
-        
+
         # Set up storage with default directory
-        storage_dir = kwargs.get('storage_dir', 'data')
+        storage_dir = kwargs.get("storage_dir", "data")
         self.storage = Storage(JSONStorage(storage_dir))
-        
+
         # Initialize spam protection with config values
         self.spam_protection = SpamProtection(
             self.storage,
             rate_limit=self.config.rate_limit,
             cooldown=self.config.cooldown,
             max_warnings=self.config.max_warnings,
-            warning_timeout=self.config.warning_timeout
+            warning_timeout=self.config.warning_timeout,
         )
 
         # Setup paths
@@ -140,6 +141,9 @@ class LXMFBot:
         # Initialize services
         self.transport = Transport(storage=self.storage)
 
+        # Initialize help system
+        self.help_system = HelpSystem(self)
+
     def command(self, *args, **kwargs):
         def decorator(func):
             if len(args) > 0:
@@ -183,9 +187,11 @@ class LXMFBot:
         sender = RNS.hexrep(message.source_hash, delimit=False)
         receipt = RNS.hexrep(message.hash, delimit=False)
 
-        if hasattr(self, 'spam_protection') and not self.is_admin(sender):
+        if hasattr(self, "spam_protection") and not self.is_admin(sender):
             if sender in self.spam_protection.banned_users:
-                RNS.log(f"Dropping message from banned user: {sender[:8]}", RNS.LOG_DEBUG)
+                RNS.log(
+                    f"Dropping message from banned user: {sender[:8]}", RNS.LOG_DEBUG
+                )
                 return
 
         if receipt in self.receipts:
