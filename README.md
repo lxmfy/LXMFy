@@ -68,11 +68,7 @@ poetry install
 
 ### Dev Scripts
 
-Run Black, Pylint, and Bandit.
-
-```
-./scripts/dev.sh
-```
+`poetry run dev`
 
 ### Docker
 
