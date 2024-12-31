@@ -9,6 +9,7 @@ from .core import LXMFBot
 from .storage import Storage, JSONStorage
 from .commands import Command, command
 from .cogs_core import load_cogs_from_directory
+from .help import HelpSystem, HelpFormatter
 
 __all__ = [
     "LXMFBot",
@@ -17,4 +18,6 @@ __all__ = [
     "Command",
     "command",
     "load_cogs_from_directory",
+    "HelpSystem",
+    "HelpFormatter",
 ]

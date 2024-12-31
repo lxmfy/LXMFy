@@ -1,6 +1,6 @@
 # LXMFy
 
-Easily create LXMF bots for the Reticulum Network with this framework. Very similar to Discord.py.
+Easily create LXMF bots for the Reticulum Network with this extensible framework.
 
 ## Features
 
