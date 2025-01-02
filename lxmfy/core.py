@@ -15,7 +15,7 @@ import importlib
 import logging
 from queue import Queue
 from types import SimpleNamespace
-from typing import Optional, Dict, Any
+from typing import Optional, Dict
 from dataclasses import dataclass
 
 # Reticulum and LXMF imports
@@ -28,6 +28,7 @@ from .moderation import SpamProtection
 from .transport import Transport
 from .storage import JSONStorage, Storage
 from .help import HelpSystem
+from .permissions import PermissionManager, DefaultPerms
 
 
 @dataclass
@@ -45,6 +46,7 @@ class BotConfig:
     warning_timeout: int = 300
     command_prefix: str = "/"
     cogs_dir: str = "cogs"
+    permissions_enabled: bool = False
 
 
 class LXMFBot:
@@ -80,7 +82,8 @@ class LXMFBot:
 
         # Initialize spam protection with config values
         self.spam_protection = SpamProtection(
-            self.storage,
+            storage=self.storage,
+            bot=self,
             rate_limit=self.config.rate_limit,
             cooldown=self.config.cooldown,
             max_warnings=self.config.max_warnings,
@@ -144,6 +147,16 @@ class LXMFBot:
         # Initialize help system
         self.help_system = HelpSystem(self)
 
+        # Initialize permission manager
+        self.permissions = PermissionManager(
+            storage=self.storage,
+            enabled=self.config.permissions_enabled
+        )
+        
+        # Add admins to admin role
+        for admin in self.admins:
+            self.permissions.assign_role(admin, "admin")
+
     def command(self, *args, **kwargs):
         def decorator(func):
             if len(args) > 0:
@@ -187,15 +200,13 @@ class LXMFBot:
         sender = RNS.hexrep(message.source_hash, delimit=False)
         receipt = RNS.hexrep(message.hash, delimit=False)
 
-        if hasattr(self, "spam_protection") and not self.is_admin(sender):
-            if sender in self.spam_protection.banned_users:
-                RNS.log(
-                    f"Dropping message from banned user: {sender[:8]}", RNS.LOG_DEBUG
-                )
-                return
-
         if receipt in self.receipts:
             return
+
+        if hasattr(self, "spam_protection") and not self.is_admin(sender):
+            if sender in self.spam_protection.banned_users:
+                RNS.log(f"Dropping message from banned user: {sender[:8]}", RNS.LOG_DEBUG)
+                return
 
         self.receipts.append(receipt)
         if len(self.receipts) > 100:
@@ -207,11 +218,16 @@ class LXMFBot:
 
         content = message.content.decode("utf-8").strip()
 
-        # Check spam protection for non-admin users
+        # Single permission check for both bot usage and spam
         if not self.is_admin(sender):
+            # Check spam first
             allowed, reason = self.spam_protection.check_spam(sender)
             if not allowed:
-                reply(reason)  # Send one last message about the ban/warning
+                reply(reason)
+                return
+            
+            # Then check basic bot permission
+            if not self.permissions.has_permission(sender, DefaultPerms.USE_BOT):
                 return
 
         obj = {
@@ -231,8 +247,10 @@ class LXMFBot:
             )
             if command_name in self.commands:
                 cmd = self.commands[command_name]
-                if getattr(cmd, "admin_only", False) and not self.is_admin(sender):
-                    self.send(sender, "This command is for administrators only.")
+                
+                # Check command permissions
+                if not self.permissions.has_permission(sender, cmd.permissions):
+                    self.send(sender, "You don't have permission to use this command.")
                     return
 
                 ctx = SimpleNamespace(
@@ -277,7 +295,7 @@ class LXMFBot:
     def send(self, destination, message, title="Reply"):
         try:
             hash = bytes.fromhex(destination)
-        except Exception as e:
+        except Exception:
             RNS.log("Invalid destination hash", RNS.LOG_ERROR)
             return
 

@@ -10,16 +10,20 @@ Easily create LXMF bots for the Reticulum Network with this extensible framework
 - Command prefix (set to None to process all messages as commands)
 - Announcements (announce in seconds, set to 0 to disable)
 - Extensible Storage Backend
+- Permission System
 
 ## Installation
 
 ```bash
 pip install lxmfy
 ```
+or pipx:
+
+```bash
+pipx install lxmfy
+```
 
 ## Usage
-
-**CLI Tool**
 
 ```bash
 lxmfy create
@@ -66,9 +70,15 @@ cd lxmfy
 poetry install
 ```
 
-### Dev Scripts
+### Development
 
-`poetry run dev`
+This project uses ruff and bandit. Make sure to run format and scan commands before committing your changes.
+
+```
+poetry run format
+poetry run lint
+poetry run scan
+```
 
 ### Docker
 
@@ -92,7 +102,4 @@ docker run -d \
     --restart unless-stopped \
     lxmfy-test
 ```
-
-
-
-Credit to https://github.com/randogoth/lxmf-bot, helped me learning to create LXMF bots. - Sudo-Ivan
+Credit to https://github.com/randogoth/lxmf-bot, helped me learning to create LXMF bots.

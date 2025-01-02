@@ -9,6 +9,7 @@ from time import time
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Tuple
+from .permissions import DefaultPerms
 
 
 @dataclass
@@ -37,15 +38,17 @@ class SpamProtection:
         warning_times: Dictionary tracking last warning time per user
     """
 
-    def __init__(self, storage, **kwargs):
+    def __init__(self, storage, bot, **kwargs):
         """
         Initialize spam protection with the given configuration.
 
         Args:
             storage: Storage backend for persisting data
+            bot: Reference to the bot instance
             **kwargs: Override default spam configuration settings
         """
         self.storage = storage
+        self.bot = bot
         self.config = SpamConfig(**kwargs)
         self.message_counts = defaultdict(list)  # Initialize as defaultdict
         self.warnings = defaultdict(int)
@@ -81,6 +84,10 @@ class SpamProtection:
             Tuple[bool, str]: (allowed, message) where allowed indicates if the message
             should be processed and message contains any warning/ban notification
         """
+        # Check if user has bypass permission
+        if self.bot.permissions.has_permission(sender, DefaultPerms.BYPASS_SPAM):
+            return True, None
+
         if sender in self.banned_users:
             return False, "You are banned from using this bot."
 

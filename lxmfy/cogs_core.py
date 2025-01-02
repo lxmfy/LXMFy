@@ -9,7 +9,6 @@ and manages their integration with the bot system.
 # Standard library imports
 import os
 import sys
-import importlib.util
 
 # Reticulum imports
 import RNS

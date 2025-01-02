@@ -1,7 +1,8 @@
 """Help command system for LXMFy."""
 
-from typing import Dict, List, Optional, Callable
+from typing import Dict, List
 from dataclasses import dataclass
+from .permissions import DefaultPerms
 
 
 @dataclass
@@ -19,6 +20,12 @@ class HelpFormatter:
         if command.help.examples:
             help_text.append("Examples:")
             help_text.extend(f"  {ex}" for ex in command.help.examples)
+
+        if command.permissions != DefaultPerms.USE_COMMANDS:
+            help_text.append("Required Permissions:")
+            for perm in DefaultPerms:
+                if perm.value & command.permissions:
+                    help_text.append(f"  - {perm.name}")
 
         if command.admin_only:
             help_text.append("Note: Admin only command")
