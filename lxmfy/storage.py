@@ -7,9 +7,8 @@ The Storage class serves as a facade for the underlying storage backend.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List
 import json
-import os
 from pathlib import Path
 import logging
 
@@ -112,3 +111,19 @@ class Storage:
 
     def scan(self, prefix: str) -> list:
         return self.backend.scan(prefix)
+
+    def get_role_data(self, role_name: str) -> Dict:
+        """Helper method for permission system"""
+        return self.get(f"roles:{role_name}", {})
+
+    def set_role_data(self, role_name: str, data: Dict):
+        """Helper method for permission system"""
+        self.set(f"roles:{role_name}", data)
+
+    def get_user_roles(self, user_hash: str) -> List[str]:
+        """Helper method for permission system"""
+        return self.get(f"user_roles:{user_hash}", [])
+
+    def set_user_roles(self, user_hash: str, roles: List[str]):
+        """Helper method for permission system"""
+        self.set(f"user_roles:{user_hash}", roles)

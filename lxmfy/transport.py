@@ -8,11 +8,12 @@ as the main interface for network operations, with support for path and request
 handlers.
 """
 
-from typing import Optional, Dict, List, Callable, Any
+from typing import Optional, Callable
 import RNS
 import logging
 import time
 from dataclasses import dataclass
+from .permissions import DefaultPerms
 
 
 @dataclass
@@ -52,6 +53,11 @@ class Transport:
 
     def establish_link(self, destination_hash: bytes, timeout: int = 15) -> RNS.Link:
         """Establish a link with path discovery"""
+        # Check if user has permission to establish links
+        sender = RNS.hexrep(destination_hash, delimit=False)
+        if not self.bot.permissions.has_permission(sender, DefaultPerms.USE_BOT):
+            raise Exception("User does not have permission to establish links")
+
         self.load_paths()
         try:
             if RNS.Transport.has_path(destination_hash):

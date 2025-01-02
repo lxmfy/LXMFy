@@ -11,7 +11,6 @@ import sys
 import re
 import json
 import hashlib
-from pathlib import Path
 from glob import glob
 
 
@@ -58,11 +57,11 @@ def validate_bot_name(name: str) -> str:
 
 def create_bot_file(name: str, output_path: str) -> str:
     """
-    Create the bot file with validated inputs.
+    Create a new bot file from template.
 
     Args:
-        name: Name of the bot
-        output_path: Desired output path and filename
+        name: Name for the bot
+        output_path: Desired output path
 
     Returns:
         str: The actual filename used
@@ -98,6 +97,8 @@ bot = LXMFBot(
     cooldown=5,        # 5 seconds cooldown
     max_warnings=3,    # 3 warnings before ban
     warning_timeout=300,  # Warnings reset after 5 minutes
+    # Permission settings
+    permissions_enabled=False,  # Set to True to enable role-based permissions
 )
 
 # Load all cogs from the cogs directory
@@ -184,7 +185,7 @@ def verify_wheel_signature(whl_path: str, sigstore_path: str) -> bool:
             return False
 
         if whl_hash != sigstore_data["hash"]:
-            print(f"Hash verification failed!")
+            print("Hash verification failed!")
             print(f"Wheel hash: {whl_hash}")
             print(f"Sigstore hash: {sigstore_data['hash']}")
             return False
