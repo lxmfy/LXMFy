@@ -1,5 +1,42 @@
 # Changelog
 
+## [0.4.2] - 2025-01-01
+
+### Major Features - Non-Breaking to existing bots
+- **Permission System**
+  - Role-based access control with hierarchical permissions
+  - Default and admin role system
+  - Custom role creation and management
+  - Persistent permission storage
+  - Command-specific permission requirements
+  - Permission flags: READ, WRITE, EXECUTE, MANAGE
+  - Built-in permission sets: USE_BOT, SEND_MESSAGES, USE_COMMANDS, etc.
+  - Permission inheritance through roles
+  - Permission priority system
+  - Integration with existing admin system
+  - Permission system can be disabled/enabled
+
+### Code Quality
+- **Enhanced Command System**
+  - Permission-aware command decorator
+  - Improved command metadata
+  - Better permission validation
+  - Integration with help system for permission display
+
+### Core Features
+- **Permission Management**
+  - `PermissionManager` class for centralized permission handling
+  - Role assignment and removal
+  - Permission checking utilities
+  - User permission calculation
+  - Role persistence and storage
+
+## [0.4.1] - 2024-31-12
+
+### Major Features
+- **Help Commands**
+  - Detection of existing commands and creates a help command.
+
 ## [0.4.0] - 2024-12-29
 
 ### Major Features
@@ -66,3 +103,5 @@
 
 [0.3.3]: https://github.com/lxmfy/lxmfy/releases/tag/v0.3.3
 [0.4.0]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.0
+[0.4.1]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.1
+[0.4.2]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.2

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lxmfy"
-version = "0.4.1"
+version = "0.4.2"
 description = "LXMF bot framework for creating bots for the Reticulum Network"
 authors = ["Ivan"]
 readme = "README.md"
@@ -12,12 +12,11 @@ lxmf = "^0.5.8"
 rns = "^0.8.8"
 
 [tool.poetry.group.dev.dependencies]
-black = "^24.10.0"
 pytest = "^8.3.4"
-pylint = "^3.3.3"
 bandit = "^1.8.0"
 pytest-cov = "^6.0.0"
 pytest-mock = "^3.14.0"
+ruff = "^0.8.4"
 
 [build-system]
 requires = ["poetry-core"]
@@ -25,4 +24,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 lxmfy = "lxmfy.cli:main"
-dev = "scripts.dev:main"
+format = "scripts.dev:format"
+lint = "scripts.dev:lint"
+scan = "scripts.dev:scan"
