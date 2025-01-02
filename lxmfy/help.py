@@ -9,7 +9,8 @@ from .permissions import DefaultPerms
 class HelpFormatter:
     """Default help formatter for commands"""
 
-    def format_command(self, command) -> str:
+    @staticmethod
+    def format_command(command) -> str:
         """Format a single command's help"""
         help_text = [f"Command: {command.name}"]
         help_text.append(f"Description: {command.help.description}")
@@ -32,19 +33,21 @@ class HelpFormatter:
 
         return "\n".join(help_text)
 
-    def format_category(self, category: str, commands: List) -> str:
+    @staticmethod
+    def format_category(category: str, commands: List) -> str:
         """Format a category of commands"""
         help_text = [f"\n=== {category} ==="]
         for cmd in commands:
             help_text.append(f"{cmd.name}: {cmd.help.description}")
         return "\n".join(help_text)
 
-    def format_all_commands(self, categories: Dict[str, List]) -> str:
+    @staticmethod
+    def format_all_commands(categories: Dict[str, List]) -> str:
         """Format the complete help listing"""
         help_text = ["Available Commands:"]
 
         for category, commands in categories.items():
-            help_text.append(self.format_category(category, commands))
+            help_text.append(HelpFormatter.format_category(category, commands))
 
         return "\n".join(help_text)
 
