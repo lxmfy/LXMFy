@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "lxmfy"}]
 
 [tool.poetry.dependencies]
-python = "^3.13"
+python = "^3.11"
 lxmf = "^0.5.8"
 rns = "^0.8.8"
 
