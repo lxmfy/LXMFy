@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.4.3] - 2025-01-04
+
+### Major Features
+- **First Message Handler**
+- **SQLite3 Storage Backend**
+- **Simpler and Better Bot Templates**
+
+Templates Added: EchoBot, ReminderBot, NoteBot
+Templates Removed: FullBot
+
+On First Message Handler:
+
+```python
+
+@bot.on_first_message()
+def welcome_message(sender, message):
+    # Custom welcome message handler
+    bot.send(sender, "Welcome to the bot! Type /help to see available commands.")
+    return True  # Return True to indicate message was handled
+```
+
+SQLite3 Storage Backend:
+
+```python
+bot = LXMFBot(
+    name="mybot",
+    announce=600,  # Announce every 600 seconds (10 minutes)
+    admins=[],  # Add your LXMF hashes here
+    hot_reloading=True,
+    command_prefix="/",
+    first_message_enabled=True,
+    storage_type="sqlite",
+    storage_path="mybot.db",
+)
+```
+
 ## [0.4.2] - 2025-01-01
 
 ### Major Features - Non-Breaking to existing bots
@@ -105,3 +141,4 @@
 [0.4.0]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.0
 [0.4.1]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.1
 [0.4.2]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.2
+[0.4.3]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.3
