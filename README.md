@@ -2,6 +2,8 @@
 
 Easily create LXMF bots for the Reticulum Network with this extensible framework.
 
+[Roadmap](https://lxmfy.quad4.io/roadmap.html)
+
 ## Features
 
 - Hot reloading (Cog system)
