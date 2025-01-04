@@ -6,7 +6,7 @@ including command handling, storage management, moderation features, and role-ba
 """
 
 from .core import LXMFBot
-from .storage import Storage, JSONStorage
+from .storage import Storage, JSONStorage, SQLiteStorage
 from .commands import Command, command
 from .cogs_core import load_cogs_from_directory
 from .help import HelpSystem, HelpFormatter
@@ -16,6 +16,7 @@ __all__ = [
     "LXMFBot",
     "Storage",
     "JSONStorage",
+    "SQLiteStorage",
     "Command",
     "command",
     "load_cogs_from_directory",

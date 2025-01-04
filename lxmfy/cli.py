@@ -13,6 +13,7 @@ import json
 import hashlib
 from glob import glob
 
+from .templates import EchoBot, ReminderBot, NoteBot
 
 def sanitize_filename(filename: str) -> str:
     """
@@ -36,23 +37,26 @@ def sanitize_filename(filename: str) -> str:
 
 def validate_bot_name(name: str) -> str:
     """
-    Validate bot name to ensure it's safe.
+    Validate and sanitize bot name.
 
     Args:
-        name: The bot name to validate
+        name: Proposed bot name
 
     Returns:
-        str: The validated bot name
+        str: Sanitized bot name
 
     Raises:
-        ValueError: If the bot name is invalid
+        ValueError: If name is invalid
     """
-    if not re.match(r"^[a-zA-Z0-9][a-zA-Z0-9 \-_]*$", name):
-        raise ValueError(
-            "Bot name must start with alphanumeric character and can only contain "
-            "alphanumeric characters, spaces, dashes, and underscores"
-        )
-    return name
+    if not name:
+        raise ValueError("Bot name cannot be empty")
+
+    # Remove invalid characters
+    sanitized = "".join(c for c in name if c.isalnum() or c in " -_")
+    if not sanitized:
+        raise ValueError("Bot name must contain valid characters")
+
+    return sanitized
 
 
 def create_bot_file(name: str, output_path: str) -> str:
@@ -64,7 +68,7 @@ def create_bot_file(name: str, output_path: str) -> str:
         output_path: Desired output path
 
     Returns:
-        str: The actual filename used
+        str: Path to created bot file
 
     Raises:
         RuntimeError: If file creation fails
@@ -92,17 +96,16 @@ bot = LXMFBot(
     admins=[],  # Add your LXMF hashes here
     hot_reloading=True,
     command_prefix="/",
-    # Moderation settings
-    rate_limit=5,      # 5 messages per minute
-    cooldown=5,        # 5 seconds cooldown
-    max_warnings=3,    # 3 warnings before ban
-    warning_timeout=300,  # Warnings reset after 5 minutes
-    # Permission settings
-    permissions_enabled=False,  # Set to True to enable role-based permissions
+    first_message_enabled=True,
 )
 
 # Load all cogs from the cogs directory
 load_cogs_from_directory(bot)
+
+@bot.on_first_message()
+def welcome_message(sender, message):
+    bot.send(sender, "Welcome to the bot! Type /help to see available commands.")
+    return True
 
 @bot.command(name="ping", description="Test if bot is responsive")
 def ping(ctx):
@@ -220,17 +223,48 @@ def create_from_template(template_name: str, output_path: str, bot_name: str) ->
     Raises:
         ValueError: If template is invalid
     """
-    templates = {
-        "basic": create_bot_file,
-        "full": create_full_bot,
-    }
+    try:
+        name = validate_bot_name(bot_name)
+        output_dir = os.path.dirname(output_path)
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
 
-    if template_name not in templates:
-        raise ValueError(
-            f"Invalid template: {template_name}. Available templates: {', '.join(templates.keys())}"
-        )
+        if output_path.endswith("/") or output_path.endswith("\\"):
+            base_name = "bot.py"
+            output_path = os.path.join(output_path, base_name)
+        elif not output_path.endswith(".py"):
+            output_path += ".py"
 
-    return templates[template_name](bot_name, output_path)
+        safe_path = os.path.abspath(output_path)
+
+        if template_name == "basic":
+            return create_bot_file(name, safe_path)
+        
+        template_map = {
+            "echo": EchoBot,
+            "reminder": ReminderBot,
+            "note": NoteBot
+        }
+
+        if template_name not in template_map:
+            raise ValueError(
+                f"Invalid template: {template_name}. Available templates: basic, {', '.join(template_map.keys())}"
+            )
+
+        template = f"""from lxmfy.templates import {template_map[template_name].__name__}
+
+if __name__ == "__main__":
+    bot = {template_map[template_name].__name__}()
+    bot.bot.name = "{name}"  # Set custom name
+    bot.run()
+"""
+        with open(safe_path, "w", encoding="utf-8") as f:
+            f.write(template)
+
+        return os.path.relpath(safe_path)
+
+    except Exception as e:
+        raise RuntimeError(f"Failed to create bot from template: {str(e)}") from e
 
 
 def create_full_bot(name: str, output_path: str) -> str:
@@ -275,7 +309,9 @@ def main() -> None:
 Examples:
   lxmfy create                          # Create basic bot in current directory
   lxmfy create mybot                    # Create basic bot with name 'mybot'
-  lxmfy create --template full mybot    # Create full-featured bot
+  lxmfy create --template echo mybot    # Create echo bot
+  lxmfy create --template reminder bot  # Create reminder bot
+  lxmfy create --template note notes    # Create note-taking bot
   lxmfy verify                          # Verify latest wheel in current directory
   lxmfy verify package.whl sigstore.json # Verify specific wheel and signature
         """,
@@ -300,7 +336,7 @@ Examples:
     )
     parser.add_argument(
         "--template",
-        choices=["basic", "full"],
+        choices=["basic", "echo", "reminder", "note"],
         default="basic",
         help="Bot template to use (default: basic)",
     )

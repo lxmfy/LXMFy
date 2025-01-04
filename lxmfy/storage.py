@@ -9,8 +9,31 @@ The Storage class serves as a facade for the underlying storage backend.
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 import json
+import sqlite3
 from pathlib import Path
 import logging
+import base64
+
+
+def serialize(obj: Any) -> bytes:
+    """Serialize object to JSON and encode as base64."""
+    if isinstance(obj, (bytes, bytearray)):
+        return base64.b64encode(obj)
+    return base64.b64encode(json.dumps(obj).encode())
+
+
+def deserialize(data: bytes) -> Any:
+    """Deserialize from base64-encoded JSON."""
+    try:
+        decoded = base64.b64decode(data)
+        try:
+            # Try to decode as JSON first
+            return json.loads(decoded)
+        except json.JSONDecodeError:
+            # If not JSON, return as bytes
+            return decoded
+    except Exception:
+        return None
 
 
 class StorageBackend(ABC):
@@ -91,6 +114,92 @@ class JSONStorage(StorageBackend):
         except Exception as e:
             self.logger.error("Error scanning with prefix %s: %s", prefix, str(e))
         return results
+
+
+class SQLiteStorage(StorageBackend):
+    def __init__(self, database_path: str):
+        self.database_path = database_path
+        self.cache: Dict[str, Any] = {}
+        self.logger = logging.getLogger(__name__)
+        self._init_db()
+
+    def _init_db(self):
+        try:
+            with sqlite3.connect(self.database_path) as conn:
+                conn.execute("""
+                    CREATE TABLE IF NOT EXISTS key_value (
+                        key TEXT PRIMARY KEY,
+                        value BLOB,
+                        type TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                conn.execute("""
+                    CREATE INDEX IF NOT EXISTS idx_key_prefix ON key_value(key)
+                """)
+        except Exception as e:
+            self.logger.error("Error initializing database: %s", str(e))
+            raise
+
+    def get(self, key: str, default: Any = None) -> Any:
+        if key in self.cache:
+            return self.cache[key]
+
+        try:
+            with sqlite3.connect(self.database_path) as conn:
+                cursor = conn.execute("SELECT value FROM key_value WHERE key = ?", (key,))
+                row = cursor.fetchone()
+                if row:
+                    value = deserialize(row[0])
+                    self.cache[key] = value
+                    return value
+        except Exception as e:
+            self.logger.error("Error reading %s: %s", key, str(e))
+        return default
+
+    def set(self, key: str, value: Any) -> None:
+        try:
+            serialized = serialize(value)
+            with sqlite3.connect(self.database_path) as conn:
+                conn.execute("""
+                    INSERT OR REPLACE INTO key_value (key, value, type, updated_at)
+                    VALUES (?, ?, ?, CURRENT_TIMESTAMP)
+                """, (key, serialized, type(value).__name__))
+            self.cache[key] = value
+        except Exception as e:
+            self.logger.error("Error writing %s: %s", key, str(e))
+            raise
+
+    def delete(self, key: str) -> None:
+        try:
+            with sqlite3.connect(self.database_path) as conn:
+                conn.execute("DELETE FROM key_value WHERE key = ?", (key,))
+            self.cache.pop(key, None)
+        except Exception as e:
+            self.logger.error("Error deleting %s: %s", key, str(e))
+            raise
+
+    def exists(self, key: str) -> bool:
+        try:
+            with sqlite3.connect(self.database_path) as conn:
+                cursor = conn.execute("SELECT 1 FROM key_value WHERE key = ?", (key,))
+                return cursor.fetchone() is not None
+        except Exception as e:
+            self.logger.error("Error checking existence of %s: %s", key, str(e))
+            return False
+
+    def scan(self, prefix: str) -> list:
+        try:
+            with sqlite3.connect(self.database_path) as conn:
+                cursor = conn.execute(
+                    "SELECT key FROM key_value WHERE key LIKE ? ORDER BY key",
+                    (f"{prefix}%",)
+                )
+                return [row[0] for row in cursor.fetchall()]
+        except Exception as e:
+            self.logger.error("Error scanning with prefix %s: %s", prefix, str(e))
+            return []
 
 
 class Storage:
