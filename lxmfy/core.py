@@ -26,7 +26,7 @@ from LXMF import LXMRouter, LXMessage
 from .commands import Command
 from .moderation import SpamProtection
 from .transport import Transport
-from .storage import JSONStorage, Storage
+from .storage import JSONStorage, Storage, SQLiteStorage
 from .help import HelpSystem
 from .permissions import PermissionManager, DefaultPerms
 
@@ -47,6 +47,9 @@ class BotConfig:
     command_prefix: str = "/"
     cogs_dir: str = "cogs"
     permissions_enabled: bool = False
+    storage_type: str = "json"
+    storage_path: str = "data"
+    first_message_enabled: bool = True
 
 
 class LXMFBot:
@@ -76,9 +79,14 @@ class LXMFBot:
         """
         self.config = BotConfig(**kwargs)
 
-        # Set up storage with default directory
-        storage_dir = kwargs.get("storage_dir", "data")
-        self.storage = Storage(JSONStorage(storage_dir))
+        # Set up storage with configured backend
+        storage_type = kwargs.get("storage_type", self.config.storage_type)
+        storage_path = kwargs.get("storage_path", self.config.storage_path)
+        
+        if storage_type == "sqlite":
+            self.storage = Storage(SQLiteStorage(storage_path))
+        else:  # default to json
+            self.storage = Storage(JSONStorage(storage_path))
 
         # Initialize spam protection with config values
         self.spam_protection = SpamProtection(
@@ -101,8 +109,7 @@ class LXMFBot:
         # Create __init__.py if it doesn't exist
         init_file = os.path.join(self.cogs_dir, "__init__.py")
         if not os.path.exists(init_file):
-            with open(init_file, "w", encoding="utf-8") as f:
-                pass
+            open(init_file, "w", encoding="utf-8").close()
 
         # Setup identity
         identity_file = os.path.join(self.config_path, "identity")
@@ -157,6 +164,10 @@ class LXMFBot:
         for admin in self.admins:
             self.permissions.assign_role(admin, "admin")
 
+        # Add first message handler storage
+        self.first_message_handlers = []
+        self.first_message_enabled = kwargs.get("first_message_enabled", True)
+
     def command(self, *args, **kwargs):
         def decorator(func):
             if len(args) > 0:
@@ -202,6 +213,26 @@ class LXMFBot:
 
         if receipt in self.receipts:
             return
+
+        # Check if this is user's first message
+        is_first_message = not self.storage.exists(f"user:{sender}")
+        if is_first_message:
+            self.storage.set(f"user:{sender}", {"first_seen": time.time()})
+            
+            if self.first_message_enabled:
+                # Handle first message
+                handled = False
+                for handler in self.first_message_handlers:
+                    if handler(sender, message):
+                        handled = True
+                        break
+                        
+                if not handled:
+                    # Default first message behavior - show help
+                    self.send(sender, "Welcome! Here are the available commands:", "Welcome")
+                    categories = self.help_system._get_categorized_commands(False)
+                    self.send(sender, self.help_system.formatter.format_all_commands(categories))
+                return
 
         if hasattr(self, "spam_protection") and not self.is_admin(sender):
             if sender in self.spam_protection.banned_users:
@@ -303,7 +334,7 @@ class LXMFBot:
             RNS.log("Invalid destination hash length", RNS.LOG_ERROR)
         else:
             id = RNS.Identity.recall(hash)
-            if id == None:
+            if id is None:
                 RNS.log(
                     "Could not recall an Identity for the requested address. You have probably never received an announce from it. Try requesting a path from the network first. In fact, let's do this now :)",
                     RNS.LOG_ERROR,
@@ -356,3 +387,10 @@ class LXMFBot:
 
     def cleanup(self):
         self.transport.cleanup()
+
+    def on_first_message(self):
+        """Decorator for registering first message handlers"""
+        def decorator(func):
+            self.first_message_handlers.append(func)
+            return func
+        return decorator
