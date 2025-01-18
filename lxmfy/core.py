@@ -16,7 +16,6 @@ import logging
 from queue import Queue
 from types import SimpleNamespace
 from typing import Optional, Dict
-from dataclasses import dataclass
 
 # Reticulum and LXMF imports
 import RNS
@@ -29,27 +28,8 @@ from .transport import Transport
 from .storage import JSONStorage, Storage, SQLiteStorage
 from .help import HelpSystem
 from .permissions import PermissionManager, DefaultPerms
-
-
-@dataclass
-class BotConfig:
-    """Configuration settings for LXMFBot."""
-
-    name: str = "LXMFBot"
-    announce: int = 600
-    announce_immediately: bool = True
-    admins: set = None
-    hot_reloading: bool = False
-    rate_limit: int = 5
-    cooldown: int = 60
-    max_warnings: int = 3
-    warning_timeout: int = 300
-    command_prefix: str = "/"
-    cogs_dir: str = "cogs"
-    permissions_enabled: bool = False
-    storage_type: str = "json"
-    storage_path: str = "data"
-    first_message_enabled: bool = True
+from .config import BotConfig
+from .validation import validate_bot, format_validation_results
 
 
 class LXMFBot:
@@ -394,3 +374,8 @@ class LXMFBot:
             self.first_message_handlers.append(func)
             return func
         return decorator
+
+    def validate(self) -> str:
+        """Run validation checks and return formatted results."""
+        results = validate_bot(self)
+        return format_validation_results(results)

@@ -11,6 +11,8 @@ from .commands import Command, command
 from .cogs_core import load_cogs_from_directory
 from .help import HelpSystem, HelpFormatter
 from .permissions import DefaultPerms, Role, PermissionManager
+from .validation import validate_bot, format_validation_results
+from .config import BotConfig
 
 __all__ = [
     "LXMFBot",
@@ -25,4 +27,7 @@ __all__ = [
     "DefaultPerms",
     "Role",
     "PermissionManager",
+    "validate_bot",
+    "format_validation_results",
+    "BotConfig",
 ]
