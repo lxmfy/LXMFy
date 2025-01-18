@@ -50,7 +50,7 @@ class SpamProtection:
         self.storage = storage
         self.bot = bot
         self.config = SpamConfig(**kwargs)
-        self.message_counts = defaultdict(list)  # Initialize as defaultdict
+        self.message_counts = defaultdict(list)
         self.warnings = defaultdict(int)
         self.banned_users = set()
         self.warning_times = defaultdict(float)

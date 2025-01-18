@@ -2,7 +2,7 @@
 CLI module for LXMFy bot framework.
 
 This module provides command-line interface functionality for creating and managing
-LXMF bots, including bot file creation and example cog generation.
+LXMF bots, including bot file creation, example cog generation, and bot analysis.
 """
 
 import os
@@ -12,8 +12,10 @@ import re
 import json
 import hashlib
 from glob import glob
+import importlib.util
 
 from .templates import EchoBot, ReminderBot, NoteBot
+from .validation import validate_bot, format_validation_results
 
 def sanitize_filename(filename: str) -> str:
     """
@@ -300,6 +302,47 @@ if __name__ == "__main__":
         raise RuntimeError(f"Failed to create full bot: {str(e)}") from e
 
 
+def analyze_bot_file(file_path: str) -> None:
+    """
+    Analyze a bot file for configuration issues and best practices.
+
+    Args:
+        file_path: Path to the bot file to analyze
+    """
+    try:
+        # Load the bot module
+        spec = importlib.util.spec_from_file_location("bot_module", file_path)
+        if not spec or not spec.loader:
+            raise ImportError("Could not load bot file")
+        
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        # Find the bot instance
+        bot = None
+        for attr in dir(module):
+            obj = getattr(module, attr)
+            if hasattr(obj, '__class__') and 'LXMFBot' in str(obj.__class__):
+                bot = obj
+                break
+            elif hasattr(obj, 'bot') and hasattr(obj.bot, '__class__') and 'LXMFBot' in str(obj.bot.__class__):
+                bot = obj.bot
+                break
+
+        if not bot:
+            print("Error: No LXMFBot instance found in the file")
+            return
+
+        # Run validation
+        results = validate_bot(bot)
+        print("\n=== Bot Analysis Results ===")
+        print(format_validation_results(results))
+
+    except Exception as e:
+        print(f"Error analyzing bot file: {str(e)}")
+        return
+
+
 def main() -> None:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
@@ -312,6 +355,7 @@ Examples:
   lxmfy create --template echo mybot    # Create echo bot
   lxmfy create --template reminder bot  # Create reminder bot
   lxmfy create --template note notes    # Create note-taking bot
+  lxmfy analyze bot.py                  # Analyze bot configuration
   lxmfy verify                          # Verify latest wheel in current directory
   lxmfy verify package.whl sigstore.json # Verify specific wheel and signature
         """,
@@ -319,8 +363,8 @@ Examples:
 
     parser.add_argument(
         "command",
-        choices=["create", "verify"],
-        help="Create a new LXMF bot or verify wheel signature",
+        choices=["create", "verify", "analyze"],
+        help="Create a new LXMF bot, verify wheel signature, or analyze bot configuration",
     )
     parser.add_argument(
         "name",
@@ -354,7 +398,19 @@ Examples:
 
     args = parser.parse_args()
 
-    if args.command == "create":
+    if args.command == "analyze":
+        if not args.name:
+            print("Error: Please specify a bot file to analyze")
+            sys.exit(1)
+        
+        bot_path = args.name
+        if not os.path.exists(bot_path):
+            print(f"Error: Bot file not found: {bot_path}")
+            sys.exit(1)
+            
+        analyze_bot_file(bot_path)
+        
+    elif args.command == "create":
         try:
             bot_name = args.name_opt or args.name or "MyLXMFBot"
 
