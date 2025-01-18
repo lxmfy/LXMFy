@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.4.4] - 2025-01-17
+
+### Major Features
+- **Bot Analysis**
+  - Validate bot configuration and best practices
+  - Analyze bot file and provide recommendations
+  - Validate bot file syntax and structure
+  - Check for common issues and suggest improvements
+
+- **Update rns to 0.9.0**
+
+  cli command: `lxmfy analyze bot.py`
+
+
 ## [0.4.3] - 2025-01-04
 
 ### Major Features
