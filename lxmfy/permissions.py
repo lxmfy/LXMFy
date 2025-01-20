@@ -33,10 +33,16 @@ class DefaultPerms(Flag):
     BYPASS_SPAM = auto()
     VIEW_ADMIN_COMMANDS = auto()
     
+    # Event system permissions
+    VIEW_EVENTS = auto()
+    MANAGE_EVENTS = auto()
+    BYPASS_EVENT_CHECKS = auto()
+    
     # Combined permissions
     ALL = (USE_BOT | SEND_MESSAGES | USE_COMMANDS | 
           MANAGE_MESSAGES | MANAGE_COMMANDS | MANAGE_USERS | 
-          BYPASS_RATELIMIT | BYPASS_SPAM | VIEW_ADMIN_COMMANDS)
+          BYPASS_RATELIMIT | BYPASS_SPAM | VIEW_ADMIN_COMMANDS |
+          VIEW_EVENTS | MANAGE_EVENTS | BYPASS_EVENT_CHECKS)
 
 
 @dataclass

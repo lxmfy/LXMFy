@@ -13,6 +13,7 @@ from .help import HelpSystem, HelpFormatter
 from .permissions import DefaultPerms, Role, PermissionManager
 from .validation import validate_bot, format_validation_results
 from .config import BotConfig
+from .events import Event, EventManager, EventPriority
 
 __all__ = [
     "LXMFBot",
@@ -30,4 +31,7 @@ __all__ = [
     "validate_bot",
     "format_validation_results",
     "BotConfig",
+    "Event",
+    "EventManager",
+    "EventPriority",
 ]

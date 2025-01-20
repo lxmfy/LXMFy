@@ -16,6 +16,7 @@ import logging
 from queue import Queue
 from types import SimpleNamespace
 from typing import Optional, Dict
+import asyncio
 
 # Reticulum and LXMF imports
 import RNS
@@ -30,6 +31,7 @@ from .help import HelpSystem
 from .permissions import PermissionManager, DefaultPerms
 from .config import BotConfig
 from .validation import validate_bot, format_validation_results
+from .events import EventManager, Event, EventPriority
 
 
 class LXMFBot:
@@ -148,6 +150,12 @@ class LXMFBot:
         self.first_message_handlers = []
         self.first_message_enabled = kwargs.get("first_message_enabled", True)
 
+        # Initialize event system
+        self.events = EventManager(self.storage)
+        
+        # Register built-in events
+        self._register_builtin_events()
+
     def command(self, *args, **kwargs):
         def decorator(func):
             if len(args) > 0:
@@ -187,13 +195,42 @@ class LXMFBot:
     def is_admin(self, sender):
         return sender in self.admins
 
+    def _register_builtin_events(self):
+        """Register built-in event handlers"""
+        @self.events.on("message_received", EventPriority.HIGHEST)
+        def handle_message(event):
+            message = event.data["message"]
+            sender = event.data["sender"]
+            
+            # Check spam protection
+            if not self.permissions.has_permission(sender, DefaultPerms.BYPASS_SPAM):
+                allowed, msg = self.spam_protection.check_spam(sender)
+                if not allowed:
+                    event.cancel()
+                    self.send(sender, msg)
+                    return
+                    
+            # Process message
+            self._process_message(message, sender)
+
     def _message_received(self, message):
+        """Handle received messages"""
         sender = RNS.hexrep(message.source_hash, delimit=False)
         receipt = RNS.hexrep(message.hash, delimit=False)
-
+        
         if receipt in self.receipts:
             return
-
+            
+        event = Event("message_received", {
+            "message": message,
+            "sender": sender,
+            "receipt": receipt
+        })
+        
+        self.events.dispatch(event)
+        if event.cancelled:
+            return
+            
         # Check if this is user's first message
         is_first_message = not self.storage.exists(f"user:{sender}")
         if is_first_message:
@@ -339,17 +376,19 @@ class LXMFBot:
                 self.queue.put(lxm)
 
     def run(self, delay=10):
-        RNS.log(
-            f"LXMF Bot `{self.local.display_name}` reporting for duty and awaiting messages...",
-            RNS.LOG_INFO,
-        )
-
-        while True:
-            for i in list(self.queue.queue):
-                lxm = self.queue.get()
-                self.router.handle_outbound(lxm)
-            self._announce()
-            time.sleep(delay)
+        """Run the bot"""
+        try:
+            while True:
+                # Process outbound queue
+                for i in list(self.queue.queue):
+                    lxm = self.queue.get()
+                    self.router.handle_outbound(lxm)
+                    
+                self._announce()
+                time.sleep(delay)
+                
+        except KeyboardInterrupt:
+            self.transport.cleanup()
 
     def received(self, function):
         self.delivery_callbacks.append(function)

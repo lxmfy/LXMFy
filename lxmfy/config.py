@@ -20,4 +20,14 @@ class BotConfig:
     permissions_enabled: bool = False
     storage_type: str = "json"
     storage_path: str = "data"
-    first_message_enabled: bool = True 
+    first_message_enabled: bool = True
+    event_logging_enabled: bool = True
+    max_logged_events: int = 1000
+    event_middleware_enabled: bool = True
+
+    def __post_init__(self):
+        if self.admins is None:
+            self.admins = set()
+
+    def __str__(self):
+        return f"BotConfig(name={self.name}, announce={self.announce}, announce_immediately={self.announce_immediately}, admins={self.admins}, hot_reloading={self.hot_reloading}, rate_limit={self.rate_limit}, cooldown={self.cooldown}, max_warnings={self.max_warnings}, warning_timeout={self.warning_timeout}, command_prefix={self.command_prefix}, cogs_dir={self.cogs_dir}, permissions_enabled={self.permissions_enabled}, storage_type={self.storage_type}, storage_path={self.storage_path}, first_message_enabled={self.first_message_enabled}, event_logging_enabled={self.event_logging_enabled}, max_logged_events={self.max_logged_events}, event_middleware_enabled={self.event_middleware_enabled})" 
