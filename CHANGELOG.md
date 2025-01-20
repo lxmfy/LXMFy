@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.4.5] - 2025-01-20
+
+### Major Features
+- **Event System**
+  - Event system for handling events and middleware
+  - EventManager class for managing events and handlers
+  - Event class for representing events
+  - EventPriority enum for event priority levels
+  - EventMiddleware for handling event middleware
+
+```python
+@bot.events.on("custom_event")
+async def handle_custom_event(event):
+    print(f"Custom event received: {event.data}")
+
+# Dispatch custom event
+await bot.events.dispatch(Event("custom_event", {"foo": "bar"}))
+```
+
+- **Update rns and lxmf**
+
 ## [0.4.4] - 2025-01-17
 
 ### Major Features
@@ -157,3 +178,4 @@ bot = LXMFBot(
 [0.4.2]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.2
 [0.4.3]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.3
 [0.4.4]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.4
+[0.4.5]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.5
