@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.4.6] - 2025-01-25
+
+### Major Features
+- **Middleware System**
+  - Middleware system for processing messages and events
+  - MiddlewareManager class for managing middleware
+  - MiddlewareType enum for middleware types
+  - MiddlewareContext class for passing data through middleware
+
+- **Task Scheduler**
+  - Task scheduler for scheduling tasks
+  - TaskScheduler class for managing tasks
+  - ScheduledTask class for representing scheduled tasks
+
+- **Update lxmf to **
+
+```python
+from lxmfy import LXMFBot, MiddlewareType, TaskScheduler
+
+bot = LXMFBot(name="MyBot")
+
+# Add middleware
+@bot.middleware.register(MiddlewareType.PRE_COMMAND)
+def log_commands(ctx):
+    print(f"Command received: {ctx.data}")
+    return ctx.data
+
+# Schedule task
+@bot.scheduler.schedule("cleanup", "0 */2 * * *")  # Every 2 hours
+def cleanup_task():
+    print("Running cleanup...")
+```
+
 ## [0.4.5] - 2025-01-20
 
 ### Major Features
