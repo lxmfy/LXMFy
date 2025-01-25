@@ -156,7 +156,7 @@ class SQLiteStorage(StorageBackend):
                 conn.execute("""
                     CREATE TABLE IF NOT EXISTS key_value (
                         key TEXT PRIMARY KEY,
-                        value BLOB,
+                        value TEXT,
                         type TEXT,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -178,16 +178,24 @@ class SQLiteStorage(StorageBackend):
                 cursor = conn.execute("SELECT value FROM key_value WHERE key = ?", (key,))
                 row = cursor.fetchone()
                 if row:
-                    value = deserialize_value(row[0])
-                    self.cache[key] = value
-                    return value
+                    try:
+                        value = json.loads(row[0])  # Deserialize JSON string
+                        self.cache[key] = value
+                        return value
+                    except json.JSONDecodeError:
+                        return row[0]  # Return raw value if not JSON
         except Exception as e:
             self.logger.error("Error reading %s: %s", key, str(e))
         return default
 
     def set(self, key: str, value: Any) -> None:
         try:
-            serialized = serialize_value(value)
+            # Convert value to JSON string
+            if isinstance(value, (dict, list)):
+                serialized = json.dumps(value)
+            else:
+                serialized = str(value)
+
             with sqlite3.connect(self.database_path) as conn:
                 conn.execute("""
                     INSERT OR REPLACE INTO key_value (key, value, type, updated_at)
