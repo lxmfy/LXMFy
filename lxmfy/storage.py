@@ -13,27 +13,54 @@ import sqlite3
 from pathlib import Path
 import logging
 import base64
+from datetime import datetime
+from LXMF import LXMessage
+import RNS
 
 
-def serialize(obj: Any) -> bytes:
-    """Serialize object to JSON and encode as base64."""
+def serialize_value(obj: Any) -> Any:
+    """Serialize complex objects to JSON-compatible format."""
     if isinstance(obj, (bytes, bytearray)):
-        return base64.b64encode(obj)
-    return base64.b64encode(json.dumps(obj).encode())
+        return {"__type": "bytes", "data": base64.b64encode(obj).decode()}
+    elif isinstance(obj, datetime):
+        return {"__type": "datetime", "data": obj.isoformat()}
+    elif isinstance(obj, LXMessage):
+        return {
+            "__type": "LXMessage",
+            "source_hash": RNS.hexrep(obj.source_hash, delimit=False),
+            "destination_hash": RNS.hexrep(obj.destination_hash, delimit=False),
+            "content": base64.b64encode(obj.content).decode() if obj.content else None,
+            "title": obj.title,
+            "timestamp": obj.timestamp.isoformat() if obj.timestamp else None
+        }
+    elif isinstance(obj, (list, tuple)):
+        return [serialize_value(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {k: serialize_value(v) for k, v in obj.items()}
+    return obj
 
 
-def deserialize(data: bytes) -> Any:
-    """Deserialize from base64-encoded JSON."""
-    try:
-        decoded = base64.b64decode(data)
-        try:
-            # Try to decode as JSON first
-            return json.loads(decoded)
-        except json.JSONDecodeError:
-            # If not JSON, return as bytes
-            return decoded
-    except Exception:
-        return None
+def deserialize_value(obj: Any) -> Any:
+    """Deserialize from storage format."""
+    if isinstance(obj, dict):
+        if "__type" in obj:
+            if obj["__type"] == "bytes":
+                return base64.b64decode(obj["data"])
+            elif obj["__type"] == "datetime":
+                return datetime.fromisoformat(obj["data"])
+            elif obj["__type"] == "LXMessage":
+                # Return simplified dict for LXMessage data
+                return {
+                    "source_hash": obj["source_hash"],
+                    "destination_hash": obj["destination_hash"],
+                    "content": base64.b64decode(obj["data"]) if obj["content"] else None,
+                    "title": obj["title"],
+                    "timestamp": datetime.fromisoformat(obj["timestamp"]) if obj["timestamp"] else None
+                }
+        return {k: deserialize_value(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [deserialize_value(item) for item in obj]
+    return obj
 
 
 class StorageBackend(ABC):
@@ -151,7 +178,7 @@ class SQLiteStorage(StorageBackend):
                 cursor = conn.execute("SELECT value FROM key_value WHERE key = ?", (key,))
                 row = cursor.fetchone()
                 if row:
-                    value = deserialize(row[0])
+                    value = deserialize_value(row[0])
                     self.cache[key] = value
                     return value
         except Exception as e:
@@ -160,7 +187,7 @@ class SQLiteStorage(StorageBackend):
 
     def set(self, key: str, value: Any) -> None:
         try:
-            serialized = serialize(value)
+            serialized = serialize_value(value)
             with sqlite3.connect(self.database_path) as conn:
                 conn.execute("""
                     INSERT OR REPLACE INTO key_value (key, value, type, updated_at)
@@ -207,10 +234,12 @@ class Storage:
         self.backend = backend
 
     def get(self, key: str, default: Any = None) -> Any:
-        return self.backend.get(key, default)
+        value = self.backend.get(key, default)
+        return deserialize_value(value)
 
     def set(self, key: str, value: Any) -> None:
-        self.backend.set(key, value)
+        serialized = serialize_value(value)
+        self.backend.set(key, serialized)
 
     def delete(self, key: str) -> None:
         self.backend.delete(key)
