@@ -14,6 +14,8 @@ from .permissions import DefaultPerms, Role, PermissionManager
 from .validation import validate_bot, format_validation_results
 from .config import BotConfig
 from .events import Event, EventManager, EventPriority
+from .middleware import MiddlewareManager, MiddlewareType, MiddlewareContext
+from .scheduler import TaskScheduler, ScheduledTask
 
 __all__ = [
     "LXMFBot",
@@ -34,4 +36,11 @@ __all__ = [
     "Event",
     "EventManager",
     "EventPriority",
+    "MiddlewareManager",
+    "MiddlewareType",
+    "MiddlewareContext",
+    "TaskScheduler",
+    "ScheduledTask"
 ]
+
+__version__ = "0.4.6"
