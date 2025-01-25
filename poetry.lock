@@ -250,13 +250,13 @@ files = [
 
 [[package]]
 name = "lxmf"
-version = "0.6.0"
+version = "0.6.1"
 description = "Lightweight Extensible Message Format for Reticulum"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "lxmf-0.6.0-py3-none-any.whl", hash = "sha256:e217619d0ffd3effb21194023a1122df68de3bdb56fa9f0d0ce6e931d3c477b8"},
-    {file = "lxmf-0.6.0.tar.gz", hash = "sha256:7d982b68c5188fc16e538e53905186d0828fcea72d31e147ed7efa304fd1a10c"},
+    {file = "lxmf-0.6.1-py3-none-any.whl", hash = "sha256:26ebad10ff8545087d4b11ba1db44d235148b945f1c3bc046de51d6c9a5d92b2"},
+    {file = "lxmf-0.6.1.tar.gz", hash = "sha256:5ea4fb6c6caa6b0c091f3e57af49b031982a8cd0413a49abe33a51885eac2750"},
 ]
 
 [package.dependencies]
@@ -567,4 +567,4 @@ pbr = ">=2.0.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "685ace8abc8241c47ceed0c44ecbe0baf13b0d84ac52551cdd4a14766a9fbcfa"
+content-hash = "3364db1de0013fad35e6e1e724ef0139d79300d0a44a2cdcab492c8b175b342b"
