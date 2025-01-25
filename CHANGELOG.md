@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.6-1] - 2025-01-25
+- **Fix Storage System**
+  - Serialization errors
+  
+- **Fix Event System**
+  - Event handling of some attributes
+
 ## [0.4.6] - 2025-01-25
 
 ### Major Features
@@ -14,7 +21,7 @@
   - TaskScheduler class for managing tasks
   - ScheduledTask class for representing scheduled tasks
 
-- **Update lxmf to **
+- **Update lxmf to 0.6.1**
 
 ```python
 from lxmfy import LXMFBot, MiddlewareType, TaskScheduler
