@@ -16,107 +16,83 @@ logger = logging.getLogger(__name__)
 
 class EventPriority(Enum):
     """Priority levels for event handlers"""
-    LOWEST = 0
-    LOW = 1
-    NORMAL = 2
-    HIGH = 3
-    HIGHEST = 4
-    MONITOR = 5
+    HIGHEST = 3
+    HIGH = 2
+    NORMAL = 1
+    LOW = 0
 
-@dataclass
+@dataclass(frozen=True)
 class Event:
-    """Base event class"""
+    """Event data class"""
     name: str
-    data: Dict[str, Any] = field(default_factory=dict)
+    data: dict = field(default_factory=dict)
     cancelled: bool = False
-    timestamp: datetime = field(default_factory=datetime.now)
+    
+    def __hash__(self):
+        return hash(self.name)
+    
+    def __eq__(self, other):
+        if not isinstance(other, Event):
+            return False
+        return self.name == other.name
     
     def cancel(self):
-        """Cancel the event"""
-        self.cancelled = True
+        object.__setattr__(self, 'cancelled', True)
 
 @dataclass
 class EventHandler:
-    """Event handler container"""
+    """Event handler with priority"""
     callback: Callable
-    priority: EventPriority = EventPriority.NORMAL
-    middleware: List[Callable] = field(default_factory=list)
+    priority: EventPriority
 
 class EventManager:
     """Manages event registration, dispatching and middleware"""
     
-    def __init__(self, storage=None):
-        self.handlers: Dict[str, List[EventHandler]] = {}
-        self.middleware: List[Callable] = []
+    def __init__(self, storage):
         self.storage = storage
+        self.handlers = {}  # Change to use event names as keys instead of Event objects
         self.logger = logging.getLogger(__name__)
         
     def on(self, event_name: str, priority: EventPriority = EventPriority.NORMAL):
-        """Decorator to register an event handler"""
+        """Register an event handler"""
         def decorator(func):
-            self.register_handler(event_name, func, priority)
+            if event_name not in self.handlers:
+                self.handlers[event_name] = []
+            self.handlers[event_name].append((priority, func))
+            # Sort handlers by priority
+            self.handlers[event_name].sort(key=lambda x: x[0].value)
             return func
         return decorator
         
-    def register_handler(self, event_name: str, callback: Callable, 
-                        priority: EventPriority = EventPriority.NORMAL):
-        """Register an event handler"""
-        if event_name not in self.handlers:
-            self.handlers[event_name] = []
-            
-        handler = EventHandler(callback=callback, priority=priority)
-        self.handlers[event_name].append(handler)
-        
-        # Sort handlers by priority
-        self.handlers[event_name].sort(key=lambda h: h.priority.value, reverse=True)
-        
     def use(self, middleware: Callable):
         """Add middleware to the event pipeline"""
-        self.middleware.append(middleware)
+        # This method is no longer used in the new implementation
+        pass
         
-    def dispatch(self, event: Event) -> Event:
-        """Dispatch an event through middleware and to handlers"""
+    def dispatch(self, event: Event):
+        """Dispatch an event to registered handlers"""
         try:
-            # Run through middleware
-            for mw in self.middleware:
-                event = mw(event)
-                if event.cancelled:
-                    return event
-                    
             if event.name in self.handlers:
-                for handler in self.handlers[event.name]:
+                for priority, handler in self.handlers[event.name]:
+                    if event.cancelled:
+                        break
                     try:
-                        # Run handler middleware
-                        for mw in handler.middleware:
-                            event = mw(event)
-                            if event.cancelled:
-                                return event
-                                
-                        # Execute handler
-                        handler.callback(event)
-                        if event.cancelled:
-                            break
-                            
+                        handler(event)
                     except Exception as e:
-                        self.logger.error(f"Error in event handler: {str(e)}")
-                        
-            # Log event if storage is configured
-            if self.storage:
-                self._log_event(event)
-                
-            return event
-            
+                        self.logger.error(f"Error in event handler {handler.__name__}: {str(e)}")
         except Exception as e:
             self.logger.error(f"Error dispatching event: {str(e)}")
-            raise
             
     def _log_event(self, event: Event):
         """Log event to storage"""
         try:
+            if not self.storage:
+                return
+                
             events = self.storage.get("events:log", [])
             events.append({
                 "name": event.name,
-                "timestamp": event.timestamp.isoformat(),
+                "timestamp": event.timestamp.timestamp(),
                 "cancelled": event.cancelled,
                 "data": event.data
             })

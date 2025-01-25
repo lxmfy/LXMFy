@@ -212,115 +212,124 @@ class LXMFBot:
             # Process message
             self._process_message(message, sender)
 
-    def _message_received(self, message):
-        """Handle received messages"""
-        sender = RNS.hexrep(message.source_hash, delimit=False)
-        receipt = RNS.hexrep(message.hash, delimit=False)
-        
-        if receipt in self.receipts:
-            return
+    def _process_message(self, message, sender):
+        """Process an incoming message"""
+        try:
+            content = message.content.decode('utf-8')
+            receipt = RNS.hexrep(message.hash, delimit=False)
             
-        event = Event("message_received", {
-            "message": message,
-            "sender": sender,
-            "receipt": receipt
-        })
-        
-        self.events.dispatch(event)
-        if event.cancelled:
-            return
+            def reply(response):
+                self.send(sender, response)
             
-        # Check if this is user's first message
-        is_first_message = not self.storage.exists(f"user:{sender}")
-        if is_first_message:
-            self.storage.set(f"user:{sender}", {"first_seen": time.time()})
+            # Check if this is a first message from the user
+            if self.config.first_message_enabled:
+                first_messages = self.storage.get("first_messages", {})
+                if sender not in first_messages:
+                    first_messages[sender] = True
+                    self.storage.set("first_messages", first_messages)
+                    for handler in self.first_message_handlers:
+                        if handler(sender, message):
+                            return
             
-            if self.first_message_enabled:
-                # Handle first message
-                handled = False
-                for handler in self.first_message_handlers:
-                    if handler(sender, message):
-                        handled = True
-                        break
-                        
-                if not handled:
-                    # Default first message behavior - show help
-                    self.send(sender, "Welcome! Here are the available commands:", "Welcome")
-                    categories = self.help_system._get_categorized_commands(False)
-                    self.send(sender, self.help_system.formatter.format_all_commands(categories))
-                return
-
-        if hasattr(self, "spam_protection") and not self.is_admin(sender):
-            if sender in self.spam_protection.banned_users:
-                RNS.log(f"Dropping message from banned user: {sender[:8]}", RNS.LOG_DEBUG)
-                return
-
-        self.receipts.append(receipt)
-        if len(self.receipts) > 100:
-            self.receipts.pop(0)
-
-        # Define reply function
-        def reply(content, title="Reply"):
-            self.send(sender, content, title)
-
-        content = message.content.decode("utf-8").strip()
-
-        # Single permission check for both bot usage and spam
-        if not self.is_admin(sender):
-            # Check spam first
-            allowed, reason = self.spam_protection.check_spam(sender)
-            if not allowed:
-                reply(reason)
-                return
+            # Check spam protection
+            if not self.permissions.has_permission(sender, DefaultPerms.BYPASS_SPAM):
+                allowed, reason = self.spam_protection.check_spam(sender)
+                if not allowed:
+                    reply(reason)
+                    return
             
-            # Then check basic bot permission
+            # Check basic bot permission
             if not self.permissions.has_permission(sender, DefaultPerms.USE_BOT):
                 return
 
-        obj = {
-            "lxmf": message,
-            "reply": reply,
-            "sender": sender,
-            "content": content,
-            "hash": receipt,
-        }
-        msg = SimpleNamespace(**obj)
+            # Create message context
+            msg_ctx = {
+                "lxmf": message,
+                "reply": reply,
+                "sender": sender,
+                "content": content,
+                "hash": receipt,
+            }
+            msg = SimpleNamespace(**msg_ctx)
 
-        if self.command_prefix is None or content.startswith(self.command_prefix):
-            command_name = (
-                content.split()[0][len(self.command_prefix) :]
-                if self.command_prefix
-                else content.split()[0]
-            )
-            if command_name in self.commands:
-                cmd = self.commands[command_name]
-                
-                # Check command permissions
-                if not self.permissions.has_permission(sender, cmd.permissions):
-                    self.send(sender, "You don't have permission to use this command.")
-                    return
-
-                ctx = SimpleNamespace(
-                    bot=self,
-                    sender=sender,
-                    content=content,
-                    args=content.split()[1:],
-                    is_admin=self.is_admin(sender),
-                    reply=reply,
-                    message=msg,
+            # Process commands
+            if self.command_prefix is None or content.startswith(self.command_prefix):
+                command_name = (
+                    content.split()[0][len(self.command_prefix):]
+                    if self.command_prefix
+                    else content.split()[0]
                 )
+                if command_name in self.commands:
+                    cmd = self.commands[command_name]
+                    
+                    # Check command permissions
+                    if not self.permissions.has_permission(sender, cmd.permissions):
+                        self.send(sender, "You don't have permission to use this command.")
+                        return
 
-                try:
-                    cmd.callback(ctx)
-                except Exception as e:
-                    RNS.log(
-                        f"Error executing command {command_name}: {str(e)}",
-                        RNS.LOG_ERROR,
+                    # Create command context
+                    ctx = SimpleNamespace(
+                        bot=self,
+                        sender=sender,
+                        content=content,
+                        args=content.split()[1:],
+                        is_admin=self.is_admin(sender),
+                        reply=reply,
+                        message=msg,
                     )
-                    self.send(sender, f"Error executing command: {str(e)}")
 
-        for callback in self.delivery_callbacks:
-            callback(msg)
+                    try:
+                        cmd.callback(ctx)
+                        
+                        # Dispatch command executed event
+                        event = Event("command_executed", {
+                            "command": command_name,
+                            "sender": sender,
+                            "args": ctx.args,
+                            "content": content
+                        })
+                        self.events.dispatch(event)
+                        
+                    except Exception as e:
+                        self.logger.error(
+                            f"Error executing command {command_name}: {str(e)}"
+                        )
+                        self.send(sender, f"Error executing command: {str(e)}")
+
+            # Run delivery callbacks
+            for callback in self.delivery_callbacks:
+                callback(msg)
+                
+        except Exception as e:
+            self.logger.error(f"Error processing message: {str(e)}")
+
+    def _message_received(self, message):
+        """Handle received messages"""
+        try:
+            sender = RNS.hexrep(message.source_hash, delimit=False)
+            receipt = RNS.hexrep(message.hash, delimit=False)
+            
+            if receipt in self.receipts:
+                return
+                
+            # Add to receipts list
+            self.receipts.append(receipt)
+            if len(self.receipts) > 100:
+                self.receipts = self.receipts[-100:]
+            
+            # Dispatch message received event
+            event = Event("message_received", {
+                "message": message,
+                "sender": sender,
+                "receipt": receipt
+            })
+            self.events.dispatch(event)
+            
+            # Process the message
+            self._process_message(message, sender)
+            
+        except Exception as e:
+            self.logger.error(f"Error handling received message: {str(e)}")
 
     def _announce(self):
         announce_path = os.path.join(self.config_path, "announce")
