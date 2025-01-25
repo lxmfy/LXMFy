@@ -212,3 +212,4 @@ bot = LXMFBot(
 [0.4.3]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.3
 [0.4.4]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.4
 [0.4.5]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.5
+[0.4.6]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.6
