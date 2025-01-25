@@ -16,7 +16,6 @@ import logging
 from queue import Queue
 from types import SimpleNamespace
 from typing import Optional, Dict
-import asyncio
 
 # Reticulum and LXMF imports
 import RNS
