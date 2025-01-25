@@ -7,10 +7,9 @@ This module provides a comprehensive event handling system including:
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List
+from typing import Callable
 from enum import Enum
 import logging
-from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
