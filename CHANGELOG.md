@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.4.6-1] - 2025-01-25
+## [0.4.7] - 2025-01-25
 - **Fix Storage System**
   - Serialization errors
   
@@ -220,3 +220,4 @@ bot = LXMFBot(
 [0.4.4]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.4
 [0.4.5]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.5
 [0.4.6]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.6
+[0.4.7]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.7
