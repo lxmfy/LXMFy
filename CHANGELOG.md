@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.4.9] - 2025-02-14
+- **Fix Announce System**
+  - Add ability to disable announces on start.
+  - Fix announcing interval
+
+Bot configuration:
+
+```python
+    announce=600,  # Set the announce interval in seconds, set to 0 to disable periodic announces
+    announce_enabled=True,  # Set to False to disable all announces (both initial and periodic)
+```
+
+- **Fix Duplicate Responses**
+
+- **Update Dependencies**
+  - Update LXMF from `0.6.1` to `0.6.2`
+  - Regenerate poetry.lock
+
 ## [0.4.8] - 2025-01-25
 - **Fix Storage System**
   - Serialization errors
@@ -227,3 +245,4 @@ bot = LXMFBot(
 [0.4.6]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.6
 [0.4.7]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.7
 [0.4.8]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.8
+[0.4.9]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.9
