@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.0] - 2025-02-14
+
+- **Update config, cli and core**
+  - Add missing values
+  - Fix announce system
+
 ## [0.4.9] - 2025-02-14
 - **Fix Announce System**
   - Add ability to disable announces on start.
