@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.5.1] - 2025-02-14
+
+- **Remove unused variables**
+- **Fix version**
+
 ## [0.5.0] - 2025-02-14
 
 - **Update config, cli and core**
@@ -252,3 +257,4 @@ bot = LXMFBot(
 [0.4.7]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.7
 [0.4.8]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.8
 [0.4.9]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.9
+[0.5.0]: https://github.com/lxmfy/lxmfy/releases/tag/v0.5.0
