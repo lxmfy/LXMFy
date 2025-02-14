@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lxmfy"
-version = "0.4.8"
+version = "0.4.9"
 description = "LXMF bot framework for creating bots for the Reticulum Network"
 authors = ["Ivan"]
 readme = "README.md"

@@ -68,7 +68,7 @@ class LXMFBot:
             self.storage = Storage(SQLiteStorage(storage_path))
         else:  # default to json
             self.storage = Storage(JSONStorage(storage_path))
-
+        
         # Initialize spam protection with config values
         self.spam_protection = SpamProtection(
             storage=self.storage,
@@ -101,13 +101,6 @@ class LXMFBot:
         self.identity = RNS.Identity.from_file(identity_file)
         RNS.log("Loaded identity from file", RNS.LOG_INFO)
 
-        # Handle immediate announce
-        if self.config.announce_immediately:
-            announce_file = os.path.join(self.config_path, "announce")
-            if os.path.isfile(announce_file):
-                os.remove(announce_file)
-                RNS.log("Announcing now. Timer reset.", RNS.LOG_INFO)
-
         # Initialize LXMF router
         RNS.Reticulum(loglevel=RNS.LOG_VERBOSE)
         self.router = LXMRouter(identity=self.identity, storagepath=self.config_path)
@@ -120,13 +113,19 @@ class LXMFBot:
             RNS.LOG_INFO,
         )
 
+        # Handle immediate announce
+        if self.config.announce_immediately:
+            announce_file = os.path.join(self.config_path, "announce")
+            if os.path.isfile(announce_file):
+                os.remove(announce_file)
+                RNS.log("Announcing now. Timer reset.", RNS.LOG_INFO)
+
         # Initialize bot state
-        self._announce()
         self.commands = {}
         self.cogs = {}
         self.admins = set(self.config.admins or [])
         self.hot_reloading = self.config.hot_reloading
-        self.announce_time = self.config.announce
+        self.announce_time = kwargs.get("announce", self.config.announce)
         self.command_prefix = self.config.command_prefix
 
         # Initialize services
@@ -332,12 +331,20 @@ class LXMFBot:
             self.logger.error(f"Error handling received message: {str(e)}")
 
     def _announce(self):
+        """Send an announce if the configured interval has passed."""
+        if self.announce_time == 0:
+            RNS.log("Announcements disabled", RNS.LOG_DEBUG)
+            return
+
         announce_path = os.path.join(self.config_path, "announce")
         if os.path.isfile(announce_path):
             with open(announce_path, "r") as f:
-                announce = int(f.readline())
+                try:
+                    announce = int(f.readline())
+                except ValueError:
+                    announce = 0
         else:
-            announce = 1
+            announce = 0
 
         if announce > int(time.time()):
             RNS.log("Recent announcement", RNS.LOG_DEBUG)
@@ -346,7 +353,7 @@ class LXMFBot:
                 next_announce = int(time.time()) + self.announce_time
                 af.write(str(next_announce))
             self.local.announce()
-            RNS.log("Announcement sent, expr set 1800 seconds", RNS.LOG_INFO)
+            RNS.log(f"Announcement sent, next announce in {self.announce_time} seconds", RNS.LOG_INFO)
 
     def send(self, destination, message, title="Reply"):
         try:
