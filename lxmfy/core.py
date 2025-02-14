@@ -114,8 +114,11 @@ class LXMFBot:
             RNS.LOG_INFO,
         )
 
+        # Set announce settings from config
+        self.announce_enabled = self.config.announce_enabled
+        self.announce_time = self.config.announce
+
         # Handle initial announce
-        self.announce_enabled = kwargs.get("announce_enabled", True)
         if self.config.announce_immediately and self.announce_enabled:
             announce_file = os.path.join(self.config_path, "announce")
             if os.path.isfile(announce_file):
@@ -129,7 +132,6 @@ class LXMFBot:
         self.cogs = {}
         self.admins = set(self.config.admins or [])
         self.hot_reloading = self.config.hot_reloading
-        self.announce_time = kwargs.get("announce", self.config.announce)
         self.command_prefix = self.config.command_prefix
 
         # Initialize services
