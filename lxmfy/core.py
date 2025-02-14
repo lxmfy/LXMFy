@@ -206,7 +206,6 @@ class LXMFBot:
         """Register built-in event handlers"""
         @self.events.on("message_received", EventPriority.HIGHEST)
         def handle_message(event):
-            message = event.data["message"]
             sender = event.data["sender"]
             
             # Check spam protection
@@ -216,9 +215,6 @@ class LXMFBot:
                     event.cancel()
                     self.send(sender, msg)
                     return
-            
-            # Let the event system handle it, don't call _process_message directly
-            # Remove the _process_message call from here
 
     def _process_message(self, message, sender):
         """Process an incoming message"""
