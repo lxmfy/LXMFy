@@ -60,17 +60,16 @@ class HelpSystem:
         # Register the help command
         @bot.command(
             name="help",
-            description="Show help for commands",
-            usage="help [command]",
-            examples=["help", "help note"],
+            description="Show help for commands"
         )
         def help_command(ctx):
             args = ctx.args
             if not args:
                 # Show all commands
                 categories = self._get_categorized_commands(ctx.is_admin)
-                ctx.reply(self.formatter.format_all_commands(categories))
-                return
+                response = self.formatter.format_all_commands(categories)
+                ctx.reply(response)
+                return  # Make sure to return after replying
 
             # Show specific command help
             command_name = args[0]
@@ -78,10 +77,13 @@ class HelpSystem:
                 command = self.bot.commands[command_name]
                 if command.admin_only and not ctx.is_admin:
                     ctx.reply("This command is for administrators only.")
-                    return
-                ctx.reply(self.formatter.format_command(command))
+                    return  # Make sure to return after replying
+                response = self.formatter.format_command(command)
+                ctx.reply(response)
+                return  # Make sure to return after replying
             else:
                 ctx.reply(f"Command '{command_name}' not found.")
+                return  # Make sure to return after replying
 
     def _get_categorized_commands(self, is_admin: bool) -> Dict[str, List]:
         """Group commands by category"""

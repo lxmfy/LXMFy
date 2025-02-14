@@ -94,7 +94,8 @@ def create_bot_file(name: str, output_path: str) -> str:
 
 bot = LXMFBot(
     name="{name}",
-    announce=600,  # Announce every 600 seconds (10 minutes)
+    announce=600,  # Announce every 600 seconds (10 minutes), set to 0 to disable periodic announces
+    announce_enabled=True,  # Set to False to disable all announces (both initial and periodic)
     admins=[],  # Add your LXMF hashes here
     hot_reloading=True,
     command_prefix="/",

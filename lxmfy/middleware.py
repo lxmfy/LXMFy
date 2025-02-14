@@ -33,6 +33,23 @@ class MiddlewareContext:
         """Cancel middleware processing"""
         self.cancelled = True
 
+class MessageTracker:
+    """Tracks processed messages to prevent duplicates"""
+    
+    def __init__(self, max_size=1000):
+        self.processed = set()
+        self.max_size = max_size
+        
+    def is_processed(self, msg_hash: str) -> bool:
+        """Check if message was already processed"""
+        if msg_hash in self.processed:
+            return True
+            
+        self.processed.add(msg_hash)
+        if len(self.processed) > self.max_size:
+            self.processed = set(list(self.processed)[-self.max_size:])
+        return False
+
 class MiddlewareManager:
     """Manages middleware registration and execution"""
     
@@ -40,6 +57,7 @@ class MiddlewareManager:
         self.middleware: dict[MiddlewareType, List[Callable]] = {
             t: [] for t in MiddlewareType
         }
+        self.message_tracker = MessageTracker()
         self.logger = logging.getLogger(__name__)
         
     def register(self, middleware_type: MiddlewareType, func: Callable):

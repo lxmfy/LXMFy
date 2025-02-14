@@ -31,6 +31,7 @@ from .permissions import PermissionManager, DefaultPerms
 from .config import BotConfig
 from .validation import validate_bot, format_validation_results
 from .events import EventManager, Event, EventPriority
+from .middleware import MiddlewareContext, MiddlewareType, MiddlewareManager
 
 
 class LXMFBot:
@@ -113,12 +114,15 @@ class LXMFBot:
             RNS.LOG_INFO,
         )
 
-        # Handle immediate announce
-        if self.config.announce_immediately:
+        # Handle initial announce
+        self.announce_enabled = kwargs.get("announce_enabled", True)
+        if self.config.announce_immediately and self.announce_enabled:
             announce_file = os.path.join(self.config_path, "announce")
             if os.path.isfile(announce_file):
                 os.remove(announce_file)
                 RNS.log("Announcing now. Timer reset.", RNS.LOG_INFO)
+            self.local.announce()
+            RNS.log("Initial announce sent", RNS.LOG_INFO)
 
         # Initialize bot state
         self.commands = {}
@@ -153,6 +157,9 @@ class LXMFBot:
         
         # Register built-in events
         self._register_builtin_events()
+
+        # Initialize middleware
+        self.middleware = MiddlewareManager()
 
     def command(self, *args, **kwargs):
         def decorator(func):
@@ -207,9 +214,9 @@ class LXMFBot:
                     event.cancel()
                     self.send(sender, msg)
                     return
-                    
-            # Process message
-            self._process_message(message, sender)
+            
+            # Let the event system handle it, don't call _process_message directly
+            # Remove the _process_message call from here
 
     def _process_message(self, message, sender):
         """Process an incoming message"""
@@ -228,14 +235,8 @@ class LXMFBot:
                     self.storage.set("first_messages", first_messages)
                     for handler in self.first_message_handlers:
                         if handler(sender, message):
-                            return
-            
-            # Check spam protection
-            if not self.permissions.has_permission(sender, DefaultPerms.BYPASS_SPAM):
-                allowed, reason = self.spam_protection.check_spam(sender)
-                if not allowed:
-                    reply(reason)
-                    return
+                            break
+                    return  # Return after handling first message
             
             # Check basic bot permission
             if not self.permissions.has_permission(sender, DefaultPerms.USE_BOT):
@@ -251,6 +252,11 @@ class LXMFBot:
             }
             msg = SimpleNamespace(**msg_ctx)
 
+            # Run through pre-command middleware
+            ctx = MiddlewareContext(MiddlewareType.PRE_COMMAND, msg)
+            if self.middleware.execute(MiddlewareType.PRE_COMMAND, ctx) is None:
+                return
+
             # Process commands
             if self.command_prefix is None or content.startswith(self.command_prefix):
                 command_name = (
@@ -261,41 +267,27 @@ class LXMFBot:
                 if command_name in self.commands:
                     cmd = self.commands[command_name]
                     
-                    # Check command permissions
                     if not self.permissions.has_permission(sender, cmd.permissions):
                         self.send(sender, "You don't have permission to use this command.")
                         return
 
-                    # Create command context
-                    ctx = SimpleNamespace(
-                        bot=self,
-                        sender=sender,
-                        content=content,
-                        args=content.split()[1:],
-                        is_admin=self.is_admin(sender),
-                        reply=reply,
-                        message=msg,
-                    )
-
                     try:
-                        cmd.callback(ctx)
+                        args = content.split()[1:] if len(content.split()) > 1 else []
+                        msg.args = args
+                        msg.is_admin = sender in self.admins
                         
-                        # Dispatch command executed event
-                        event = Event("command_executed", {
-                            "command": command_name,
-                            "sender": sender,
-                            "args": ctx.args,
-                            "content": content
-                        })
-                        self.events.dispatch(event)
+                        cmd.callback(msg)
+                        
+                        # Run post-command middleware
+                        self.middleware.execute(MiddlewareType.POST_COMMAND, msg)
+                        return
                         
                     except Exception as e:
-                        self.logger.error(
-                            f"Error executing command {command_name}: {str(e)}"
-                        )
+                        self.logger.error(f"Error executing command {command_name}: {str(e)}")
                         self.send(sender, f"Error executing command: {str(e)}")
+                        return
 
-            # Run delivery callbacks
+            # Run delivery callbacks only if not a command
             for callback in self.delivery_callbacks:
                 callback(msg)
                 
@@ -308,31 +300,41 @@ class LXMFBot:
             sender = RNS.hexrep(message.source_hash, delimit=False)
             receipt = RNS.hexrep(message.hash, delimit=False)
             
+            # Check if message was already processed
             if receipt in self.receipts:
                 return
-                
+            
             # Add to receipts list
             self.receipts.append(receipt)
             if len(self.receipts) > 100:
                 self.receipts = self.receipts[-100:]
             
-            # Dispatch message received event
-            event = Event("message_received", {
+            # Create event data
+            event_data = {
                 "message": message,
                 "sender": sender,
                 "receipt": receipt
-            })
+            }
+            
+            # Run through middleware first
+            ctx = MiddlewareContext(MiddlewareType.PRE_EVENT, event_data)
+            if self.middleware.execute(MiddlewareType.PRE_EVENT, ctx) is None:
+                return
+            
+            # Dispatch message received event and process message
+            event = Event("message_received", event_data)
             self.events.dispatch(event)
             
-            # Process the message
-            self._process_message(message, sender)
+            # Only process message if event wasn't cancelled
+            if not event.cancelled:
+                self._process_message(message, sender)
             
         except Exception as e:
             self.logger.error(f"Error handling received message: {str(e)}")
 
     def _announce(self):
         """Send an announce if the configured interval has passed."""
-        if self.announce_time == 0:
+        if self.announce_time == 0 or not self.announce_enabled:
             RNS.log("Announcements disabled", RNS.LOG_DEBUG)
             return
 
