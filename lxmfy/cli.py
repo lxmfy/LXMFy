@@ -96,6 +96,7 @@ bot = LXMFBot(
     name="{name}",
     announce=600,  # Announce every 600 seconds (10 minutes), set to 0 to disable periodic announces
     announce_enabled=True,  # Set to False to disable all announces (both initial and periodic)
+    announce_immediately=True,  # Set to False to disable initial announce
     admins=[],  # Add your LXMF hashes here
     hot_reloading=True,
     command_prefix="/",
