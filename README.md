@@ -43,6 +43,8 @@ from lxmfy import LXMFBot, load_cogs_from_directory
 bot = LXMFBot(
     name="LXMFy Test Bot", # Name of the bot that appears on the network.
     announce=600, # Announce every 600 seconds, set to 0 to disable.
+    announce_enabled=True, # Set to False to disable all announces (both initial and periodic)
+    announce_immediately=True, # Set to False to disable initial announce
     admins=["your_lxmf_hash_here"], # List of admin hashes.
     hot_reloading=True, # Enable hot reloading.
     command_prefix="/", # Set to None to process all messages as commands.
