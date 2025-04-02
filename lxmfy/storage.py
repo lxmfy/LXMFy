@@ -16,6 +16,7 @@ import base64
 from datetime import datetime
 from LXMF import LXMessage
 import RNS
+from .attachments import Attachment, AttachmentType
 
 
 def serialize_value(obj: Any) -> Any:
@@ -25,13 +26,28 @@ def serialize_value(obj: Any) -> Any:
     elif isinstance(obj, datetime):
         return {"__type": "datetime", "data": obj.isoformat()}
     elif isinstance(obj, LXMessage):
-        return {
+        msg_data = {
             "__type": "LXMessage",
             "source_hash": RNS.hexrep(obj.source_hash, delimit=False),
             "destination_hash": RNS.hexrep(obj.destination_hash, delimit=False),
             "content": base64.b64encode(obj.content).decode() if obj.content else None,
             "title": obj.title,
             "timestamp": obj.timestamp.isoformat() if obj.timestamp else None
+        }
+        
+        if hasattr(obj, "fields") and obj.fields:
+            msg_data["fields"] = {
+                str(k): serialize_value(v) for k, v in obj.fields.items()
+            }
+            
+        return msg_data
+    elif isinstance(obj, Attachment):
+        return {
+            "__type": "Attachment",
+            "type": obj.type,
+            "name": obj.name,
+            "data": base64.b64encode(obj.data).decode(),
+            "format": obj.format
         }
     elif isinstance(obj, (list, tuple)):
         return [serialize_value(item) for item in obj]
@@ -49,14 +65,23 @@ def deserialize_value(obj: Any) -> Any:
             elif obj["__type"] == "datetime":
                 return datetime.fromisoformat(obj["data"])
             elif obj["__type"] == "LXMessage":
-                # Return simplified dict for LXMessage data
-                return {
+                msg_data = {
                     "source_hash": obj["source_hash"],
                     "destination_hash": obj["destination_hash"],
                     "content": base64.b64decode(obj["data"]) if obj["content"] else None,
                     "title": obj["title"],
                     "timestamp": datetime.fromisoformat(obj["timestamp"]) if obj["timestamp"] else None
                 }
+                if "fields" in obj:
+                    msg_data["fields"] = deserialize_value(obj["fields"])
+                return msg_data
+            elif obj["__type"] == "Attachment":
+                return Attachment(
+                    type=AttachmentType(obj["type"]),
+                    name=obj["name"],
+                    data=base64.b64decode(obj["data"]),
+                    format=obj["format"]
+                )
         return {k: deserialize_value(v) for k, v in obj.items()}
     elif isinstance(obj, list):
         return [deserialize_value(item) for item in obj]

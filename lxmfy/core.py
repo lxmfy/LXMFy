@@ -32,6 +32,7 @@ from .config import BotConfig
 from .validation import validate_bot, format_validation_results
 from .events import EventManager, Event, EventPriority
 from .middleware import MiddlewareContext, MiddlewareType, MiddlewareManager
+from .attachments import Attachment, pack_attachment
 
 
 class LXMFBot:
@@ -389,6 +390,39 @@ class LXMFBot:
                 )
                 lxm.try_propagation_on_fail = True
                 self.queue.put(lxm)
+
+    def send_with_attachment(self, destination: str, message: str, attachment: Attachment, title: str = "Reply"):
+        try:
+            hash = bytes.fromhex(destination)
+            if not len(hash) == RNS.Reticulum.TRUNCATED_HASHLENGTH // 8:
+                RNS.log("Invalid destination hash length", RNS.LOG_ERROR)
+                return
+            
+            id = RNS.Identity.recall(hash)
+            if id is None:
+                RNS.log("Could not recall Identity, requesting path...", RNS.LOG_ERROR)
+                RNS.Transport.request_path(hash)
+                return
+            
+            lxmf_destination = RNS.Destination(
+                id, RNS.Destination.OUT, RNS.Destination.SINGLE, "lxmf", "delivery"
+            )
+            
+            fields = pack_attachment(attachment)
+            
+            lxm = LXMessage(
+                lxmf_destination,
+                self.local,
+                message,
+                title=title,
+                desired_method=LXMessage.DIRECT,
+                fields=fields
+            )
+            lxm.try_propagation_on_fail = True
+            self.queue.put(lxm)
+            
+        except Exception as e:
+            self.logger.error(f"Error sending message with attachment: {str(e)}")
 
     def run(self, delay=10):
         """Run the bot"""
