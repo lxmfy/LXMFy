@@ -16,6 +16,7 @@ from .config import BotConfig
 from .events import Event, EventManager, EventPriority
 from .middleware import MiddlewareManager, MiddlewareType, MiddlewareContext
 from .scheduler import TaskScheduler, ScheduledTask
+from .attachments import Attachment, AttachmentType, pack_attachment
 
 __all__ = [
     "LXMFBot",
@@ -40,7 +41,10 @@ __all__ = [
     "MiddlewareType",
     "MiddlewareContext",
     "TaskScheduler",
-    "ScheduledTask"
+    "ScheduledTask",
+    "Attachment",
+    "AttachmentType",
+    "pack_attachment"
 ]
 
 __version__ = "0.5.1"
