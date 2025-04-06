@@ -26,15 +26,15 @@ class Event:
     name: str
     data: dict = field(default_factory=dict)
     cancelled: bool = False
-    
+
     def __hash__(self):
         return hash(self.name)
-    
+
     def __eq__(self, other):
         if not isinstance(other, Event):
             return False
         return self.name == other.name
-    
+
     def cancel(self):
         object.__setattr__(self, 'cancelled', True)
 
@@ -46,12 +46,12 @@ class EventHandler:
 
 class EventManager:
     """Manages event registration, dispatching and middleware"""
-    
+
     def __init__(self, storage):
         self.storage = storage
         self.handlers = {}  # Change to use event names as keys instead of Event objects
         self.logger = logging.getLogger(__name__)
-        
+
     def on(self, event_name: str, priority: EventPriority = EventPriority.NORMAL):
         """Register an event handler"""
         def decorator(func):
@@ -61,12 +61,12 @@ class EventManager:
             self.handlers[event_name].sort(key=lambda x: x[0].value, reverse=True)
             return func
         return decorator
-        
+
     def use(self, middleware: Callable):
         """Add middleware to the event pipeline"""
         # This method is no longer used in the new implementation
         pass
-        
+
     def dispatch(self, event: Event):
         """Dispatch an event to registered handlers"""
         try:
@@ -80,13 +80,13 @@ class EventManager:
                         self.logger.error(f"Error in event handler {handler.__name__}: {str(e)}")
         except Exception as e:
             self.logger.error(f"Error dispatching event: {str(e)}")
-            
+
     def _log_event(self, event: Event):
         """Log event to storage"""
         try:
             if not self.storage:
                 return
-                
+
             events = self.storage.get("events:log", [])
             events.append({
                 "name": event.name,

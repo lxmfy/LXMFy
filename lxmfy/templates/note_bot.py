@@ -46,7 +46,7 @@ class NoteBot:
                 for i, note in enumerate(notes[-10:], 1):
                     tags = " ".join(f"#{tag}" for tag in note["tags"]) if note["tags"] else ""
                     response += f"{i}. {note['text']} {tags}\n"
-                
+
                 if len(notes) > 10:
                     response += f"\nShowing last 10 of {len(notes)} notes. Use /notes all to see all."
                 ctx.reply(response)
@@ -65,7 +65,7 @@ class NoteBot:
                 tag = ctx.args[0][1:]
                 notes = self.bot.storage.get(f"notes:{ctx.sender}", [])
                 tagged_notes = [n for n in notes if tag in n["tags"]]
-                
+
                 if not tagged_notes:
                     ctx.reply(f"No notes found with tag #{tag}")
                     return
