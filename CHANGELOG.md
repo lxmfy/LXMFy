@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.6.0] - 2025-04-06
+
+- **Update lxmf to 0.6.3**
+- **Update rns to 0.9.3**
+- **Add docker-compose.yml file**
+- **Run bot templates directly: lxmfy run echo**
+- **Add basic tests**
+- Fix linting errors
+- **Add LXMF Attachment Support**
+
 ## [0.5.1] - 2025-02-14
 
 - **Remove unused variables**
@@ -258,3 +268,5 @@ bot = LXMFBot(
 [0.4.8]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.8
 [0.4.9]: https://github.com/lxmfy/lxmfy/releases/tag/v0.4.9
 [0.5.0]: https://github.com/lxmfy/lxmfy/releases/tag/v0.5.0
+[0.5.1]: https://github.com/lxmfy/lxmfy/releases/tag/v0.5.1
+[0.6.0]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.0
