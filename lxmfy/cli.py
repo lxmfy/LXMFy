@@ -6,6 +6,7 @@ LXMF bots, including bot file creation, example cog generation, and bot analysis
 """
 
 import argparse
+import ast
 import hashlib
 import importlib.util
 import json
@@ -13,6 +14,8 @@ import os
 import re
 import sys
 from glob import glob
+from pathlib import Path
+from typing import Any, Optional
 
 from .templates import EchoBot, NoteBot, ReminderBot
 from .validation import format_validation_results, validate_bot
@@ -62,13 +65,14 @@ def validate_bot_name(name: str) -> str:
     return sanitized
 
 
-def create_bot_file(name: str, output_path: str) -> str:
+def create_bot_file(name: str, output_path: str, no_cogs: bool = False) -> str:
     """
     Create a new bot file from template.
 
     Args:
         name: Name for the bot
         output_path: Desired output path
+        no_cogs: Disable cogs loading
 
     Returns:
         str: Path to created bot file
@@ -91,30 +95,30 @@ def create_bot_file(name: str, output_path: str) -> str:
 
         safe_path = os.path.abspath(output_path)
 
-        template = f"""from lxmfy import LXMFBot, load_cogs_from_directory
+        template = f"""from lxmfy import LXMFBot
 
 bot = LXMFBot(
     name="{name}",
-    announce=600,  # Announce every 600 seconds (10 minutes), set to 0 to disable periodic announces
-    announce_enabled=True,  # Set to False to disable all announces (both initial and periodic)
-    announce_immediately=True,  # Set to False to disable initial announce
-    admins=[],  # Add your LXMF hashes here
-    hot_reloading=True,
+    announce=600,
+    announce_immediately=True,
+    admins=set(),
+    hot_reloading=False,
+    rate_limit=5,
+    cooldown=60,
+    max_warnings=3,
+    warning_timeout=300,
     command_prefix="/",
+    cogs_dir="cogs",
+    cogs_enabled={not no_cogs},
+    permissions_enabled=False,
+    storage_type="json",
+    storage_path="data",
     first_message_enabled=True,
+    event_logging_enabled=True,
+    max_logged_events=1000,
+    event_middleware_enabled=True,
+    announce_enabled=True
 )
-
-# Load all cogs from the cogs directory
-load_cogs_from_directory(bot)
-
-@bot.on_first_message()
-def welcome_message(sender, message):
-    bot.send(sender, "Welcome to the bot! Type /help to see available commands.")
-    return True
-
-@bot.command(name="ping", description="Test if bot is responsive")
-def ping(ctx):
-    ctx.reply("Pong!")
 
 if __name__ == "__main__":
     bot.run()
@@ -305,45 +309,61 @@ if __name__ == "__main__":
         raise RuntimeError(f"Failed to create full bot: {str(e)}") from e
 
 
-def analyze_bot_file(file_path: str) -> None:
+def analyze_bot_file(file_path: str) -> dict[str, Any]:
     """
     Analyze a bot file for configuration issues and best practices.
 
     Args:
         file_path: Path to the bot file to analyze
+
+    Returns:
+        dict[str, Any]: Analysis results
     """
     try:
-        # Load the bot module
-        spec = importlib.util.spec_from_file_location("bot_module", file_path)
-        if not spec or not spec.loader:
-            raise ImportError("Could not load bot file")
+        with open(file_path) as f:
+            tree = ast.parse(f.read())
 
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
+        results = {
+            'commands': [],
+            'events': [],
+            'middleware': [],
+            'permissions': [],
+            'config': {},
+            'warnings': [],
+            'errors': []
+        }
 
-        # Find the bot instance
-        bot = None
-        for attr in dir(module):
-            obj = getattr(module, attr)
-            if hasattr(obj, '__class__') and 'LXMFBot' in str(obj.__class__):
-                bot = obj
-                break
-            elif hasattr(obj, 'bot') and hasattr(obj.bot, '__class__') and 'LXMFBot' in str(obj.bot.__class__):
-                bot = obj.bot
-                break
+        class BotAnalyzer(ast.NodeVisitor):
+            def visit_Call(self, node):
+                if isinstance(node.func, ast.Attribute):
+                    if node.func.attr == 'command':
+                        results['commands'].append(node.args[0].value)
+                    elif node.func.attr == 'on':
+                        results['events'].append(node.args[0].value)
+                    elif node.func.attr == 'middleware':
+                        results['middleware'].append(node.args[0].value)
+                    elif node.func.attr == 'permission':
+                        results['permissions'].append(node.args[0].value)
+                elif isinstance(node.func, ast.Name) and node.func.id == 'LXMFBot':
+                    for kw in node.keywords:
+                        results['config'][kw.arg] = kw.value.value
 
-        if not bot:
-            print("Error: No LXMFBot instance found in the file")
-            return
+            def visit_Assign(self, node):
+                if (isinstance(node.targets[0], ast.Name) and 
+                    node.targets[0].id == 'bot' and 
+                    isinstance(node.value, ast.Call) and 
+                    isinstance(node.value.func, ast.Name) and 
+                    node.value.func.id == 'LXMFBot'):
+                    for kw in node.value.keywords:
+                        results['config'][kw.arg] = kw.value.value
 
-        # Run validation
-        results = validate_bot(bot)
-        print("\n=== Bot Analysis Results ===")
-        print(format_validation_results(results))
+        analyzer = BotAnalyzer()
+        analyzer.visit(tree)
+
+        return results
 
     except Exception as e:
-        print(f"Error analyzing bot file: {str(e)}")
-        return
+        return {'errors': [f'Error analyzing file: {str(e)}']}
 
 
 def main() -> None:
@@ -406,6 +426,11 @@ Examples:
         default=None,
         help="Output file path or directory for 'create' command",
     )
+    parser.add_argument(
+        "--no-cogs",
+        action="store_true",
+        help="Disable cogs loading for 'create' command",
+    )
 
     args = parser.parse_args()
 
@@ -419,7 +444,26 @@ Examples:
             print(f"Error: Bot file not found: {bot_path}")
             sys.exit(1)
 
-        analyze_bot_file(bot_path)
+        results = analyze_bot_file(bot_path)
+
+        if results.get('errors'):
+            print('Errors:')
+            for error in results['errors']:
+                print(f'  - {error}')
+
+        if results.get('warnings'):
+            print('Warnings:')
+            for warning in results['warnings']:
+                print(f'  - {warning}')
+
+        print('Configuration:')
+        for key, value in results.get('config', {}).items():
+            print(f'  {key}: {value}')
+
+        print('Commands:', ', '.join(results.get('commands', [])))
+        print('Events:', ', '.join(results.get('events', [])))
+        print('Middleware:', ', '.join(results.get('middleware', [])))
+        print('Permissions:', ', '.join(results.get('permissions', [])))
 
     elif args.command == "create":
         try:

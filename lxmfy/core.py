@@ -22,6 +22,7 @@ import RNS
 from LXMF import LXMessage, LXMRouter
 
 from .attachments import Attachment, pack_attachment
+from .cogs_core import load_cogs_from_directory
 
 # Local imports
 from .commands import Command
@@ -62,15 +63,25 @@ class LXMFBot:
             **kwargs: Override default configuration settings
         """
         self.config = BotConfig(**kwargs)
+        self.commands = {}
+        self.events = {}
+        self.middleware = {}
+        self.permissions = {}
+        self.storage = None
+        self.transport = None
 
-        # Set up storage with configured backend
-        storage_type = kwargs.get("storage_type", self.config.storage_type)
-        storage_path = kwargs.get("storage_path", self.config.storage_path)
+        if self.config.cogs_enabled:
+            load_cogs_from_directory(self)
 
-        if storage_type == "sqlite":
-            self.storage = Storage(SQLiteStorage(storage_path))
-        else:  # default to json
-            self.storage = Storage(JSONStorage(storage_path))
+        if self.config.permissions_enabled:
+            self._load_permissions()
+
+        if self.config.storage_type == "json":
+            self.storage = JSONStorage(self.config.storage_path)
+        elif self.config.storage_type == "sqlite":
+            self.storage = SQLiteStorage(self.config.storage_path)
+
+        self.transport = Transport(self)
 
         # Initialize spam protection with config values
         self.spam_protection = SpamProtection(
@@ -130,31 +141,13 @@ class LXMFBot:
             RNS.log("Initial announce sent", RNS.LOG_INFO)
 
         # Initialize bot state
-        self.commands = {}
         self.cogs = {}
         self.admins = set(self.config.admins or [])
         self.hot_reloading = self.config.hot_reloading
         self.command_prefix = self.config.command_prefix
 
-        # Initialize services
-        self.transport = Transport(storage=self.storage)
-
         # Initialize help system
         self.help_system = HelpSystem(self)
-
-        # Initialize permission manager
-        self.permissions = PermissionManager(
-            storage=self.storage,
-            enabled=self.config.permissions_enabled
-        )
-
-        # Add admins to admin role
-        for admin in self.admins:
-            self.permissions.assign_role(admin, "admin")
-
-        # Add first message handler storage
-        self.first_message_handlers = []
-        self.first_message_enabled = kwargs.get("first_message_enabled", True)
 
         # Initialize event system
         self.events = EventManager(self.storage)
