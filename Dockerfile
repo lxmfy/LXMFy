@@ -1,4 +1,4 @@
-FROM python:3.13-slim
+FROM python:3.13-alpine
 
 WORKDIR /bot
 
@@ -7,7 +7,4 @@ RUN mkdir -p /root/.reticulum /bot/config
 
 RUN pip3 install --no-cache-dir lxmfy
 
-CMD ["lxmfy", "create", "mybot"]
-
-# Run bot
-CMD ["python3", "mybot.py"]
+CMD ["lxmfy", "run", "echo"]
