@@ -1,6 +1,7 @@
-from enum import IntEnum
-from typing import List, Optional
 from dataclasses import dataclass
+from enum import IntEnum
+from typing import Optional
+
 from LXMF import LXMessage
 
 
@@ -18,15 +19,15 @@ class Attachment:
     format: Optional[str] = None
 
 
-def create_file_attachment(filename: str, data: bytes) -> List:
+def create_file_attachment(filename: str, data: bytes) -> list:
     return [filename, data]
 
 
-def create_image_attachment(format: str, data: bytes) -> List:
+def create_image_attachment(format: str, data: bytes) -> list:
     return [format, data]
 
 
-def create_audio_attachment(mode: int, data: bytes) -> List:
+def create_audio_attachment(mode: int, data: bytes) -> list:
     return [mode, data]
 
 

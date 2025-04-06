@@ -5,10 +5,10 @@ This module provides spam protection functionality for LXMFy bots,
 including rate limiting, warning system, and user banning capabilities.
 """
 
-from time import time
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Tuple
+from time import time
+
 from .permissions import DefaultPerms
 
 
@@ -73,7 +73,7 @@ class SpamProtection:
         self.storage.set("spam:banned_users", list(self.banned_users))
         self.storage.set("spam:warning_times", dict(self.warning_times))
 
-    def check_spam(self, sender) -> Tuple[bool, str]:
+    def check_spam(self, sender) -> tuple[bool, str]:
         """
         Check if a message from the sender should be allowed.
 

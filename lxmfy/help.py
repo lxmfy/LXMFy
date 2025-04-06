@@ -1,7 +1,7 @@
 """Help command system for LXMFy."""
 
-from typing import Dict, List
 from dataclasses import dataclass
+
 from .permissions import DefaultPerms
 
 
@@ -34,7 +34,7 @@ class HelpFormatter:
         return "\n".join(help_text)
 
     @staticmethod
-    def format_category(category: str, commands: List) -> str:
+    def format_category(category: str, commands: list) -> str:
         """Format a category of commands"""
         help_text = [f"\n=== {category} ==="]
         for cmd in commands:
@@ -42,7 +42,7 @@ class HelpFormatter:
         return "\n".join(help_text)
 
     @staticmethod
-    def format_all_commands(categories: Dict[str, List]) -> str:
+    def format_all_commands(categories: dict[str, list]) -> str:
         """Format the complete help listing"""
         help_text = ["Available Commands:"]
 
@@ -85,7 +85,7 @@ class HelpSystem:
                 ctx.reply(f"Command '{command_name}' not found.")
                 return  # Make sure to return after replying
 
-    def _get_categorized_commands(self, is_admin: bool) -> Dict[str, List]:
+    def _get_categorized_commands(self, is_admin: bool) -> dict[str, list]:
         """Group commands by category"""
         categories = {}
 

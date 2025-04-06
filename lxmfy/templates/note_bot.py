@@ -1,7 +1,9 @@
 """Note-taking bot with JSON storage."""
 
-from lxmfy import LXMFBot
 from datetime import datetime
+
+from lxmfy import LXMFBot
+
 
 class NoteBot:
     def __init__(self):

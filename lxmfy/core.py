@@ -7,32 +7,33 @@ the Reticulum Network.
 """
 
 # Standard library imports
+import importlib
+import inspect
+import logging
 import os
 import sys
 import time
-import inspect
-import importlib
-import logging
 from queue import Queue
 from types import SimpleNamespace
-from typing import Optional, Dict
+from typing import Optional
 
 # Reticulum and LXMF imports
 import RNS
-from LXMF import LXMRouter, LXMessage
+from LXMF import LXMessage, LXMRouter
+
+from .attachments import Attachment, pack_attachment
 
 # Local imports
 from .commands import Command
-from .moderation import SpamProtection
-from .transport import Transport
-from .storage import JSONStorage, Storage, SQLiteStorage
-from .help import HelpSystem
-from .permissions import PermissionManager, DefaultPerms
 from .config import BotConfig
-from .validation import validate_bot, format_validation_results
-from .events import EventManager, Event, EventPriority
-from .middleware import MiddlewareContext, MiddlewareType, MiddlewareManager
-from .attachments import Attachment, pack_attachment
+from .events import Event, EventManager, EventPriority
+from .help import HelpSystem
+from .middleware import MiddlewareContext, MiddlewareManager, MiddlewareType
+from .moderation import SpamProtection
+from .permissions import DefaultPerms, PermissionManager
+from .storage import JSONStorage, SQLiteStorage, Storage
+from .transport import Transport
+from .validation import format_validation_results, validate_bot
 
 
 class LXMFBot:
@@ -166,10 +167,7 @@ class LXMFBot:
 
     def command(self, *args, **kwargs):
         def decorator(func):
-            if len(args) > 0:
-                name = args[0]
-            else:
-                name = kwargs.get("name", func.__name__)
+            name = args[0] if len(args) > 0 else kwargs.get("name", func.__name__)
 
             description = kwargs.get("description", "No description provided")
             admin_only = kwargs.get("admin_only", False)
@@ -193,7 +191,7 @@ class LXMFBot:
 
     def add_cog(self, cog):
         self.cogs[cog.__class__.__name__] = cog
-        for name, method in inspect.getmembers(
+        for _name, method in inspect.getmembers(
             cog, predicate=lambda x: hasattr(x, "_command")
         ):
             cmd = method._command
@@ -339,7 +337,7 @@ class LXMFBot:
 
         announce_path = os.path.join(self.config_path, "announce")
         if os.path.isfile(announce_path):
-            with open(announce_path, "r") as f:
+            with open(announce_path) as f:
                 try:
                     announce = int(f.readline())
                 except ValueError:
@@ -363,7 +361,7 @@ class LXMFBot:
             RNS.log("Invalid destination hash", RNS.LOG_ERROR)
             return
 
-        if not len(hash) == RNS.Reticulum.TRUNCATED_HASHLENGTH // 8:
+        if len(hash) != RNS.Reticulum.TRUNCATED_HASHLENGTH // 8:
             RNS.log("Invalid destination hash length", RNS.LOG_ERROR)
         else:
             id = RNS.Identity.recall(hash)
@@ -394,7 +392,7 @@ class LXMFBot:
     def send_with_attachment(self, destination: str, message: str, attachment: Attachment, title: str = "Reply"):
         try:
             hash = bytes.fromhex(destination)
-            if not len(hash) == RNS.Reticulum.TRUNCATED_HASHLENGTH // 8:
+            if len(hash) != RNS.Reticulum.TRUNCATED_HASHLENGTH // 8:
                 RNS.log("Invalid destination hash length", RNS.LOG_ERROR)
                 return
             
@@ -429,7 +427,7 @@ class LXMFBot:
         try:
             while True:
                 # Process outbound queue
-                for i in list(self.queue.queue):
+                for _i in list(self.queue.queue):
                     lxm = self.queue.get()
                     self.router.handle_outbound(lxm)
                     
@@ -444,8 +442,8 @@ class LXMFBot:
         return function
 
     def request_page(
-        self, destination_hash: str, page_path: str, field_data: Optional[Dict] = None
-    ) -> Dict:
+        self, destination_hash: str, page_path: str, field_data: Optional[dict] = None
+    ) -> dict:
         try:
             dest_hash_bytes = bytes.fromhex(destination_hash)
             return self.transport.request_page(dest_hash_bytes, page_path, field_data)

@@ -1,17 +1,29 @@
-import pytest
-import os
-from pathlib import Path
-from datetime import datetime
 import base64
-from lxmfy.core import LXMFBot, BotConfig
-from lxmfy.storage import Storage, JSONStorage, SQLiteStorage, serialize_value, deserialize_value
-from lxmfy.attachments import Attachment, AttachmentType, pack_attachment
-from lxmfy.events import EventManager, Event, EventPriority
-from lxmfy.permissions import PermissionManager, DefaultPerms
-from lxmfy.moderation import SpamProtection # Added imports
-from lxmfy.validation import ValidationResult, format_validation_results # Added imports
+import os
+from datetime import datetime
+from pathlib import Path
+from unittest.mock import MagicMock, patch
+
+import pytest
 from LXMF import LXMessage
-from unittest.mock import patch, MagicMock
+
+from lxmfy.attachments import Attachment, AttachmentType, pack_attachment
+from lxmfy.core import BotConfig, LXMFBot
+from lxmfy.events import Event, EventManager, EventPriority
+from lxmfy.moderation import SpamProtection  # Added imports
+from lxmfy.permissions import DefaultPerms, PermissionManager
+from lxmfy.storage import (
+    JSONStorage,
+    SQLiteStorage,
+    Storage,
+    deserialize_value,
+    serialize_value,
+)
+from lxmfy.validation import (  # Added imports
+    ValidationResult,
+    format_validation_results,
+)
+
 
 # Mock RNS and LXMF dependencies to avoid network/filesystem interactions during tests
 @pytest.fixture(autouse=True)

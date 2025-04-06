@@ -8,11 +8,13 @@ as the main interface for network operations, with support for path and request
 handlers.
 """
 
-from typing import Optional, Callable
-import RNS
 import logging
 import time
 from dataclasses import dataclass
+from typing import Callable, Optional
+
+import RNS
+
 from .permissions import DefaultPerms
 
 

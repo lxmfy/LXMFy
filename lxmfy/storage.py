@@ -6,16 +6,18 @@ It includes a base StorageBackend interface and a JSON file-based implementation
 The Storage class serves as a facade for the underlying storage backend.
 """
 
-from abc import ABC, abstractmethod
-from typing import Any, Dict, List
-import json
-import sqlite3
-from pathlib import Path
-import logging
 import base64
+import json
+import logging
+import sqlite3
+from abc import ABC, abstractmethod
 from datetime import datetime
-from LXMF import LXMessage
+from pathlib import Path
+from typing import Any
+
 import RNS
+from LXMF import LXMessage
+
 from .attachments import Attachment, AttachmentType
 
 
@@ -114,7 +116,7 @@ class JSONStorage(StorageBackend):
     def __init__(self, directory: str):
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True)
-        self.cache: Dict[str, Any] = {}
+        self.cache: dict[str, Any] = {}
         self.logger = logging.getLogger(__name__)
 
     def get(self, key: str, default: Any = None) -> Any:
@@ -124,7 +126,7 @@ class JSONStorage(StorageBackend):
         file_path = self.directory / f"{key}.json"
         try:
             if file_path.exists():
-                with open(file_path, "r") as f:
+                with open(file_path) as f:
                     data = json.load(f)
                     self.cache[key] = data
                     return data
@@ -171,7 +173,7 @@ class JSONStorage(StorageBackend):
 class SQLiteStorage(StorageBackend):
     def __init__(self, database_path: str):
         self.database_path = database_path
-        self.cache: Dict[str, Any] = {}
+        self.cache: dict[str, Any] = {}
         self.logger = logging.getLogger(__name__)
         self._init_db()
 
@@ -283,18 +285,18 @@ class Storage:
     def scan(self, prefix: str) -> list:
         return self.backend.scan(prefix)
 
-    def get_role_data(self, role_name: str) -> Dict:
+    def get_role_data(self, role_name: str) -> dict:
         """Helper method for permission system"""
         return self.get(f"roles:{role_name}", {})
 
-    def set_role_data(self, role_name: str, data: Dict):
+    def set_role_data(self, role_name: str, data: dict):
         """Helper method for permission system"""
         self.set(f"roles:{role_name}", data)
 
-    def get_user_roles(self, user_hash: str) -> List[str]:
+    def get_user_roles(self, user_hash: str) -> list[str]:
         """Helper method for permission system"""
         return self.get(f"user_roles:{user_hash}", [])
 
-    def set_user_roles(self, user_hash: str, roles: List[str]):
+    def set_user_roles(self, user_hash: str, roles: list[str]):
         """Helper method for permission system"""
         self.set(f"user_roles:{user_hash}", roles)

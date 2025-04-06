@@ -5,8 +5,9 @@ This module provides the core command handling functionality for LXMFy bots,
 including command registration, method decoration, and cog support.
 """
 
-from typing import Optional, List
 from dataclasses import dataclass
+from typing import Optional
+
 from .permissions import BasePermission, DefaultPerms
 
 
@@ -17,9 +18,9 @@ class CommandHelp:
     name: str
     description: str
     usage: Optional[str] = None
-    examples: List[str] = None
+    examples: list[str] = None
     category: Optional[str] = None
-    aliases: List[str] = None
+    aliases: list[str] = None
 
 
 class Command:

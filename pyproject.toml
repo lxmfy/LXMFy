@@ -24,6 +24,26 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 lxmfy = "lxmfy.cli:main"
-format = "scripts.dev:format"
-lint = "scripts.dev:lint"
-scan = "scripts.dev:scan"
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
+ignore = ["F401", "E501"]
+exclude = [
+    "tests/test_basic.py",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests"]

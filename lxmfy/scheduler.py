@@ -4,12 +4,12 @@ This module provides cron-style scheduling and background task management
 for LXMFy bots.
 """
 
-from typing import Callable, Dict, List, Optional
-from dataclasses import dataclass
-import time
 import logging
+import time
+from dataclasses import dataclass
 from datetime import datetime, timedelta
-from threading import Thread, Event
+from threading import Event, Thread
+from typing import Callable, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -73,8 +73,8 @@ class TaskScheduler:
     
     def __init__(self, bot):
         self.bot = bot
-        self.tasks: Dict[str, ScheduledTask] = {}
-        self.background_tasks: List[Thread] = []
+        self.tasks: dict[str, ScheduledTask] = {}
+        self.background_tasks: list[Thread] = []
         self.stop_event = Event()
         self.logger = logging.getLogger(__name__)
         

@@ -1,8 +1,8 @@
 """Permissions system for LXMFy."""
 
 from dataclasses import dataclass, field
-from typing import Set, Dict, Optional, Any
 from enum import Flag, auto
+from typing import Any, Optional
 
 
 class BasePermission(Flag):
@@ -63,11 +63,11 @@ class PermissionManager:
     admin_role: Role = field(default_factory=lambda: Role("admin", DefaultPerms.ALL, priority=100))
     
     def __post_init__(self):
-        self.roles: Dict[str, Role] = {
+        self.roles: dict[str, Role] = {
             "user": self.default_role,
             "admin": self.admin_role
         }
-        self.user_roles: Dict[str, Set[str]] = {}
+        self.user_roles: dict[str, set[str]] = {}
         self.load_data()
     
     def load_data(self):
@@ -144,10 +144,9 @@ class PermissionManager:
     
     def remove_role(self, user: str, role_name: str):
         """Remove a role from a user"""
-        if user in self.user_roles and role_name in self.user_roles[user]:
-            if role_name != self.default_role.name:  # Can't remove default role
-                self.user_roles[user].remove(role_name)
-                self.save_data()
+        if user in self.user_roles and role_name in self.user_roles[user] and role_name != self.default_role.name:
+            self.user_roles[user].remove(role_name)
+            self.save_data()
     
     def get_user_permissions(self, user: str) -> DefaultPerms:
         """Get combined permissions for a user"""

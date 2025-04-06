@@ -5,17 +5,18 @@ This module provides command-line interface functionality for creating and manag
 LXMF bots, including bot file creation, example cog generation, and bot analysis.
 """
 
-import os
 import argparse
-import sys
-import re
-import json
 import hashlib
-from glob import glob
 import importlib.util
+import json
+import os
+import re
+import sys
+from glob import glob
 
-from .templates import EchoBot, ReminderBot, NoteBot
-from .validation import validate_bot, format_validation_results
+from .templates import EchoBot, NoteBot, ReminderBot
+from .validation import format_validation_results, validate_bot
+
 
 def sanitize_filename(filename: str) -> str:
     """
@@ -180,7 +181,7 @@ def verify_wheel_signature(whl_path: str, sigstore_path: str) -> bool:
         bool: True if the signature is valid, False otherwise
     """
     try:
-        with open(sigstore_path, "r") as f:
+        with open(sigstore_path) as f:
             sigstore_data = json.load(f)
 
         with open(whl_path, "rb") as f:

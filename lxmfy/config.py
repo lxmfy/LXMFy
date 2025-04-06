@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 
+
 @dataclass
 class BotConfig:
     """Configuration settings for LXMFBot."""

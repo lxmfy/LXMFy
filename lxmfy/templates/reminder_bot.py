@@ -1,9 +1,11 @@
 """Reminder bot with SQLite storage."""
 
-from lxmfy import LXMFBot
+import re
 import time
 from datetime import datetime, timedelta
-import re
+
+from lxmfy import LXMFBot
+
 
 class ReminderBot:
     def __init__(self):
@@ -98,7 +100,7 @@ class ReminderBot:
         def run_with_reminders(delay=10):
             while True:
                 check_reminders()
-                for i in list(self.bot.queue.queue):
+                for _i in list(self.bot.queue.queue):
                     lxm = self.bot.queue.get()
                     self.bot.router.handle_outbound(lxm)
                 self.bot._announce()

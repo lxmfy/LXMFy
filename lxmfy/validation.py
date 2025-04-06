@@ -1,8 +1,9 @@
 """Validation module for LXMFy configuration and best practices."""
 
-from dataclasses import dataclass
-from typing import List, Dict, Any
 import logging
+from dataclasses import dataclass
+from typing import Any
+
 from .storage import JSONStorage
 
 logger = logging.getLogger(__name__)
@@ -11,14 +12,14 @@ logger = logging.getLogger(__name__)
 class ValidationResult:
     """Result of a validation check."""
     valid: bool
-    messages: List[str]
+    messages: list[str]
     severity: str  # 'error', 'warning', or 'info'
 
 class ConfigValidator:
     """Validates bot configuration settings."""
     
     @staticmethod
-    def validate_config(config: Any) -> List[ValidationResult]:
+    def validate_config(config: Any) -> list[ValidationResult]:
         results = []
         
         try:
@@ -69,7 +70,7 @@ class BestPracticesChecker:
     """Checks for bot implementation best practices."""
     
     @staticmethod
-    def check_bot(bot: Any) -> List[ValidationResult]:
+    def check_bot(bot: Any) -> list[ValidationResult]:
         results = []
         
         # Check permission system usage
@@ -110,7 +111,7 @@ class PerformanceAnalyzer:
     """Analyzes bot configuration for performance optimization opportunities."""
     
     @staticmethod
-    def analyze_bot(bot: Any) -> List[ValidationResult]:
+    def analyze_bot(bot: Any) -> list[ValidationResult]:
         results = []
         
         # Check caching settings
@@ -130,17 +131,17 @@ class PerformanceAnalyzer:
             ))
             
         # Check storage backend
-        if hasattr(bot, 'storage') and hasattr(bot.storage, 'backend'):
-            if isinstance(bot.storage.backend, JSONStorage):
-                results.append(ValidationResult(
-                    True,
-                    ["SQLite backend recommended for better performance with large datasets"],
-                    "info"
-                ))
+        if hasattr(bot, 'storage') and hasattr(bot.storage, 'backend') and isinstance(bot.storage.backend, JSONStorage):
+            # Combined checks: storage exists, backend exists, and it's JSONStorage
+            results.append(ValidationResult(
+                True,
+                ["SQLite backend recommended for better performance with large datasets"],
+                "info"
+            ))
             
         return results
 
-def validate_bot(bot: Any) -> Dict[str, List[ValidationResult]]:
+def validate_bot(bot: Any) -> dict[str, list[ValidationResult]]:
     """Run all validation checks on a bot instance."""
     try:
         return {
@@ -158,7 +159,7 @@ def validate_bot(bot: Any) -> Dict[str, List[ValidationResult]]:
             )]
         }
 
-def format_validation_results(results: Dict[str, List[ValidationResult]]) -> str:
+def format_validation_results(results: dict[str, list[ValidationResult]]) -> str:
     """Format validation results into a readable string."""
     output = []
     
