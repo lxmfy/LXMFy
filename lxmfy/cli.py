@@ -348,15 +348,23 @@ def analyze_bot_file(file_path: str) -> None:
 def main() -> None:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
-        description="LXMFy Bot Creator",
+        description="LXMFy Bot Tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  lxmfy create                          # Create basic bot in current directory
-  lxmfy create mybot                    # Create basic bot with name 'mybot'
-  lxmfy create --template echo mybot    # Create echo bot
-  lxmfy create --template reminder bot  # Create reminder bot
-  lxmfy create --template note notes    # Create note-taking bot
+  # Creating Bots
+  lxmfy create                          # Create basic bot file 'bot.py'
+  lxmfy create mybot                    # Create basic bot file 'mybot.py'
+  lxmfy create --template echo mybot    # Create echo bot file 'mybot.py'
+  lxmfy create --template reminder bot  # Create reminder bot file 'bot.py'
+  lxmfy create --template note notes    # Create note-taking bot file 'notes.py'
+
+  # Running Template Bots Directly
+  lxmfy run echo                        # Run the built-in echo bot
+  lxmfy run reminder --name "MyReminder"  # Run the reminder bot with a custom name
+  lxmfy run note                        # Run the built-in note bot
+
+  # Analyzing and Verifying
   lxmfy analyze bot.py                  # Analyze bot configuration
   lxmfy verify                          # Verify latest wheel in current directory
   lxmfy verify package.whl sigstore.json # Verify specific wheel and signature
@@ -365,37 +373,37 @@ Examples:
 
     parser.add_argument(
         "command",
-        choices=["create", "verify", "analyze"],
-        help="Create a new LXMF bot, verify wheel signature, or analyze bot configuration",
+        choices=["create", "verify", "analyze", "run"],
+        help="Create a bot file, verify signature, analyze config, or run a template bot",
     )
     parser.add_argument(
         "name",
         nargs="?",
         default=None,
-        help="Name of the bot or path to wheel file (optional)",
+        help="Name for 'create' (bot name/path), 'analyze' (file path), 'verify' (wheel path), or 'run' (template name: echo, reminder, note)",
     )
     parser.add_argument(
         "directory",
         nargs="?",
         default=None,
-        help="Output directory or path to sigstore file (optional)",
+        help="Output directory for 'create', or sigstore path for 'verify' (optional)",
     )
     parser.add_argument(
         "--template",
         choices=["basic", "echo", "reminder", "note"],
         default="basic",
-        help="Bot template to use (default: basic)",
+        help="Bot template to use for 'create' command (default: basic)",
     )
     parser.add_argument(
         "--name",
         dest="name_opt",
         default=None,
-        help="Name of the bot (alphanumeric, spaces, dash, underscore)",
+        help="Optional custom name for the bot (used with 'create' or 'run')",
     )
     parser.add_argument(
         "--output",
         default=None,
-        help="Output file path or directory",
+        help="Output file path or directory for 'create' command",
     )
 
     args = parser.parse_args()
@@ -421,9 +429,24 @@ Examples:
             elif args.directory:
                 output_path = os.path.join(args.directory, "bot.py")
             elif args.name:
-                output_path = f"{args.name}.py"
+                # Handle case where name might be intended as filename
+                if '.' in args.name:
+                     output_path = args.name
+                     # Attempt to extract a bot name if none was provided via --name
+                     if not args.name_opt:
+                         bot_name = os.path.splitext(os.path.basename(args.name))[0]
+                else:
+                    output_path = f"{args.name}.py"
+
             else:
                 output_path = "bot.py"
+
+            # Ensure bot_name is valid if extracted from filename
+            try:
+                bot_name = validate_bot_name(bot_name)
+            except ValueError as ve:
+                print(f"Error: Invalid bot name '{bot_name}'. {ve}", file=sys.stderr)
+                sys.exit(1)
 
             bot_path = create_from_template(args.template, output_path, bot_name)
 
@@ -461,7 +484,7 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
                 """
                 )
         except Exception as e:
-            print(f"Error: {str(e)}", file=sys.stderr)
+            print(f"Error creating bot: {str(e)}", file=sys.stderr)
             sys.exit(1)
 
     elif args.command == "verify":
@@ -486,6 +509,49 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
             sys.exit(1)
 
         if not verify_wheel_signature(whl_path, sigstore_path):
+            sys.exit(1)
+
+    elif args.command == "run":
+        template_name = args.name
+        if not template_name:
+            print("Error: Please specify a template name to run (echo, reminder, note)")
+            sys.exit(1)
+
+        template_map = {
+            "echo": EchoBot,
+            "reminder": ReminderBot,
+            "note": NoteBot
+        }
+
+        if template_name not in template_map:
+             print(f"Error: Invalid template name '{template_name}'. Choose from: echo, reminder, note")
+             sys.exit(1)
+
+        try:
+            BotClass = template_map[template_name]
+            print(f"Starting {template_name} bot...")
+            bot_instance = BotClass() # Instantiate the template class
+
+            # Set custom name if provided
+            custom_name = args.name_opt
+            if custom_name:
+                 try:
+                     validated_name = validate_bot_name(custom_name)
+                     # Templates might wrap the actual bot, check for .bot attribute
+                     if hasattr(bot_instance, 'bot'):
+                         bot_instance.bot.config.name = validated_name
+                         bot_instance.bot.name = validated_name # Also update potential direct attribute if exists
+                     else:
+                         bot_instance.config.name = validated_name # Assume direct config if no .bot
+                         bot_instance.name = validated_name # Also update potential direct attribute if exists
+                     print(f"Running with custom name: {validated_name}")
+                 except ValueError as ve:
+                     print(f"Warning: Invalid custom name '{custom_name}' provided. Using default. ({ve})")
+
+            bot_instance.run() # Call run on the instance
+
+        except Exception as e:
+            print(f"Error running template bot '{template_name}': {str(e)}", file=sys.stderr)
             sys.exit(1)
 
 
