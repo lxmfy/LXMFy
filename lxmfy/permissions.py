@@ -166,4 +166,4 @@ class PermissionManager:
         if not self.enabled:
             return True
         user_perms = self.get_user_permissions(user)
-        return bool(user_perms & permission) 
+        return (user_perms & permission) == permission 
