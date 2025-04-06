@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.6.1] - 2025-04-06
+
+- **Fix syntax errors**
+
 ## [0.6.0] - 2025-04-06
 
 - **Update lxmf to 0.6.3**
@@ -270,3 +274,4 @@ bot = LXMFBot(
 [0.5.0]: https://github.com/lxmfy/lxmfy/releases/tag/v0.5.0
 [0.5.1]: https://github.com/lxmfy/lxmfy/releases/tag/v0.5.1
 [0.6.0]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.0
+[0.6.1]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.1
