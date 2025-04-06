@@ -1,8 +1,10 @@
 # Changelog
 
-## [0.6.2] - 2025-04-06
+## [0.6.3] - 2025-04-07
 
 - **Fix syntax errors**
+- **Manual publish workflow**
+- **Update Poetry.lock**
 
 ## [0.6.0] - 2025-04-06
 
@@ -274,4 +276,4 @@ bot = LXMFBot(
 [0.5.0]: https://github.com/lxmfy/lxmfy/releases/tag/v0.5.0
 [0.5.1]: https://github.com/lxmfy/lxmfy/releases/tag/v0.5.1
 [0.6.0]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.0
-[0.6.2]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.2
+[0.6.3]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.3
