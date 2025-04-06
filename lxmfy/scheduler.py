@@ -45,10 +45,11 @@ class ScheduledTask:
             self._match_field(hour, dt.hour, 0, 23) and
             self._match_field(day, dt.day, 1, 31) and
             self._match_field(month, dt.month, 1, 12) and
-            self._match_field(weekday, dt.weekday(), 0, 6)
+            ScheduledTask._match_field(weekday, dt.weekday(), 0, 6)
         )
         
-    def _match_field(self, pattern: str, value: int, min_val: int, max_val: int) -> bool:
+    @staticmethod
+    def _match_field(pattern: str, value: int, min_val: int, max_val: int) -> bool:
         """Match a cron field pattern"""
         if pattern == "*":
             return True
