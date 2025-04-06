@@ -9,7 +9,7 @@ packages = [{include = "lxmfy"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 lxmf = "^0.6.3"
-rns = "^0.9.3
+rns = "^0.9.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
