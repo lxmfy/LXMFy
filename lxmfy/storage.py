@@ -36,12 +36,12 @@ def serialize_value(obj: Any) -> Any:
             "title": obj.title,
             "timestamp": obj.timestamp.isoformat() if obj.timestamp else None
         }
-        
+
         if hasattr(obj, "fields") and obj.fields:
             msg_data["fields"] = {
                 str(k): serialize_value(v) for k, v in obj.fields.items()
             }
-            
+
         return msg_data
     elif isinstance(obj, Attachment):
         return {

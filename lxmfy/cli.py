@@ -149,11 +149,11 @@ def create_example_cog(bot_path: str) -> None:
 class BasicCommands:
     def __init__(self, bot):
         self.bot = bot
-    
+
     @Command(name="hello", description="Says hello")
     async def hello(self, ctx):
         ctx.reply(f"Hello {ctx.sender}!")
-    
+
     @Command(name="about", description="About this bot")
     async def about(self, ctx):
         ctx.reply("I'm a bot created with LXMFy!")
@@ -244,7 +244,7 @@ def create_from_template(template_name: str, output_path: str, bot_name: str) ->
 
         if template_name == "basic":
             return create_bot_file(name, safe_path)
-        
+
         template_map = {
             "echo": EchoBot,
             "reminder": ReminderBot,
@@ -317,7 +317,7 @@ def analyze_bot_file(file_path: str) -> None:
         spec = importlib.util.spec_from_file_location("bot_module", file_path)
         if not spec or not spec.loader:
             raise ImportError("Could not load bot file")
-        
+
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
 
@@ -413,14 +413,14 @@ Examples:
         if not args.name:
             print("Error: Please specify a bot file to analyze")
             sys.exit(1)
-        
+
         bot_path = args.name
         if not os.path.exists(bot_path):
             print(f"Error: Bot file not found: {bot_path}")
             sys.exit(1)
-            
+
         analyze_bot_file(bot_path)
-        
+
     elif args.command == "create":
         try:
             bot_name = args.name_opt or args.name or "MyLXMFBot"

@@ -66,12 +66,12 @@ class LXMFBot:
         # Set up storage with configured backend
         storage_type = kwargs.get("storage_type", self.config.storage_type)
         storage_path = kwargs.get("storage_path", self.config.storage_path)
-        
+
         if storage_type == "sqlite":
             self.storage = Storage(SQLiteStorage(storage_path))
         else:  # default to json
             self.storage = Storage(JSONStorage(storage_path))
-        
+
         # Initialize spam protection with config values
         self.spam_protection = SpamProtection(
             storage=self.storage,
@@ -147,7 +147,7 @@ class LXMFBot:
             storage=self.storage,
             enabled=self.config.permissions_enabled
         )
-        
+
         # Add admins to admin role
         for admin in self.admins:
             self.permissions.assign_role(admin, "admin")
@@ -158,7 +158,7 @@ class LXMFBot:
 
         # Initialize event system
         self.events = EventManager(self.storage)
-        
+
         # Register built-in events
         self._register_builtin_events()
 
@@ -206,7 +206,7 @@ class LXMFBot:
         @self.events.on("message_received", EventPriority.HIGHEST)
         def handle_message(event):
             sender = event.data["sender"]
-            
+
             # Check spam protection
             if not self.permissions.has_permission(sender, DefaultPerms.BYPASS_SPAM):
                 allowed, msg = self.spam_protection.check_spam(sender)
@@ -220,10 +220,10 @@ class LXMFBot:
         try:
             content = message.content.decode('utf-8')
             receipt = RNS.hexrep(message.hash, delimit=False)
-            
+
             def reply(response):
                 self.send(sender, response)
-            
+
             # Check if this is a first message from the user
             if self.config.first_message_enabled:
                 first_messages = self.storage.get("first_messages", {})
@@ -234,7 +234,7 @@ class LXMFBot:
                         if handler(sender, message):
                             break
                     return  # Return after handling first message
-            
+
             # Check basic bot permission
             if not self.permissions.has_permission(sender, DefaultPerms.USE_BOT):
                 return
@@ -263,7 +263,7 @@ class LXMFBot:
                 )
                 if command_name in self.commands:
                     cmd = self.commands[command_name]
-                    
+
                     if not self.permissions.has_permission(sender, cmd.permissions):
                         self.send(sender, "You don't have permission to use this command.")
                         return
@@ -272,13 +272,13 @@ class LXMFBot:
                         args = content.split()[1:] if len(content.split()) > 1 else []
                         msg.args = args
                         msg.is_admin = sender in self.admins
-                        
+
                         cmd.callback(msg)
-                        
+
                         # Run post-command middleware
                         self.middleware.execute(MiddlewareType.POST_COMMAND, msg)
                         return
-                        
+
                     except Exception as e:
                         self.logger.error(f"Error executing command {command_name}: {str(e)}")
                         self.send(sender, f"Error executing command: {str(e)}")
@@ -287,7 +287,7 @@ class LXMFBot:
             # Run delivery callbacks only if not a command
             for callback in self.delivery_callbacks:
                 callback(msg)
-                
+
         except Exception as e:
             self.logger.error(f"Error processing message: {str(e)}")
 
@@ -296,36 +296,36 @@ class LXMFBot:
         try:
             sender = RNS.hexrep(message.source_hash, delimit=False)
             receipt = RNS.hexrep(message.hash, delimit=False)
-            
+
             # Check if message was already processed
             if receipt in self.receipts:
                 return
-            
+
             # Add to receipts list
             self.receipts.append(receipt)
             if len(self.receipts) > 100:
                 self.receipts = self.receipts[-100:]
-            
+
             # Create event data
             event_data = {
                 "message": message,
                 "sender": sender,
                 "receipt": receipt
             }
-            
+
             # Run through middleware first
             ctx = MiddlewareContext(MiddlewareType.PRE_EVENT, event_data)
             if self.middleware.execute(MiddlewareType.PRE_EVENT, ctx) is None:
                 return
-            
+
             # Dispatch message received event and process message
             event = Event("message_received", event_data)
             self.events.dispatch(event)
-            
+
             # Only process message if event wasn't cancelled
             if not event.cancelled:
                 self._process_message(message, sender)
-            
+
         except Exception as e:
             self.logger.error(f"Error handling received message: {str(e)}")
 
@@ -395,19 +395,19 @@ class LXMFBot:
             if len(hash) != RNS.Reticulum.TRUNCATED_HASHLENGTH // 8:
                 RNS.log("Invalid destination hash length", RNS.LOG_ERROR)
                 return
-            
+
             id = RNS.Identity.recall(hash)
             if id is None:
                 RNS.log("Could not recall Identity, requesting path...", RNS.LOG_ERROR)
                 RNS.Transport.request_path(hash)
                 return
-            
+
             lxmf_destination = RNS.Destination(
                 id, RNS.Destination.OUT, RNS.Destination.SINGLE, "lxmf", "delivery"
             )
-            
+
             fields = pack_attachment(attachment)
-            
+
             lxm = LXMessage(
                 lxmf_destination,
                 self.local,
@@ -418,7 +418,7 @@ class LXMFBot:
             )
             lxm.try_propagation_on_fail = True
             self.queue.put(lxm)
-            
+
         except Exception as e:
             self.logger.error(f"Error sending message with attachment: {str(e)}")
 
@@ -430,10 +430,10 @@ class LXMFBot:
                 for _i in list(self.queue.queue):
                     lxm = self.queue.get()
                     self.router.handle_outbound(lxm)
-                    
+
                 self._announce()
                 time.sleep(delay)
-                
+
         except KeyboardInterrupt:
             self.transport.cleanup()
 
