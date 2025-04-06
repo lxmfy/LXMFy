@@ -58,8 +58,7 @@ class EventManager:
             if event_name not in self.handlers:
                 self.handlers[event_name] = []
             self.handlers[event_name].append((priority, func))
-            # Sort handlers by priority
-            self.handlers[event_name].sort(key=lambda x: x[0].value)
+            self.handlers[event_name].sort(key=lambda x: x[0].value, reverse=True)
             return func
         return decorator
         
@@ -95,6 +94,6 @@ class EventManager:
                 "cancelled": event.cancelled,
                 "data": event.data
             })
-            self.storage.set("events:log", events[-1000:])  # Keep last 1000 events
+            self.storage.set("events:log", events[-1000:])
         except Exception as e:
             self.logger.error(f"Error logging event: {str(e)}") 
