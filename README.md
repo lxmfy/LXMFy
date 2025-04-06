@@ -80,12 +80,9 @@ poetry install
 
 ### Development
 
-This project uses ruff and bandit. Make sure to run format and scan commands before committing your changes.
-
 ```
-poetry run format
-poetry run lint
-poetry run scan
+poetry run ruff check .
+poetry run bandit -c pyproject.toml -r .
 ```
 
 ### Docker

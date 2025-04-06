@@ -1,4 +1,7 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
+
+with open("README.md", encoding="utf-8") as fh:
+    long_description = fh.read()
 
 setup(
     name="LXMFy",
@@ -8,7 +11,7 @@ setup(
     author="Sudo-Ivan",
     author_email="",
     description="An easy to use bot framework for LXMF",
-    long_description=open("README.md").read(),
+    long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/lxmfy/LXMFy",
     classifiers=[

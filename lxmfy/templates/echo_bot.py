@@ -2,6 +2,7 @@
 
 from lxmfy import LXMFBot
 
+
 class EchoBot:
     def __init__(self):
         self.bot = LXMFBot(

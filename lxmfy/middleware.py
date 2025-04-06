@@ -5,10 +5,10 @@ and events, allowing users to add custom processing logic to the bot's
 message handling pipeline.
 """
 
-from typing import Any, Callable, List, Optional
+import logging
 from dataclasses import dataclass, field
 from enum import Enum
-import logging
+from typing import Any, Callable, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ class MiddlewareManager:
     """Manages middleware registration and execution"""
     
     def __init__(self):
-        self.middleware: dict[MiddlewareType, List[Callable]] = {
+        self.middleware: dict[MiddlewareType, list[Callable]] = {
             t: [] for t in MiddlewareType
         }
         self.message_tracker = MessageTracker()

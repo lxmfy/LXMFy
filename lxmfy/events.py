@@ -6,10 +6,10 @@ This module provides a comprehensive event handling system including:
 - Event logging and monitoring
 """
 
-from dataclasses import dataclass, field
-from typing import Callable
-from enum import Enum
 import logging
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Callable
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +71,7 @@ class EventManager:
         """Dispatch an event to registered handlers"""
         try:
             if event.name in self.handlers:
-                for priority, handler in self.handlers[event.name]:
+                for _priority, handler in self.handlers[event.name]:
                     if event.cancelled:
                         break
                     try:
