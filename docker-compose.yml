@@ -1,0 +1,10 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  lxmfy-bot:
+    build: .
+    volumes:
+      - ./.reticulum:/root/.reticulum
+      - ./config:/bot/config
+    command: ["lxmfy", "run", "echo"]
