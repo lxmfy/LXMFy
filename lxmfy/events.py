@@ -8,6 +8,7 @@ This module provides a comprehensive event handling system including:
 
 import logging
 from dataclasses import dataclass, field
+from datetime import datetime
 from enum import Enum
 from typing import Callable
 
@@ -68,32 +69,26 @@ class EventManager:
         pass
 
     def dispatch(self, event: Event):
-        """Dispatch an event to registered handlers"""
+        """Dispatch event to all registered handlers"""
         try:
             if event.name in self.handlers:
-                for _priority, handler in self.handlers[event.name]:
-                    if event.cancelled:
-                        break
+                for handler in self.handlers[event.name]:
                     try:
                         handler(event)
                     except Exception as e:
-                        self.logger.error(f"Error in event handler {handler.__name__}: {str(e)}")
+                        self.logger.error("Error in event handler %s: %s", handler.__name__, str(e))
         except Exception as e:
-            self.logger.error(f"Error dispatching event: {str(e)}")
+            self.logger.error("Error dispatching event: %s", str(e))
 
     def _log_event(self, event: Event):
         """Log event to storage"""
         try:
-            if not self.storage:
-                return
-
             events = self.storage.get("events:log", [])
             events.append({
                 "name": event.name,
-                "timestamp": event.timestamp.timestamp(),
-                "cancelled": event.cancelled,
-                "data": event.data
+                "data": event.data,
+                "timestamp": datetime.now().isoformat()
             })
             self.storage.set("events:log", events[-1000:])
         except Exception as e:
-            self.logger.error(f"Error logging event: {str(e)}") 
+            self.logger.error("Error logging event: %s", str(e)) 

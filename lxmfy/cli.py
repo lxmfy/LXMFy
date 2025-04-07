@@ -334,30 +334,43 @@ def analyze_bot_file(file_path: str) -> dict[str, Any]:
         }
 
         class BotAnalyzer(ast.NodeVisitor):
+            def __init__(self, results):
+                self.results = results
+                super().__init__()
+
+            @staticmethod
+            def _is_bot_call(node: ast.Call) -> bool:
+                return (isinstance(node.func, ast.Name) and 
+                       node.func.id == 'LXMFBot')
+
+            @staticmethod
+            def _is_bot_assign(node: ast.Assign) -> bool:
+                return (isinstance(node.targets[0], ast.Name) and 
+                       node.targets[0].id == 'bot' and 
+                       isinstance(node.value, ast.Call) and 
+                       isinstance(node.value.func, ast.Name) and 
+                       node.value.func.id == 'LXMFBot')
+
             def visit_Call(self, node):
                 if isinstance(node.func, ast.Attribute):
                     if node.func.attr == 'command':
-                        results['commands'].append(node.args[0].value)
+                        self.results['commands'].append(node.args[0].value)
                     elif node.func.attr == 'on':
-                        results['events'].append(node.args[0].value)
+                        self.results['events'].append(node.args[0].value)
                     elif node.func.attr == 'middleware':
-                        results['middleware'].append(node.args[0].value)
+                        self.results['middleware'].append(node.args[0].value)
                     elif node.func.attr == 'permission':
-                        results['permissions'].append(node.args[0].value)
-                elif isinstance(node.func, ast.Name) and node.func.id == 'LXMFBot':
+                        self.results['permissions'].append(node.args[0].value)
+                elif self._is_bot_call(node):
                     for kw in node.keywords:
-                        results['config'][kw.arg] = kw.value.value
+                        self.results['config'][kw.arg] = kw.value.value
 
             def visit_Assign(self, node):
-                if (isinstance(node.targets[0], ast.Name) and 
-                    node.targets[0].id == 'bot' and 
-                    isinstance(node.value, ast.Call) and 
-                    isinstance(node.value.func, ast.Name) and 
-                    node.value.func.id == 'LXMFBot'):
+                if self._is_bot_assign(node):
                     for kw in node.value.keywords:
-                        results['config'][kw.arg] = kw.value.value
+                        self.results['config'][kw.arg] = kw.value.value
 
-        analyzer = BotAnalyzer()
+        analyzer = BotAnalyzer(results)
         analyzer.visit(tree)
 
         return results
