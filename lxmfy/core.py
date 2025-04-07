@@ -273,8 +273,8 @@ class LXMFBot:
                         return
 
                     except Exception as e:
-                        self.logger.error(f"Error executing command {command_name}: {str(e)}")
-                        self.send(sender, f"Error executing command: {str(e)}")
+                        self.logger.error("Error executing command %s: %s", command_name, str(e))
+                        self.send(sender, "Error executing command: %s", str(e))
                         return
 
             # Run delivery callbacks only if not a command
@@ -282,7 +282,7 @@ class LXMFBot:
                 callback(msg)
 
         except Exception as e:
-            self.logger.error(f"Error processing message: {str(e)}")
+            self.logger.error("Error processing message: %s", str(e))
 
     def _message_received(self, message):
         """Handle received messages"""
@@ -320,7 +320,7 @@ class LXMFBot:
                 self._process_message(message, sender)
 
         except Exception as e:
-            self.logger.error(f"Error handling received message: {str(e)}")
+            self.logger.error("Error handling received message: %s", str(e))
 
     def _announce(self):
         """Send an announce if the configured interval has passed."""
@@ -413,7 +413,7 @@ class LXMFBot:
             self.queue.put(lxm)
 
         except Exception as e:
-            self.logger.error(f"Error sending message with attachment: {str(e)}")
+            self.logger.error("Error sending message with attachment: %s", str(e))
 
     def run(self, delay=10):
         """Run the bot"""

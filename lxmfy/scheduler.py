@@ -119,6 +119,6 @@ class TaskScheduler:
                         task.callback()
                         task.last_run = current_time
                 except Exception as e:
-                    self.logger.error(f"Error running task {task.name}: {str(e)}")
+                    self.logger.error("Error running task %s: %s", task.name, str(e))
 
             time.sleep(60 - datetime.now().second)  # Wait until start of next minute 

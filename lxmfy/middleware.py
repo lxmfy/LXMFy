@@ -69,23 +69,21 @@ class MiddlewareManager:
         if func in self.middleware[middleware_type]:
             self.middleware[middleware_type].remove(func)
 
-    def execute(self, middleware_type: MiddlewareType, data: Any) -> Optional[Any]:
-        """Execute middleware chain"""
+    def execute(self, mw_type: MiddlewareType, data: Any) -> Any:
+        """Execute middleware chain for given type"""
         try:
-            ctx = MiddlewareContext(middleware_type, data)
+            ctx = MiddlewareContext(mw_type, data)
 
-            for mw in self.middleware[middleware_type]:
+            for mw in self.middleware.get(mw_type, []):
                 try:
-                    result = mw(ctx)
-                    if result is not None:
-                        ctx.data = result
+                    mw(ctx)
                     if ctx.cancelled:
                         break
                 except Exception as e:
-                    self.logger.error(f"Error in middleware {mw.__name__}: {str(e)}")
+                    self.logger.error("Error in middleware %s: %s", mw.__name__, str(e))
 
             return None if ctx.cancelled else ctx.data
 
         except Exception as e:
-            self.logger.error(f"Error executing middleware chain: {str(e)}")
+            self.logger.error("Error executing middleware chain: %s", str(e))
             return data 
