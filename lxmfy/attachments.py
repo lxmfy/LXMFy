@@ -34,8 +34,8 @@ def create_audio_attachment(mode: int, data: bytes) -> list:
 def pack_attachment(attachment: Attachment) -> dict:
     if attachment.type == AttachmentType.FILE:
         return {LXMessage.FIELD_FILE_ATTACHMENTS: [create_file_attachment(attachment.name, attachment.data)]}
-    elif attachment.type == AttachmentType.IMAGE:
+    if attachment.type == AttachmentType.IMAGE:
         return {LXMessage.FIELD_IMAGE: create_image_attachment(attachment.format or "webp", attachment.data)}
-    elif attachment.type == AttachmentType.AUDIO:
+    if attachment.type == AttachmentType.AUDIO:
         return {LXMessage.FIELD_AUDIO: create_audio_attachment(int(attachment.format or 0), attachment.data)}
     raise ValueError(f"Unsupported attachment type: {attachment.type}") 

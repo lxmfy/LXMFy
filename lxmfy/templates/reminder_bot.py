@@ -103,7 +103,7 @@ class ReminderBot:
                 for _i in list(self.bot.queue.queue):
                     lxm = self.bot.queue.get()
                     self.bot.router.handle_outbound(lxm)
-                self.bot._announce()
+                self.bot.announce()
                 time.sleep(delay)
 
         # Replace the bot's run method

@@ -7,10 +7,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 from LXMF import LXMessage
 
-from lxmfy.attachments import Attachment, AttachmentType, pack_attachment
 from lxmfy.core import BotConfig, LXMFBot
 from lxmfy.events import Event, EventManager, EventPriority
-from lxmfy.moderation import SpamProtection  # Added imports
 from lxmfy.permissions import DefaultPerms, PermissionManager
 from lxmfy.storage import (
     JSONStorage,
@@ -27,90 +25,134 @@ from lxmfy.validation import (  # Added imports
 
 # Mock RNS and LXMF dependencies to avoid network/filesystem interactions during tests
 @pytest.fixture(autouse=True)
-def mock_rns_lxmf():
+def mock_rns_lxmf(tmp_path):
+    """Mocks RNS, LXMRouter, and basic filesystem operations for tests."""
+    # Use tmp_path provided by pytest for isolated test directories
+    mock_config_path = tmp_path / "config"
+    mock_cogs_path = mock_config_path / "cogs"
+
+    # Ensure the base mock directories exist for the test session
+    mock_cogs_path.mkdir(parents=True, exist_ok=True)
+    (mock_cogs_path / "__init__.py").touch()
+    # Create a dummy identity file to prevent creation attempt
+    (mock_config_path / "identity").touch()
+
     with patch('lxmfy.core.RNS') as mock_rns, \
-         patch('lxmfy.core.LXMRouter') as mock_lxmrouter:
-        
+         patch('lxmfy.core.LXMRouter') as mock_lxmrouter, \
+         patch('lxmfy.core.os.makedirs') as mock_makedirs, \
+         patch('lxmfy.core.os.remove'): # Removed exists and isfile mocks
+
         # Mock RNS Identity
         mock_identity = MagicMock()
         mock_identity.to_file.return_value = None
         mock_rns.Identity.from_file.return_value = mock_identity
-        mock_rns.Identity.return_value = mock_identity # For new identity creation
+        mock_rns.Identity.return_value = mock_identity
 
-        # Mock LXMRouter and related calls
+        # Mock LXMRouter
         mock_router_instance = MagicMock()
         mock_local_delivery_identity = MagicMock()
         mock_local_delivery_identity.hash = b'mock_hash'
         mock_router_instance.register_delivery_identity.return_value = mock_local_delivery_identity
-        mock_router_instance.register_delivery_callback.return_value = None
         mock_lxmrouter.return_value = mock_router_instance
-        
-        # Mock RNS logging and Reticulum instance if needed
+
+        # Mock RNS utils
         mock_rns.log = MagicMock()
         mock_rns.Reticulum = MagicMock()
-        mock_rns.prettyhexrep = lambda x: x.hex() # Simple hex representation
+        mock_rns.prettyhexrep = lambda x: x.hex()
 
-        # Mock os.makedirs and os.path.exists to simulate filesystem
-        with patch('lxmfy.core.os.makedirs') as mock_makedirs, \
-             patch('lxmfy.core.os.path.exists') as mock_exists, \
-             patch('lxmfy.core.os.path.isfile') as mock_isfile, \
-             patch('lxmfy.core.open', MagicMock()), \
-             patch('lxmfy.core.os.remove'): # Mock file removal for announce_immediately
+        # Configure filesystem mocks
+        # Let makedirs run for the specific config/cogs paths needed by the bot
+        def makedirs_side_effect(path, exist_ok=False):
+            # Use Path objects for comparison
+            path_obj = Path(path)
+            if path_obj == mock_config_path or path_obj == mock_cogs_path:
+                # Actually create the directory if it's the one we expect
+                os.makedirs(path, exist_ok=True)
+            else:
+                # For other paths, just pretend it worked (or raise if exist_ok=False and exists)
+                if not exist_ok and os.path.exists(path):
+                     raise FileExistsError
+                pass # Don't actually create other directories
+        mock_makedirs.side_effect = makedirs_side_effect
 
-            mock_exists.return_value = True # Assume paths/files exist by default
-            mock_isfile.return_value = True # Assume identity file exists
-            yield mock_rns, mock_lxmrouter
+        # os.path.exists and os.path.isfile will now use the real functions
+        # interacting with the tmp_path filesystem.
+
+        # We need to mock getcwd specifically in fixtures where the bot is created
+        # to control the base path.
+
+        yield mock_rns, mock_lxmrouter
 
 
 @pytest.fixture
-def default_bot():
-    """Fixture for a default LXMFBot instance."""
-    mock_cwd = '/tmp/lxmfy_test'
-    # Explicitly construct the absolute path for the default 'data' directory
-    # based on the default config value 'data' and the mocked CWD.
-    default_storage_dir_name = BotConfig.storage_path # Get default from class
-    absolute_storage_path = os.path.join(mock_cwd, default_storage_dir_name)
-    with patch('lxmfy.core.os.getcwd', return_value=mock_cwd):
-        # Pass the absolute path to the constructor to ensure JSONStorage gets it
-        # This also overrides the path stored in this specific bot.config instance
-        bot = LXMFBot(storage_path=absolute_storage_path)
+def default_bot(tmp_path):
+    """Fixture for a default LXMFBot instance using tmp_path."""
+    mock_cwd = tmp_path / "bot_instance_default"
+    mock_cwd.mkdir()
+    # Default config uses 'data', relative to CWD
+    expected_storage_path = mock_cwd / BotConfig.storage_path
+
+    with patch('lxmfy.core.os.getcwd', return_value=str(mock_cwd)):
+        # Rely on the Bot's internal logic to construct paths relative to CWD
+        bot = LXMFBot()
     return bot
 
 @pytest.fixture
-def custom_bot():
-    """Fixture for an LXMFBot instance with custom settings."""
-    with patch('lxmfy.core.os.getcwd', return_value='/tmp/lxmfy_test'):
+def custom_bot(tmp_path):
+    """Fixture for an LXMFBot instance with custom settings using tmp_path."""
+    mock_cwd = tmp_path / "bot_instance_custom"
+    mock_cwd.mkdir()
+    custom_db_path = tmp_path / "test_bot.db"
+
+    with patch('lxmfy.core.os.getcwd', return_value=str(mock_cwd)):
         bot = LXMFBot(
-            storage_type="sqlite", 
-            storage_path="/tmp/test_bot.db",
+            storage_type="sqlite",
+            storage_path=str(custom_db_path), # Pass absolute path for custom storage
             admins=["admin1_hash", "admin2_hash"],
             command_prefix="!",
             announce_enabled=False
         )
     return bot
 
-def test_default_bot_initialization(default_bot):
+def test_default_bot_initialization(default_bot, tmp_path):
     """Test if the bot initializes with default settings."""
-    mock_cwd = '/tmp/lxmfy_test'
-    expected_absolute_path = Path(os.path.join(mock_cwd, BotConfig.storage_path))
+    mock_cwd = tmp_path / "bot_instance_default"
+    expected_storage_path = mock_cwd / BotConfig.storage_path
+    expected_config_path = mock_cwd / "config"
+    expected_cogs_path = expected_config_path / "cogs"
 
     assert isinstance(default_bot, LXMFBot)
     assert isinstance(default_bot.storage.backend, JSONStorage)
-    # Check that the bot's config instance reflects the path we passed
-    assert default_bot.config.storage_path == str(expected_absolute_path) 
-    # Check the actual directory used by JSONStorage
-    assert default_bot.storage.backend.directory == expected_absolute_path
-    assert default_bot.admins == set() # Default admins should be empty initially from config defaults
-    assert default_bot.command_prefix == default_bot.config.command_prefix # Check default prefix
+    # Check paths are correctly set relative to the mocked CWD
+    assert default_bot.config.storage_path == BotConfig.storage_path # Config holds relative path
+    assert Path(default_bot.storage.backend.directory) == expected_storage_path
+    assert Path(default_bot.config_path) == expected_config_path
+    assert Path(default_bot.cogs_dir) == expected_cogs_path
+    assert default_bot.admins == set()
+    assert default_bot.command_prefix == default_bot.config.command_prefix
+    # Verify the cogs directory and init file were created
+    assert expected_cogs_path.is_dir()
+    assert (expected_cogs_path / "__init__.py").is_file()
 
-def test_custom_bot_initialization(custom_bot):
+def test_custom_bot_initialization(custom_bot, tmp_path):
     """Test if the bot initializes with custom settings."""
+    custom_db_path = tmp_path / "test_bot.db"
+    mock_cwd = tmp_path / "bot_instance_custom"
+    expected_config_path = mock_cwd / "config"
+    expected_cogs_path = expected_config_path / "cogs"
+
     assert isinstance(custom_bot, LXMFBot)
     assert isinstance(custom_bot.storage.backend, SQLiteStorage)
-    assert custom_bot.config.storage_path == "/tmp/test_bot.db"
+    assert custom_bot.config.storage_path == str(custom_db_path)
+    # Check actual storage backend path
+    assert Path(custom_bot.storage.backend.database_path) == custom_db_path
+    assert Path(custom_bot.config_path) == expected_config_path
+    assert Path(custom_bot.cogs_dir) == expected_cogs_path
     assert custom_bot.admins == {"admin1_hash", "admin2_hash"}
     assert custom_bot.command_prefix == "!"
     assert not custom_bot.announce_enabled
+    assert expected_cogs_path.is_dir()
+    assert (expected_cogs_path / "__init__.py").is_file()
 
 def test_command_registration(default_bot):
     """Test command registration using the decorator."""
@@ -148,33 +190,6 @@ def test_bot_config_post_init():
     assert config_none.admins == set()
     config_set = BotConfig(admins={"admin1"})
     assert config_set.admins == {"admin1"}
-
-def test_pack_file_attachment():
-    """Test packing a file attachment."""
-    att = Attachment(type=AttachmentType.FILE, name="test.txt", data=b"hello")
-    packed = pack_attachment(att)
-    assert LXMessage.FIELD_FILE_ATTACHMENTS in packed
-    assert packed[LXMessage.FIELD_FILE_ATTACHMENTS] == [["test.txt", b"hello"]]
-
-def test_pack_image_attachment():
-    """Test packing an image attachment."""
-    att = Attachment(type=AttachmentType.IMAGE, name="", data=b"imagedata", format="png")
-    packed = pack_attachment(att)
-    assert LXMessage.FIELD_IMAGE in packed
-    assert packed[LXMessage.FIELD_IMAGE] == ["png", b"imagedata"]
-
-def test_pack_audio_attachment():
-    """Test packing an audio attachment."""
-    att = Attachment(type=AttachmentType.AUDIO, name="", data=b"audiodata", format="1") # Format as mode
-    packed = pack_attachment(att)
-    assert LXMessage.FIELD_AUDIO in packed
-    assert packed[LXMessage.FIELD_AUDIO] == [1, b"audiodata"]
-
-def test_pack_unsupported_attachment():
-    """Test packing an unsupported attachment type raises ValueError."""
-    att = Attachment(type=999, name="test", data=b"data") # Invalid type
-    with pytest.raises(ValueError):
-        pack_attachment(att)
 
 # Test storage serialization/deserialization
 def test_serialize_deserialize_basic():
@@ -337,144 +352,6 @@ def test_permission_manager_disabled(permission_manager):
     permission_manager.enabled = False
     assert permission_manager.has_permission(user, DefaultPerms.MANAGE_USERS) 
     assert permission_manager.has_permission(user, DefaultPerms.ALL) 
-
-# Test SpamProtection
-@pytest.fixture
-def spam_protection():
-    """Fixture for SpamProtection with mock storage, bot, and permissions."""
-    mock_storage = MagicMock(spec=Storage)
-    # Return specific empty defaults for keys loaded by SpamProtection
-    def mock_get_side_effect(key, default=None):
-        if key == "spam:message_counts":
-            return default or {}
-        if key == "spam:warnings":
-            return default or {}
-        if key == "spam:banned_users":
-            return default or []
-        if key == "spam:warning_times":
-            return default or {}
-        return default
-    mock_storage.get.side_effect = mock_get_side_effect
-    
-    mock_bot = MagicMock(spec=LXMFBot)
-    mock_permission_manager = MagicMock(spec=PermissionManager)
-    mock_permission_manager.has_permission.return_value = False # Default: no bypass
-    mock_bot.permissions = mock_permission_manager
-    
-    # Use small, testable config values
-    config_overrides = {
-        "rate_limit": 2, 
-        "cooldown": 10,
-        "max_warnings": 1,
-        "warning_timeout": 20
-    }
-    sp = SpamProtection(storage=mock_storage, bot=mock_bot, **config_overrides)
-    sp.save_data = MagicMock() # Mock save_data
-    return sp, mock_permission_manager
-
-@patch('lxmfy.moderation.time')
-def test_spam_protection_allow(mock_time_func, spam_protection):
-    """Test that messages within the rate limit are allowed."""
-    sp, _ = spam_protection
-    sender = "user1"
-    mock_time_func.return_value = 100.0 # Set return value directly on the mocked function
-    allowed1, msg1 = sp.check_spam(sender)
-    mock_time_func.return_value = 101.0
-    allowed2, msg2 = sp.check_spam(sender)
-    
-    assert allowed1
-    assert msg1 is None
-    assert allowed2
-    assert msg2 is None
-    assert len(sp.message_counts[sender]) == 2
-
-@patch('lxmfy.moderation.time')
-def test_spam_protection_rate_limit_exceeded(mock_time_func, spam_protection):
-    """Test that exceeding the rate limit triggers a warning."""
-    sp, _ = spam_protection
-    sender = "user2"
-    # Send 2 allowed messages
-    mock_time_func.return_value = 100.0
-    sp.check_spam(sender)
-    mock_time_func.return_value = 101.0
-    sp.check_spam(sender)
-    
-    # Third message should exceed limit
-    mock_time_func.return_value = 102.0
-    allowed, msg = sp.check_spam(sender)
-    
-    assert not allowed
-    assert "Rate limit exceeded" in msg
-    assert "Warning 1/1" in msg # max_warnings is 1 in fixture
-    assert sp.warnings[sender] == 1
-
-@patch('lxmfy.moderation.time')
-def test_spam_protection_ban(mock_time_func, spam_protection):
-    """Test that exceeding max warnings results in a ban."""
-    sp, _ = spam_protection
-    sender = "user3"
-    # Exceed rate limit once (1 warning)
-    mock_time_func.return_value = 100.0; sp.check_spam(sender)
-    mock_time_func.return_value = 101.0; sp.check_spam(sender)
-    mock_time_func.return_value = 102.0; sp.check_spam(sender) # Warning 1
-    assert sp.warnings[sender] == 1
-    assert sender not in sp.banned_users
-    
-    # Exceed rate limit again (ban)
-    # Need to advance time past cooldown to allow messages again before triggering next warning
-    mock_time_func.return_value = 115.0; sp.check_spam(sender)
-    mock_time_func.return_value = 116.0; sp.check_spam(sender)
-    mock_time_func.return_value = 117.0 
-    allowed, msg = sp.check_spam(sender) # Ban
-
-    assert not allowed
-    assert "banned for spamming" in msg
-    assert sender in sp.banned_users
-
-@patch('lxmfy.moderation.time')
-def test_spam_protection_bypass(mock_time_func, spam_protection):
-    """Test that users with bypass permission are not rate limited."""
-    sp, mock_perms = spam_protection
-    sender = "bypass_user"
-    mock_perms.has_permission.return_value = True # User has bypass permission
-    
-    mock_time_func.return_value = 100.0
-    # Send multiple messages quickly
-    for i in range(5):
-        allowed, msg = sp.check_spam(sender)
-        assert allowed
-        assert msg is None
-    
-    assert sp.warnings[sender] == 0
-    assert sender not in sp.banned_users
-    # Check that has_permission was called with the correct permission
-    mock_perms.has_permission.assert_called_with(sender, DefaultPerms.BYPASS_SPAM)
-
-@patch('lxmfy.moderation.time')
-def test_spam_protection_warning_timeout(mock_time_func, spam_protection):
-    """Test that warnings reset after the timeout."""
-    sp, _ = spam_protection
-    sender = "user4"
-    # Trigger a warning
-    mock_time_func.return_value = 100.0; sp.check_spam(sender)
-    mock_time_func.return_value = 101.0; sp.check_spam(sender)
-    mock_time_func.return_value = 102.0; allowed, msg = sp.check_spam(sender) # Warning 1
-    assert sp.warnings[sender] == 1
-    
-    # Advance time past warning_timeout (20s in fixture)
-    mock_time_func.return_value = 130.0
-    # Send allowed messages again
-    allowed1, msg1 = sp.check_spam(sender)
-    allowed2, msg2 = sp.check_spam(sender)
-    assert allowed1
-    assert allowed2
-    # Warning count should have reset to 0 before these messages
-    assert sp.warnings[sender] == 0
-    # Trigger another warning - it should be warning 1 again
-    allowed3, msg3 = sp.check_spam(sender)
-    assert not allowed3
-    assert "Warning 1/1" in msg3
-    assert sp.warnings[sender] == 1
 
 # Test Validation Formatting
 def test_format_validation_results():

@@ -72,9 +72,12 @@ class EventManager:
         """Dispatch event to all registered handlers"""
         try:
             if event.name in self.handlers:
-                for handler in self.handlers[event.name]:
+                for priority, handler in self.handlers[event.name]:
                     try:
                         handler(event)
+                        # Check if the event was cancelled by the handler
+                        if event.cancelled:
+                            break # Stop processing further handlers for this event
                     except Exception as e:
                         self.logger.error("Error in event handler %s: %s", handler.__name__, str(e))
         except Exception as e:
