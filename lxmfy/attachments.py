@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import IntEnum
 from typing import Optional
 
-from LXMF import LXMessage
+import LXMF
 
 
 class AttachmentType(IntEnum):
@@ -33,9 +33,9 @@ def create_audio_attachment(mode: int, data: bytes) -> list:
 
 def pack_attachment(attachment: Attachment) -> dict:
     if attachment.type == AttachmentType.FILE:
-        return {LXMessage.FIELD_FILE_ATTACHMENTS: [create_file_attachment(attachment.name, attachment.data)]}
+        return {LXMF.FIELD_FILE_ATTACHMENTS: [create_file_attachment(attachment.name, attachment.data)]}
     if attachment.type == AttachmentType.IMAGE:
-        return {LXMessage.FIELD_IMAGE: create_image_attachment(attachment.format or "webp", attachment.data)}
+        return {LXMF.FIELD_IMAGE: create_image_attachment(attachment.format or "webp", attachment.data)}
     if attachment.type == AttachmentType.AUDIO:
-        return {LXMessage.FIELD_AUDIO: create_audio_attachment(int(attachment.format or 0), attachment.data)}
+        return {LXMF.FIELD_AUDIO: create_audio_attachment(int(attachment.format or 0), attachment.data)}
     raise ValueError(f"Unsupported attachment type: {attachment.type}") 
