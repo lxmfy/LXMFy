@@ -1,6 +1,10 @@
 # Changelog
 
-## [0.6.3] - 2025-04-07
+## [0.6.4] - 2025-04-06
+
+- **Code refactoring for security and performance**
+
+## [0.6.3] - 2025-04-06
 
 - **Fix syntax errors**
 - **Manual publish workflow**
@@ -277,3 +281,4 @@ bot = LXMFBot(
 [0.5.1]: https://github.com/lxmfy/lxmfy/releases/tag/v0.5.1
 [0.6.0]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.0
 [0.6.3]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.3
+[0.6.4]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.4
