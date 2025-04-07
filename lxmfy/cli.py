@@ -17,7 +17,7 @@ from glob import glob
 from pathlib import Path
 from typing import Any, Optional
 
-from .templates import EchoBot, NoteBot, ReminderBot
+from .templates import EchoBot, MemeBot, NoteBot, ReminderBot
 from .validation import format_validation_results, validate_bot
 
 
@@ -252,7 +252,8 @@ def create_from_template(template_name: str, output_path: str, bot_name: str) ->
         template_map = {
             "echo": EchoBot,
             "reminder": ReminderBot,
-            "note": NoteBot
+            "note": NoteBot,
+            "meme": MemeBot
         }
 
         if template_name not in template_map:
@@ -415,11 +416,13 @@ Examples:
   lxmfy create --template echo mybot    # Create echo bot file 'mybot.py'
   lxmfy create --template reminder bot  # Create reminder bot file 'bot.py'
   lxmfy create --template note notes    # Create note-taking bot file 'notes.py'
+  lxmfy create --template meme memes    # Create meme bot file 'memes.py'
 
   # Running Template Bots Directly
   lxmfy run echo                        # Run the built-in echo bot
   lxmfy run reminder --name "MyReminder"  # Run the reminder bot with a custom name
   lxmfy run note                        # Run the built-in note bot
+  lxmfy run meme                        # Run the built-in meme bot
 
   # Analyzing and Verifying
   lxmfy analyze bot.py                  # Analyze bot configuration
@@ -437,7 +440,7 @@ Examples:
         "name",
         nargs="?",
         default=None,
-        help="Name for 'create' (bot name/path), 'analyze' (file path), 'verify' (wheel path), or 'run' (template name: echo, reminder, note)",
+        help="Name for 'create' (bot name/path), 'analyze' (file path), 'verify' (wheel path), or 'run' (template name: echo, reminder, note, meme)",
     )
     parser.add_argument(
         "directory",
@@ -447,7 +450,7 @@ Examples:
     )
     parser.add_argument(
         "--template",
-        choices=["basic", "echo", "reminder", "note"],
+        choices=["basic", "echo", "reminder", "note", "meme"],
         default="basic",
         help="Bot template to use for 'create' command (default: basic)",
     )
@@ -595,17 +598,18 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
     elif args.command == "run":
         template_name = args.name
         if not template_name:
-            print("Error: Please specify a template name to run (echo, reminder, note)")
+            print("Error: Please specify a template name to run (echo, reminder, note, meme)")
             sys.exit(1)
 
         template_map = {
             "echo": EchoBot,
             "reminder": ReminderBot,
-            "note": NoteBot
+            "note": NoteBot,
+            "meme": MemeBot
         }
 
         if template_name not in template_map:
-             print(f"Error: Invalid template name '{template_name}'. Choose from: echo, reminder, note")
+             print(f"Error: Invalid template name '{template_name}'. Choose from: {', '.join(template_map.keys())}")
              sys.exit(1)
 
         try:
