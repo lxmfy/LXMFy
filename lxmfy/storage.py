@@ -175,7 +175,17 @@ class SQLiteStorage(StorageBackend):
         self.database_path = database_path
         self.cache: dict[str, Any] = {}
         self.logger = logging.getLogger(__name__)
+        self._ensure_db_dir()
         self._init_db()
+
+    def _ensure_db_dir(self):
+        db_path = Path(self.database_path)
+        db_dir = db_path.parent
+        try:
+            db_dir.mkdir(parents=True, exist_ok=True)
+        except Exception as e:
+            self.logger.error(f"Failed to create database directory {db_dir}: {str(e)}")
+            raise
 
     def _init_db(self):
         try:
@@ -192,8 +202,11 @@ class SQLiteStorage(StorageBackend):
                 conn.execute("""
                     CREATE INDEX IF NOT EXISTS idx_key_prefix ON key_value(key)
                 """)
+        except sqlite3.OperationalError as e:
+            self.logger.error(f"Failed to initialize database at {self.database_path}: {str(e)}")
+            raise
         except Exception as e:
-            self.logger.error("Error initializing database: %s", str(e))
+            self.logger.error(f"Unexpected error initializing database: {str(e)}")
             raise
 
     def get(self, key: str, default: Any = None) -> Any:
