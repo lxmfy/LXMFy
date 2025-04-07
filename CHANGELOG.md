@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.6.5] - 2025-04-07
+
+- **Fix Attachment System**
+- **Add more storage error handling**
+
 ## [0.6.4] - 2025-04-06
 
 - **Code refactoring for security and performance**
@@ -282,3 +287,4 @@ bot = LXMFBot(
 [0.6.0]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.0
 [0.6.3]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.3
 [0.6.4]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.4
+[0.6.5]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.5
