@@ -309,6 +309,18 @@ if __name__ == "__main__":
         raise RuntimeError(f"Failed to create full bot: {str(e)}") from e
 
 
+def is_safe_path(path: str, base_path: str = None) -> bool:
+    """Check if path is safe and within allowed directory"""
+    try:
+        if base_path:
+            base_path = os.path.abspath(base_path)
+            path = os.path.abspath(path)
+            return path.startswith(base_path)
+        return True
+    except Exception:
+        return False
+
+
 def analyze_bot_file(file_path: str) -> dict[str, Any]:
     """
     Analyze a bot file for configuration issues and best practices.
@@ -320,7 +332,18 @@ def analyze_bot_file(file_path: str) -> dict[str, Any]:
         dict[str, Any]: Analysis results
     """
     try:
-        with open(file_path) as f:
+        # Convert to absolute path and validate
+        abs_path = os.path.abspath(file_path)
+        if not is_safe_path(abs_path):
+            return {'errors': ['Invalid file path']}
+
+        # Ensure file exists and is a Python file
+        if not os.path.exists(abs_path):
+            return {'errors': ['File not found']}
+        if not abs_path.endswith('.py'):
+            return {'errors': ['Not a Python file']}
+
+        with open(abs_path) as f:
             tree = ast.parse(f.read())
 
         results = {

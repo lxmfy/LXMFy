@@ -81,7 +81,7 @@ class Command:
             callable: The decorated function
         """
         self.callback = func
-        func._command = self
+        func.command = self
         return func
 
     def __get__(self, obj, objtype=None):

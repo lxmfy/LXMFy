@@ -81,9 +81,8 @@ class HelpSystem:
                 response = self.formatter.format_command(command)
                 ctx.reply(response)
                 return  # Make sure to return after replying
-            else:
-                ctx.reply(f"Command '{command_name}' not found.")
-                return  # Make sure to return after replying
+            ctx.reply(f"Command '{command_name}' not found.")
+            return  # Make sure to return after replying
 
     def _get_categorized_commands(self, is_admin: bool) -> dict[str, list]:
         """Group commands by category"""

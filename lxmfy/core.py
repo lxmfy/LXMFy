@@ -49,12 +49,6 @@ class LXMFBot:
     - Admin privileges
     """
 
-    delivery_callbacks = []
-    receipts = []
-    queue = Queue(maxsize=5)
-    announce_time = 600
-    logger = logging.getLogger(__name__)
-
     def __init__(self, **kwargs):
         """
         Initialize a new LXMFBot instance.
@@ -64,26 +58,50 @@ class LXMFBot:
         """
         self.config = BotConfig(**kwargs)
         self.commands = {}
-        self.events = {}
-        self.middleware = {}
-        self.permissions = {}
-        self.storage = None
-        self.transport = None
+        self.cogs = {}
+        self.first_message_handlers = []
+        self.delivery_callbacks = []
+        self.receipts = []
+        self.queue = Queue(maxsize=5)
+        self.announce_time = 600
+        self.logger = logging.getLogger(__name__)
 
-        if self.config.cogs_enabled:
-            load_cogs_from_directory(self)
+        # Setup paths first
+        self.config_path = os.path.join(os.getcwd(), "config")
+        os.makedirs(self.config_path, exist_ok=True)
 
-        if self.config.permissions_enabled:
-            self._load_permissions()
-
+        # Setup storage before anything else that might need it
         if self.config.storage_type == "json":
             self.storage = JSONStorage(self.config.storage_path)
         elif self.config.storage_type == "sqlite":
             self.storage = SQLiteStorage(self.config.storage_path)
 
-        self.transport = Transport(self)
+        # Initialize permissions system early
+        self.permissions = PermissionManager(
+            storage=self.storage,
+            enabled=self.config.permissions_enabled
+        )
 
-        # Initialize spam protection with config values
+        # Initialize event system early
+        self.events = EventManager(self.storage)
+
+        # Register built-in events
+        self._register_builtin_events()
+
+        # Initialize middleware
+        self.middleware = MiddlewareManager()
+
+        # Setup cogs directory
+        self.cogs_dir = os.path.join(self.config_path, self.config.cogs_dir)
+        os.makedirs(self.cogs_dir, exist_ok=True)
+
+        # Create __init__.py if it doesn't exist
+        init_file = os.path.join(self.cogs_dir, "__init__.py")
+        if not os.path.exists(init_file):
+            open(init_file, "w", encoding="utf-8").close()
+
+        # Initialize transport and spam protection
+        self.transport = Transport(self)
         self.spam_protection = SpamProtection(
             storage=self.storage,
             bot=self,
@@ -92,19 +110,6 @@ class LXMFBot:
             max_warnings=self.config.max_warnings,
             warning_timeout=self.config.warning_timeout,
         )
-
-        # Setup paths
-        self.config_path = os.path.join(os.getcwd(), "config")
-        os.makedirs(self.config_path, exist_ok=True)
-
-        # Setup cogs
-        self.cogs_dir = os.path.join(self.config_path, self.config.cogs_dir)
-        os.makedirs(self.cogs_dir, exist_ok=True)
-
-        # Create __init__.py if it doesn't exist
-        init_file = os.path.join(self.cogs_dir, "__init__.py")
-        if not os.path.exists(init_file):
-            open(init_file, "w", encoding="utf-8").close()
 
         # Setup identity
         identity_file = os.path.join(self.config_path, "identity")
@@ -140,8 +145,7 @@ class LXMFBot:
             self.local.announce()
             RNS.log("Initial announce sent", RNS.LOG_INFO)
 
-        # Initialize bot state
-        self.cogs = {}
+        # Initialize remaining bot state
         self.admins = set(self.config.admins or [])
         self.hot_reloading = self.config.hot_reloading
         self.command_prefix = self.config.command_prefix
@@ -149,14 +153,9 @@ class LXMFBot:
         # Initialize help system
         self.help_system = HelpSystem(self)
 
-        # Initialize event system
-        self.events = EventManager(self.storage)
-
-        # Register built-in events
-        self._register_builtin_events()
-
-        # Initialize middleware
-        self.middleware = MiddlewareManager()
+        # Load cogs last after everything is initialized
+        if self.config.cogs_enabled:
+            load_cogs_from_directory(self)
 
     def command(self, *args, **kwargs):
         def decorator(func):
@@ -185,9 +184,9 @@ class LXMFBot:
     def add_cog(self, cog):
         self.cogs[cog.__class__.__name__] = cog
         for _name, method in inspect.getmembers(
-            cog, predicate=lambda x: hasattr(x, "_command")
+            cog, predicate=lambda x: hasattr(x, "command")
         ):
-            cmd = method._command
+            cmd = method.command
             cmd.callback = method
             self.commands[cmd.name] = cmd
 
@@ -199,7 +198,6 @@ class LXMFBot:
         @self.events.on("message_received", EventPriority.HIGHEST)
         def handle_message(event):
             sender = event.data["sender"]
-
             # Check spam protection
             if not self.permissions.has_permission(sender, DefaultPerms.BYPASS_SPAM):
                 allowed, msg = self.spam_protection.check_spam(sender)

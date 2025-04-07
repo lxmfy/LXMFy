@@ -25,9 +25,9 @@ def serialize_value(obj: Any) -> Any:
     """Serialize complex objects to JSON-compatible format."""
     if isinstance(obj, (bytes, bytearray)):
         return {"__type": "bytes", "data": base64.b64encode(obj).decode()}
-    elif isinstance(obj, datetime):
+    if isinstance(obj, datetime):
         return {"__type": "datetime", "data": obj.isoformat()}
-    elif isinstance(obj, LXMessage):
+    if isinstance(obj, LXMessage):
         msg_data = {
             "__type": "LXMessage",
             "source_hash": RNS.hexrep(obj.source_hash, delimit=False),
@@ -43,7 +43,7 @@ def serialize_value(obj: Any) -> Any:
             }
 
         return msg_data
-    elif isinstance(obj, Attachment):
+    if isinstance(obj, Attachment):
         return {
             "__type": "Attachment",
             "type": obj.type,
@@ -51,9 +51,9 @@ def serialize_value(obj: Any) -> Any:
             "data": base64.b64encode(obj.data).decode(),
             "format": obj.format
         }
-    elif isinstance(obj, (list, tuple)):
+    if isinstance(obj, (list, tuple)):
         return [serialize_value(item) for item in obj]
-    elif isinstance(obj, dict):
+    if isinstance(obj, dict):
         return {k: serialize_value(v) for k, v in obj.items()}
     return obj
 
@@ -64,9 +64,9 @@ def deserialize_value(obj: Any) -> Any:
         if "__type" in obj:
             if obj["__type"] == "bytes":
                 return base64.b64decode(obj["data"])
-            elif obj["__type"] == "datetime":
+            if obj["__type"] == "datetime":
                 return datetime.fromisoformat(obj["data"])
-            elif obj["__type"] == "LXMessage":
+            if obj["__type"] == "LXMessage":
                 msg_data = {
                     "source_hash": obj["source_hash"],
                     "destination_hash": obj["destination_hash"],
@@ -77,7 +77,7 @@ def deserialize_value(obj: Any) -> Any:
                 if "fields" in obj:
                     msg_data["fields"] = deserialize_value(obj["fields"])
                 return msg_data
-            elif obj["__type"] == "Attachment":
+            if obj["__type"] == "Attachment":
                 return Attachment(
                     type=AttachmentType(obj["type"]),
                     name=obj["name"],
@@ -85,7 +85,7 @@ def deserialize_value(obj: Any) -> Any:
                     format=obj["format"]
                 )
         return {k: deserialize_value(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
+    if isinstance(obj, list):
         return [deserialize_value(item) for item in obj]
     return obj
 
