@@ -8,7 +8,13 @@ from lxmfy import LXMFBot
 
 
 class ReminderBot:
+    """A bot that reminds users of tasks at specified times."""
+
     def __init__(self):
+        """
+        Initializes the ReminderBot, sets up the bot instance,
+        configures commands, and sets up the reminder check loop.
+        """
         self.bot = LXMFBot(
             name="Reminder Bot",
             announce=600,
@@ -20,8 +26,15 @@ class ReminderBot:
         self.setup_reminder_check()
 
     def setup_commands(self):
+        """Sets up the bot's commands, specifically the 'remind' and 'list' commands."""
         @self.bot.command(name="remind", description="Set a reminder")
         def remind(ctx):
+            """
+            Sets a reminder for the user.
+
+            Args:
+                ctx: The command context containing the sender and message.
+            """
             if not ctx.args or len(ctx.args) < 2:
                 ctx.reply("Usage: /remind <time> <message>\nExample: /remind 1h30m Buy groceries")
                 return
@@ -29,7 +42,6 @@ class ReminderBot:
             time_str = ctx.args[0].lower()
             message = " ".join(ctx.args[1:])
 
-            # Parse time string (e.g., 1h30m, 2d, 45m)
             total_minutes = 0
             time_parts = re.findall(r'(\d+)([dhm])', time_str)
 
@@ -62,6 +74,12 @@ class ReminderBot:
 
         @self.bot.command(name="list", description="List your reminders")
         def list_reminders(ctx):
+            """
+            Lists the user's active reminders.
+
+            Args:
+                ctx: The command context.
+            """
             reminders = self.bot.storage.get("reminders", [])
             user_reminders = [r for r in reminders if r["user"] == ctx.sender]
 
@@ -77,15 +95,15 @@ class ReminderBot:
             ctx.reply(response)
 
     def setup_reminder_check(self):
+        """Sets up a recurring task to check for and send reminders."""
         def check_reminders():
+            """Checks for reminders that are due and sends notifications."""
             reminders = self.bot.storage.get("reminders", [])
             current_time = time.time()
 
-            # Find due reminders
             due_reminders = [r for r in reminders if r["time"] <= current_time]
             remaining = [r for r in reminders if r["time"] > current_time]
 
-            # Send notifications
             for reminder in due_reminders:
                 self.bot.send(
                     reminder["user"],
@@ -93,11 +111,16 @@ class ReminderBot:
                     "Reminder"
                 )
 
-            # Update storage
             if due_reminders:
                 self.bot.storage.set("reminders", remaining)
 
         def run_with_reminders(delay=10):
+            """
+            Runs the bot with a reminder check loop.
+
+            Args:
+                delay (int): The delay in seconds between reminder checks.
+            """
             while True:
                 check_reminders()
                 for _i in list(self.bot.queue.queue):
@@ -106,8 +129,8 @@ class ReminderBot:
                 self.bot.announce()
                 time.sleep(delay)
 
-        # Replace the bot's run method
         self.bot.run = run_with_reminders
 
     def run(self):
-        self.bot.run() 
+        """Runs the bot."""
+        self.bot.run()

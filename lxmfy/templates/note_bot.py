@@ -6,7 +6,14 @@ from lxmfy import LXMFBot
 
 
 class NoteBot:
+    """
+    A bot that allows users to save and retrieve notes.
+    """
+
     def __init__(self):
+        """
+        Initializes the NoteBot with basic configurations and sets up commands.
+        """
         self.bot = LXMFBot(
             name="Note Bot",
             announce=600,
@@ -17,8 +24,17 @@ class NoteBot:
         self.setup_commands()
 
     def setup_commands(self):
+        """
+        Sets up the bot's commands: save note, list notes, search notes.
+        """
         @self.bot.command(name="note", description="Save a note")
         def save_note(ctx):
+            """
+            Saves a note for the user.
+
+            Args:
+                ctx: The command context.
+            """
             if not ctx.args:
                 ctx.reply("Usage: /note <your note>")
                 return
@@ -36,6 +52,12 @@ class NoteBot:
 
         @self.bot.command(name="notes", description="List your notes")
         def list_notes(ctx):
+            """
+            Lists the user's notes, with options to show all, the last 10, or notes with a specific tag.
+
+            Args:
+                ctx: The command context.
+            """
             if not ctx.args:
                 notes = self.bot.storage.get(f"notes:{ctx.sender}", [])
                 if not notes:
@@ -78,6 +100,12 @@ class NoteBot:
 
         @self.bot.command(name="search", description="Search your notes")
         def search_notes(ctx):
+            """
+            Searches the user's notes for a specific term.
+
+            Args:
+                ctx: The command context.
+            """
             if not ctx.args:
                 ctx.reply("Usage: /search <text>")
                 return
@@ -97,4 +125,7 @@ class NoteBot:
             ctx.reply(response)
 
     def run(self):
-        self.bot.run() 
+        """
+        Runs the bot.
+        """
+        self.bot.run()
