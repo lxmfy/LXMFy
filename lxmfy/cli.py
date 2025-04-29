@@ -19,6 +19,7 @@ from typing import Any, Optional
 from .templates import EchoBot, NoteBot, ReminderBot
 from .validation import format_validation_results, validate_bot
 
+
 # Custom colors for CLI
 class Colors:
     """Custom color codes for CLI output."""
@@ -92,7 +93,7 @@ def get_template_choice() -> str:
     print(f"\n{Colors.CYAN}Available templates:{Colors.ENDC}")
     for i, template in enumerate(templates, 1):
         print(f"{Colors.BOLD}{i}.{Colors.ENDC} {template}")
-    
+
     while True:
         try:
             choice = input(f"\n{Colors.CYAN}Select template (1-4): {Colors.ENDC}")
@@ -108,9 +109,9 @@ def interactive_create() -> None:
     print_header("Create New Bot")
     bot_name = get_bot_name()
     template = get_template_choice()
-    
+
     output_path = input(f"{Colors.CYAN}Enter output path (default: {bot_name}.py): {Colors.ENDC}") or f"{bot_name}.py"
-    
+
     try:
         bot_path = create_from_template(template, output_path, bot_name)
         if template == "basic":
@@ -146,7 +147,7 @@ def interactive_run() -> None:
     """Interactive bot running process."""
     print_header("Run Template Bot")
     template = get_template_choice()
-    
+
     custom_name = input(f"{Colors.CYAN}Enter custom name (optional): {Colors.ENDC}")
     if custom_name:
         try:
@@ -154,18 +155,18 @@ def interactive_run() -> None:
         except ValueError as ve:
             print_warning(f"Invalid custom name provided. Using default. ({ve})")
             custom_name = None
-    
+
     try:
         template_map = {
             "echo": EchoBot,
             "reminder": ReminderBot,
             "note": NoteBot
         }
-        
+
         BotClass = template_map[template]
         print_header(f"Starting {template} Bot")
         bot_instance = BotClass()
-        
+
         if custom_name:
             if hasattr(bot_instance, 'bot'):
                 bot_instance.bot.config.name = custom_name
@@ -174,7 +175,7 @@ def interactive_run() -> None:
                 bot_instance.config.name = custom_name
                 bot_instance.name = custom_name
             print_info(f"Running with custom name: {custom_name}")
-        
+
         bot_instance.run()
     except Exception as e:
         print_error(f"Error running template bot: {str(e)}")
@@ -183,27 +184,27 @@ def interactive_analyze() -> None:
     """Interactive bot analysis process."""
     print_header("Analyze Bot")
     bot_path = input(f"{Colors.CYAN}Enter bot file path: {Colors.ENDC}")
-    
+
     if not os.path.exists(bot_path):
         print_error(f"Bot file not found: {bot_path}")
         return
-    
+
     results = analyze_bot_file(bot_path)
-    
+
     if results.get('errors'):
         print_error('Errors:')
         for error in results['errors']:
             print(f"  - {error}")
-    
+
     if results.get('warnings'):
         print_warning('Warnings:')
         for warning in results['warnings']:
             print(f"  - {warning}")
-    
+
     print_info('Configuration:')
     for key, value in results.get('config', {}).items():
         print(f"  {key}: {value}")
-    
+
     print_info('Commands: ' + ', '.join(results.get('commands', [])))
     print_info('Events: ' + ', '.join(results.get('events', [])))
     print_info('Middleware: ' + ', '.join(results.get('middleware', [])))
@@ -213,23 +214,23 @@ def interactive_verify() -> None:
     """Interactive wheel verification process."""
     print_header("Verify Wheel Signature")
     whl_path = input(f"{Colors.CYAN}Enter wheel file path (or press Enter to use latest): {Colors.ENDC}")
-    
+
     if not whl_path:
         whl_path = find_latest_wheel()
         if not whl_path:
             print_error("No wheel files found in current directory")
             return
-    
+
     sigstore_path = input(f"{Colors.CYAN}Enter sigstore file path (default: sigstore.json): {Colors.ENDC}") or "sigstore.json"
-    
+
     if not os.path.exists(whl_path):
         print_error(f"Wheel file not found: {whl_path}")
         return
-    
+
     if not os.path.exists(sigstore_path):
         print_error(f"Sigstore file not found: {sigstore_path}")
         return
-    
+
     if not verify_wheel_signature(whl_path, sigstore_path):
         print_error("Verification failed")
 
@@ -238,7 +239,7 @@ def interactive_mode() -> None:
     while True:
         print_menu()
         choice = get_user_choice()
-        
+
         if choice == '1':
             interactive_create()
         elif choice == '2':
@@ -250,7 +251,7 @@ def interactive_mode() -> None:
         elif choice == '5':
             print_success("Goodbye!")
             sys.exit(0)
-        
+
         input(f"\n{Colors.CYAN}Press Enter to continue...{Colors.ENDC}")
 
 def sanitize_filename(filename: str) -> str:
@@ -661,7 +662,7 @@ def main() -> None:
         return
 
     print_header("LXMFy Bot Framework")
-    
+
     parser = argparse.ArgumentParser(
         description="LXMFy Bot Tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
