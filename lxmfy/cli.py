@@ -1,8 +1,7 @@
-"""
-CLI module for LXMFy bot framework.
+"""CLI module for LXMFy bot framework.
 
-This module provides command-line interface functionality for creating and managing
-LXMF bots, including bot file creation, example cog generation, and bot analysis.
+Provides command-line interface functionality for creating and managing LXMF bots,
+including bot file creation, example cog generation, and bot analysis.
 """
 
 import argparse
@@ -22,17 +21,15 @@ from .validation import format_validation_results, validate_bot
 
 
 def sanitize_filename(filename: str) -> str:
-    """
-    Sanitize the filename while preserving the extension.
+    """Sanitizes the filename while preserving the extension.
 
     Args:
-        filename: The filename to sanitize
+        filename: The filename to sanitize.
 
     Returns:
-        str: Sanitized filename with proper extension
+        Sanitized filename with proper extension.
     """
     base, ext = os.path.splitext(os.path.basename(filename))
-
     base = re.sub(r"[^a-zA-Z0-9\-_]", "", base)
 
     if not ext or ext != ".py":
@@ -42,22 +39,20 @@ def sanitize_filename(filename: str) -> str:
 
 
 def validate_bot_name(name: str) -> str:
-    """
-    Validate and sanitize bot name.
+    """Validates and sanitizes a bot name.
 
     Args:
-        name: Proposed bot name
+        name: The proposed bot name.
 
     Returns:
-        str: Sanitized bot name
+        The sanitized bot name.
 
     Raises:
-        ValueError: If name is invalid
+        ValueError: If the name is invalid.
     """
     if not name:
         raise ValueError("Bot name cannot be empty")
 
-    # Remove invalid characters
     sanitized = "".join(c for c in name if c.isalnum() or c in " -_")
     if not sanitized:
         raise ValueError("Bot name must contain valid characters")
@@ -66,19 +61,18 @@ def validate_bot_name(name: str) -> str:
 
 
 def create_bot_file(name: str, output_path: str, no_cogs: bool = False) -> str:
-    """
-    Create a new bot file from template.
+    """Creates a new bot file from a template.
 
     Args:
-        name: Name for the bot
-        output_path: Desired output path
-        no_cogs: Disable cogs loading
+        name: The name for the bot.
+        output_path: The desired output path.
+        no_cogs: Whether to disable cogs loading.
 
     Returns:
-        str: Path to created bot file
+        The path to the created bot file.
 
     Raises:
-        RuntimeError: If file creation fails
+        RuntimeError: If file creation fails.
     """
     try:
         name = validate_bot_name(name)
@@ -133,11 +127,10 @@ if __name__ == "__main__":
 
 
 def create_example_cog(bot_path: str) -> None:
-    """
-    Create example cog and necessary directory structure.
+    """Creates an example cog and the necessary directory structure.
 
     Args:
-        bot_path: Path to the bot file to determine cogs location
+        bot_path: The path to the bot file to determine the cogs location.
     """
     try:
         bot_dir = os.path.dirname(os.path.abspath(bot_path))
@@ -174,15 +167,14 @@ def setup(bot):
 
 
 def verify_wheel_signature(whl_path: str, sigstore_path: str) -> bool:
-    """
-    Verify the signature of a wheel file.
+    """Verifies the signature of a wheel file.
 
     Args:
-        whl_path: Path to the wheel file
-        sigstore_path: Path to the sigstore file
+        whl_path: The path to the wheel file.
+        sigstore_path: The path to the sigstore file.
 
     Returns:
-        bool: True if the signature is valid, False otherwise
+        True if the signature is valid, False otherwise.
     """
     try:
         with open(sigstore_path) as f:
@@ -211,6 +203,11 @@ def verify_wheel_signature(whl_path: str, sigstore_path: str) -> bool:
 
 
 def find_latest_wheel():
+    """Finds the latest wheel file in the current directory.
+
+    Returns:
+        The path to the latest wheel file, or None if no wheel files are found.
+    """
     wheels = glob("*.whl")
     if not wheels:
         return None
@@ -218,19 +215,18 @@ def find_latest_wheel():
 
 
 def create_from_template(template_name: str, output_path: str, bot_name: str) -> str:
-    """
-    Create a bot from a template.
+    """Creates a bot from a template.
 
     Args:
-        template_name: Name of the template to use
-        output_path: Desired output path
-        bot_name: Name for the bot
+        template_name: The name of the template to use.
+        output_path: The desired output path.
+        bot_name: The name for the bot.
 
     Returns:
-        str: Path to created bot file
+        The path to the created bot file.
 
     Raises:
-        ValueError: If template is invalid
+        ValueError: If the template is invalid.
     """
     try:
         name = validate_bot_name(bot_name)
@@ -278,7 +274,18 @@ if __name__ == "__main__":
 
 
 def create_full_bot(name: str, output_path: str) -> str:
-    """Create a full-featured bot with storage and admin commands."""
+    """Creates a full-featured bot with storage and admin commands.
+
+    Args:
+        name: The name of the bot.
+        output_path: The desired output path.
+
+    Returns:
+        The path to the created bot file.
+
+    Raises:
+        RuntimeError: If the bot creation fails.
+    """
     try:
         name = validate_bot_name(name)
 
@@ -311,7 +318,15 @@ if __name__ == "__main__":
 
 
 def is_safe_path(path: str, base_path: str = None) -> bool:
-    """Check if path is safe and within allowed directory"""
+    """Checks if a path is safe and within the allowed directory.
+
+    Args:
+        path: The path to check.
+        base_path: The base path to check against. If None, all paths are considered safe.
+
+    Returns:
+        True if the path is safe, False otherwise.
+    """
     try:
         if base_path:
             base_path = os.path.abspath(base_path)
@@ -323,22 +338,19 @@ def is_safe_path(path: str, base_path: str = None) -> bool:
 
 
 def analyze_bot_file(file_path: str) -> dict[str, Any]:
-    """
-    Analyze a bot file for configuration issues and best practices.
+    """Analyzes a bot file for configuration issues and best practices.
 
     Args:
-        file_path: Path to the bot file to analyze
+        file_path: The path to the bot file to analyze.
 
     Returns:
-        dict[str, Any]: Analysis results
+        A dictionary containing the analysis results.
     """
     try:
-        # Convert to absolute path and validate
         abs_path = os.path.abspath(file_path)
         if not is_safe_path(abs_path):
             return {'errors': ['Invalid file path']}
 
-        # Ensure file exists and is a Python file
         if not os.path.exists(abs_path):
             return {'errors': ['File not found']}
         if not abs_path.endswith('.py'):
@@ -358,24 +370,30 @@ def analyze_bot_file(file_path: str) -> dict[str, Any]:
         }
 
         class BotAnalyzer(ast.NodeVisitor):
+            """A visitor class to analyze the bot file's AST."""
+
             def __init__(self, results):
+                """Initializes the BotAnalyzer with the results dictionary."""
                 self.results = results
                 super().__init__()
 
             @staticmethod
             def _is_bot_call(node: ast.Call) -> bool:
-                return (isinstance(node.func, ast.Name) and 
+                """Checks if the given call node is a call to LXMFBot."""
+                return (isinstance(node.func, ast.Name) and
                        node.func.id == 'LXMFBot')
 
             @staticmethod
             def _is_bot_assign(node: ast.Assign) -> bool:
-                return (isinstance(node.targets[0], ast.Name) and 
-                       node.targets[0].id == 'bot' and 
-                       isinstance(node.value, ast.Call) and 
-                       isinstance(node.value.func, ast.Name) and 
+                """Checks if the given assignment node assigns a value to a variable named 'bot' by calling LXMFBot."""
+                return (isinstance(node.targets[0], ast.Name) and
+                       node.targets[0].id == 'bot' and
+                       isinstance(node.value, ast.Call) and
+                       isinstance(node.value.func, ast.Name) and
                        node.value.func.id == 'LXMFBot')
 
             def visit_Call(self, node):
+                """Visits a call node in the AST."""
                 if isinstance(node.func, ast.Attribute):
                     if node.func.attr == 'command':
                         self.results['commands'].append(node.args[0].value)
@@ -390,6 +408,7 @@ def analyze_bot_file(file_path: str) -> dict[str, Any]:
                         self.results['config'][kw.arg] = kw.value.value
 
             def visit_Assign(self, node):
+                """Visits an assignment node in the AST."""
                 if self._is_bot_assign(node):
                     for kw in node.value.keywords:
                         self.results['config'][kw.arg] = kw.value.value
@@ -410,7 +429,6 @@ def main() -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Creating Bots
   lxmfy create                          # Create basic bot file 'bot.py'
   lxmfy create mybot                    # Create basic bot file 'mybot.py'
   lxmfy create --template echo mybot    # Create echo bot file 'mybot.py'
@@ -418,13 +436,11 @@ Examples:
   lxmfy create --template note notes    # Create note-taking bot file 'notes.py'
   lxmfy create --template meme memes    # Create meme bot file 'memes.py'
 
-  # Running Template Bots Directly
   lxmfy run echo                        # Run the built-in echo bot
   lxmfy run reminder --name "MyReminder"  # Run the reminder bot with a custom name
   lxmfy run note                        # Run the built-in note bot
   lxmfy run meme                        # Run the built-in meme bot
 
-  # Analyzing and Verifying
   lxmfy analyze bot.py                  # Analyze bot configuration
   lxmfy verify                          # Verify latest wheel in current directory
   lxmfy verify package.whl sigstore.json # Verify specific wheel and signature
@@ -513,10 +529,8 @@ Examples:
             elif args.directory:
                 output_path = os.path.join(args.directory, "bot.py")
             elif args.name:
-                # Handle case where name might be intended as filename
                 if '.' in args.name:
                      output_path = args.name
-                     # Attempt to extract a bot name if none was provided via --name
                      if not args.name_opt:
                          bot_name = os.path.splitext(os.path.basename(args.name))[0]
                 else:
@@ -525,7 +539,6 @@ Examples:
             else:
                 output_path = "bot.py"
 
-            # Ensure bot_name is valid if extracted from filename
             try:
                 bot_name = validate_bot_name(bot_name)
             except ValueError as ve:
@@ -534,7 +547,6 @@ Examples:
 
             bot_path = create_from_template(args.template, output_path, bot_name)
 
-            # Only create example cog for basic template
             if args.template == "basic":
                 create_example_cog(bot_path)
                 print(
@@ -615,25 +627,23 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
         try:
             BotClass = template_map[template_name]
             print(f"Starting {template_name} bot...")
-            bot_instance = BotClass() # Instantiate the template class
+            bot_instance = BotClass()
 
-            # Set custom name if provided
             custom_name = args.name_opt
             if custom_name:
                  try:
                      validated_name = validate_bot_name(custom_name)
-                     # Templates might wrap the actual bot, check for .bot attribute
                      if hasattr(bot_instance, 'bot'):
                          bot_instance.bot.config.name = validated_name
-                         bot_instance.bot.name = validated_name # Also update potential direct attribute if exists
+                         bot_instance.bot.name = validated_name
                      else:
-                         bot_instance.config.name = validated_name # Assume direct config if no .bot
-                         bot_instance.name = validated_name # Also update potential direct attribute if exists
+                         bot_instance.config.name = validated_name
+                         bot_instance.name = validated_name
                      print(f"Running with custom name: {validated_name}")
                  except ValueError as ve:
                      print(f"Warning: Invalid custom name '{custom_name}' provided. Using default. ({ve})")
 
-            bot_instance.run() # Call run on the instance
+            bot_instance.run()
 
         except Exception as e:
             print(f"Error running template bot '{template_name}': {str(e)}", file=sys.stderr)

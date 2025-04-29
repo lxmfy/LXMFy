@@ -8,22 +8,39 @@ from .storage import JSONStorage
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class ValidationResult:
-    """Result of a validation check."""
+    """
+    Result of a validation check.
+
+    Attributes:
+        valid (bool): Indicates whether the validation was successful.
+        messages (list[str]): A list of messages associated with the validation result.
+        severity (str): The severity level of the validation result ('error', 'warning', or 'info').
+    """
     valid: bool
     messages: list[str]
-    severity: str  # 'error', 'warning', or 'info'
+    severity: str
+
 
 class ConfigValidator:
     """Validates bot configuration settings."""
 
     @staticmethod
     def validate_config(config: Any) -> list[ValidationResult]:
+        """
+        Validate the given bot configuration.
+
+        Args:
+            config (Any): The bot configuration object to validate.
+
+        Returns:
+            list[ValidationResult]: A list of validation results.
+        """
         results = []
 
         try:
-            # Validate name
             if len(getattr(config, 'name', '')) < 3:
                 results.append(ValidationResult(
                     False,
@@ -31,16 +48,14 @@ class ConfigValidator:
                     "error"
                 ))
 
-            # Validate announce interval
             announce = getattr(config, 'announce', 0)
-            if 0 < announce < 300:  # Allow 0 for disabled
+            if 0 < announce < 300:
                 results.append(ValidationResult(
                     False,
                     ["Announce interval should be at least 300 seconds to avoid network spam"],
                     "warning"
                 ))
 
-            # Validate rate limiting
             if getattr(config, 'rate_limit', 0) > 10:
                 results.append(ValidationResult(
                     False,
@@ -48,7 +63,6 @@ class ConfigValidator:
                     "warning"
                 ))
 
-            # Validate cooldown
             if getattr(config, 'cooldown', 0) < 30:
                 results.append(ValidationResult(
                     False,
@@ -66,14 +80,23 @@ class ConfigValidator:
 
         return results
 
+
 class BestPracticesChecker:
     """Checks for bot implementation best practices."""
 
     @staticmethod
     def check_bot(bot: Any) -> list[ValidationResult]:
+        """
+        Check the bot instance for best practices.
+
+        Args:
+            bot (Any): The bot instance to check.
+
+        Returns:
+            list[ValidationResult]: A list of validation results.
+        """
         results = []
 
-        # Check permission system usage
         if not getattr(bot.config, 'permissions_enabled', False):
             results.append(ValidationResult(
                 False,
@@ -81,7 +104,6 @@ class BestPracticesChecker:
                 "warning"
             ))
 
-        # Check command prefix
         if getattr(bot, 'command_prefix', None) is None:
             results.append(ValidationResult(
                 False,
@@ -89,7 +111,6 @@ class BestPracticesChecker:
                 "warning"
             ))
 
-        # Check admin configuration
         if not getattr(bot, 'admins', None):
             results.append(ValidationResult(
                 False,
@@ -97,7 +118,6 @@ class BestPracticesChecker:
                 "warning"
             ))
 
-        # Check storage configuration
         if getattr(bot.config, 'storage_type', '') == "json":
             results.append(ValidationResult(
                 True,
@@ -107,14 +127,23 @@ class BestPracticesChecker:
 
         return results
 
+
 class PerformanceAnalyzer:
     """Analyzes bot configuration for performance optimization opportunities."""
 
     @staticmethod
     def analyze_bot(bot: Any) -> list[ValidationResult]:
+        """
+        Analyze the bot instance for performance optimization opportunities.
+
+        Args:
+            bot (Any): The bot instance to analyze.
+
+        Returns:
+            list[ValidationResult]: A list of validation results.
+        """
         results = []
 
-        # Check caching settings
         if not hasattr(bot, 'transport') or not hasattr(bot.transport, "cached_links"):
             results.append(ValidationResult(
                 False,
@@ -122,7 +151,6 @@ class PerformanceAnalyzer:
                 "warning"
             ))
 
-        # Check queue size
         if hasattr(bot, 'queue') and getattr(bot.queue, 'maxsize', 0) < 10:
             results.append(ValidationResult(
                 False,
@@ -130,9 +158,7 @@ class PerformanceAnalyzer:
                 "info"
             ))
 
-        # Check storage backend
         if hasattr(bot, 'storage') and hasattr(bot.storage, 'backend') and isinstance(bot.storage.backend, JSONStorage):
-            # Combined checks: storage exists, backend exists, and it's JSONStorage
             results.append(ValidationResult(
                 True,
                 ["SQLite backend recommended for better performance with large datasets"],
@@ -141,8 +167,17 @@ class PerformanceAnalyzer:
 
         return results
 
+
 def validate_bot(bot: Any) -> dict[str, list[ValidationResult]]:
-    """Run all validation checks on a bot instance."""
+    """
+    Run all validation checks on a bot instance.
+
+    Args:
+        bot (Any): The bot instance to validate.
+
+    Returns:
+        dict[str, list[ValidationResult]]: A dictionary containing validation results for different categories.
+    """
     try:
         return {
             "config": ConfigValidator.validate_config(bot.config),
@@ -159,16 +194,25 @@ def validate_bot(bot: Any) -> dict[str, list[ValidationResult]]:
             )]
         }
 
+
 def format_validation_results(results: dict[str, list[ValidationResult]]) -> str:
-    """Format validation results into a readable string."""
+    """
+    Format validation results into a readable string.
+
+    Args:
+        results (dict[str, list[ValidationResult]]): A dictionary containing validation results.
+
+    Returns:
+        str: A formatted string representing the validation results.
+    """
     output = []
 
     for category, checks in results.items():
         output.append(f"\n=== {category.upper()} ===")
         for result in checks:
             prefix = "❌" if not result.valid and result.severity == "error" else \
-                    "⚠️" if result.severity == "warning" else "ℹ️"
+                     "⚠️" if result.severity == "warning" else "ℹ️"
             for msg in result.messages:
                 output.append(f"{prefix} {msg}")
 
-    return "\n".join(output) 
+    return "\n".join(output)

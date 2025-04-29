@@ -6,7 +6,6 @@ command processing, and bot lifecycle management for LXMF-based bots on
 the Reticulum Network.
 """
 
-# Standard library imports
 import importlib
 import inspect
 import logging
@@ -17,14 +16,11 @@ from queue import Queue
 from types import SimpleNamespace
 from typing import Optional
 
-# Reticulum and LXMF imports
 import RNS
 from LXMF import LXMessage, LXMRouter
 
 from .attachments import Attachment, pack_attachment
 from .cogs_core import load_cogs_from_directory
-
-# Local imports
 from .commands import Command
 from .config import BotConfig
 from .events import Event, EventManager, EventPriority
@@ -66,41 +62,32 @@ class LXMFBot:
         self.announce_time = 600
         self.logger = logging.getLogger(__name__)
 
-        # Setup paths first
         self.config_path = os.path.join(os.getcwd(), "config")
         os.makedirs(self.config_path, exist_ok=True)
 
-        # Setup storage before anything else that might need it
         if self.config.storage_type == "json":
             self.storage = JSONStorage(self.config.storage_path)
         elif self.config.storage_type == "sqlite":
             self.storage = SQLiteStorage(self.config.storage_path)
 
-        # Initialize permissions system early
         self.permissions = PermissionManager(
             storage=self.storage,
             enabled=self.config.permissions_enabled
         )
 
-        # Initialize event system early
         self.events = EventManager(self.storage)
 
-        # Register built-in events
         self._register_builtin_events()
 
-        # Initialize middleware
         self.middleware = MiddlewareManager()
 
-        # Setup cogs directory
         self.cogs_dir = os.path.join(self.config_path, self.config.cogs_dir)
         os.makedirs(self.cogs_dir, exist_ok=True)
 
-        # Create __init__.py if it doesn't exist
         init_file = os.path.join(self.cogs_dir, "__init__.py")
         if not os.path.exists(init_file):
             open(init_file, "w", encoding="utf-8").close()
 
-        # Initialize transport and spam protection
         self.transport = Transport(self)
         self.spam_protection = SpamProtection(
             storage=self.storage,
@@ -111,7 +98,6 @@ class LXMFBot:
             warning_timeout=self.config.warning_timeout,
         )
 
-        # Setup identity
         identity_file = os.path.join(self.config_path, "identity")
         if not os.path.isfile(identity_file):
             RNS.log("No Primary Identity file found, creating new...", RNS.LOG_INFO)
@@ -120,7 +106,6 @@ class LXMFBot:
         self.identity = RNS.Identity.from_file(identity_file)
         RNS.log("Loaded identity from file", RNS.LOG_INFO)
 
-        # Initialize LXMF router
         RNS.Reticulum(loglevel=RNS.LOG_VERBOSE)
         self.router = LXMRouter(identity=self.identity, storagepath=self.config_path)
         self.local = self.router.register_delivery_identity(
@@ -132,11 +117,9 @@ class LXMFBot:
             RNS.LOG_INFO,
         )
 
-        # Set announce settings from config
         self.announce_enabled = self.config.announce_enabled
         self.announce_time = self.config.announce
 
-        # Handle initial announce
         if self.config.announce_immediately and self.announce_enabled:
             announce_file = os.path.join(self.config_path, "announce")
             if os.path.isfile(announce_file):
@@ -145,20 +128,27 @@ class LXMFBot:
             self.local.announce()
             RNS.log("Initial announce sent", RNS.LOG_INFO)
 
-        # Initialize remaining bot state
         self.admins = set(self.config.admins or [])
         self.hot_reloading = self.config.hot_reloading
         self.command_prefix = self.config.command_prefix
 
-        # Initialize help system
         self.help_system = HelpSystem(self)
 
-        # Load cogs last after everything is initialized
         if self.config.cogs_enabled:
             load_cogs_from_directory(self)
 
     def command(self, *args, **kwargs):
+        """
+        Decorator for registering commands.
+
+        Args:
+            *args: Command name (optional).
+            **kwargs: Command attributes (name, description, admin_only).
+        """
         def decorator(func):
+            """
+            The actual decorator that registers the command.
+            """
             name = args[0] if len(args) > 0 else kwargs.get("name", func.__name__)
 
             description = kwargs.get("description", "No description provided")
@@ -172,6 +162,12 @@ class LXMFBot:
         return decorator
 
     def load_extension(self, name):
+        """
+        Load an extension (cog) by name.
+
+        Args:
+            name: The name of the extension to load.
+        """
         if self.hot_reloading and name in sys.modules:
             module = importlib.reload(sys.modules[name])
         else:
@@ -182,6 +178,12 @@ class LXMFBot:
         module.setup(self)
 
     def add_cog(self, cog):
+        """
+        Add a cog to the bot.
+
+        Args:
+            cog: The cog instance to add.
+        """
         self.cogs[cog.__class__.__name__] = cog
         for _name, method in inspect.getmembers(
             cog, predicate=lambda x: hasattr(x, "command")
@@ -191,14 +193,23 @@ class LXMFBot:
             self.commands[cmd.name] = cmd
 
     def is_admin(self, sender):
+        """
+        Check if a sender is an admin.
+
+        Args:
+            sender: The sender's identity hash.
+
+        Returns:
+            True if the sender is an admin, False otherwise.
+        """
         return sender in self.admins
 
     def _register_builtin_events(self):
-        """Register built-in event handlers"""
+        """Register built-in event handlers."""
         @self.events.on("message_received", EventPriority.HIGHEST)
         def handle_message(event):
+            """Handles incoming messages, performing spam checks."""
             sender = event.data["sender"]
-            # Check spam protection
             if not self.permissions.has_permission(sender, DefaultPerms.BYPASS_SPAM):
                 allowed, msg = self.spam_protection.check_spam(sender)
                 if not allowed:
@@ -207,15 +218,15 @@ class LXMFBot:
                     return
 
     def _process_message(self, message, sender):
-        """Process an incoming message"""
+        """Process an incoming message."""
         try:
             content = message.content.decode('utf-8')
             receipt = RNS.hexrep(message.hash, delimit=False)
 
             def reply(response):
+                """Helper function to reply to a message."""
                 self.send(sender, response)
 
-            # Check if this is a first message from the user
             if self.config.first_message_enabled:
                 first_messages = self.storage.get("first_messages", {})
                 if sender not in first_messages:
@@ -224,13 +235,11 @@ class LXMFBot:
                     for handler in self.first_message_handlers:
                         if handler(sender, message):
                             break
-                    return  # Return after handling first message
+                    return
 
-            # Check basic bot permission
             if not self.permissions.has_permission(sender, DefaultPerms.USE_BOT):
                 return
 
-            # Create message context
             msg_ctx = {
                 "lxmf": message,
                 "reply": reply,
@@ -240,12 +249,10 @@ class LXMFBot:
             }
             msg = SimpleNamespace(**msg_ctx)
 
-            # Run through pre-command middleware
             ctx = MiddlewareContext(MiddlewareType.PRE_COMMAND, msg)
             if self.middleware.execute(MiddlewareType.PRE_COMMAND, ctx) is None:
                 return
 
-            # Process commands
             if self.command_prefix is None or content.startswith(self.command_prefix):
                 command_name = (
                     content.split()[0][len(self.command_prefix):]
@@ -266,7 +273,6 @@ class LXMFBot:
 
                         cmd.callback(msg)
 
-                        # Run post-command middleware
                         self.middleware.execute(MiddlewareType.POST_COMMAND, msg)
                         return
 
@@ -275,7 +281,6 @@ class LXMFBot:
                         self.send(sender, "Error executing command: %s", str(e))
                         return
 
-            # Run delivery callbacks only if not a command
             for callback in self.delivery_callbacks:
                 callback(msg)
 
@@ -283,37 +288,31 @@ class LXMFBot:
             self.logger.error("Error processing message: %s", str(e))
 
     def _message_received(self, message):
-        """Handle received messages"""
+        """Handle received messages."""
         try:
             sender = RNS.hexrep(message.source_hash, delimit=False)
             receipt = RNS.hexrep(message.hash, delimit=False)
 
-            # Check if message was already processed
             if receipt in self.receipts:
                 return
 
-            # Add to receipts list
             self.receipts.append(receipt)
             if len(self.receipts) > 100:
                 self.receipts = self.receipts[-100:]
 
-            # Create event data
             event_data = {
                 "message": message,
                 "sender": sender,
                 "receipt": receipt
             }
 
-            # Run through middleware first
             ctx = MiddlewareContext(MiddlewareType.PRE_EVENT, event_data)
             if self.middleware.execute(MiddlewareType.PRE_EVENT, ctx) is None:
                 return
 
-            # Dispatch message received event and process message
             event = Event("message_received", event_data)
             self.events.dispatch(event)
 
-            # Only process message if event wasn't cancelled
             if not event.cancelled:
                 self._process_message(message, sender)
 
@@ -346,6 +345,14 @@ class LXMFBot:
             RNS.log(f"Announcement sent, next announce in {self.announce_time} seconds", RNS.LOG_INFO)
 
     def send(self, destination, message, title="Reply"):
+        """
+        Send a message to a destination.
+
+        Args:
+            destination: The destination hash.
+            message: The message content.
+            title: The message title (optional).
+        """
         try:
             hash = bytes.fromhex(destination)
         except Exception:
@@ -381,6 +388,15 @@ class LXMFBot:
                 self.queue.put(lxm)
 
     def send_with_attachment(self, destination: str, message: str, attachment: Attachment, title: str = "Reply"):
+        """
+        Send a message with an attachment to a destination.
+
+        Args:
+            destination: The destination hash.
+            message: The message content.
+            attachment: The attachment to send.
+            title: The message title (optional).
+        """
         try:
             hash = bytes.fromhex(destination)
             if len(hash) != RNS.Reticulum.TRUNCATED_HASHLENGTH // 8:
@@ -417,7 +433,6 @@ class LXMFBot:
         """Run the bot"""
         try:
             while True:
-                # Process outbound queue
                 for _i in list(self.queue.queue):
                     lxm = self.queue.get()
                     self.router.handle_outbound(lxm)
@@ -429,12 +444,29 @@ class LXMFBot:
             self.transport.cleanup()
 
     def received(self, function):
+        """
+        Decorator for registering delivery callbacks.
+
+        Args:
+            function: The function to call when a message is delivered.
+        """
         self.delivery_callbacks.append(function)
         return function
 
     def request_page(
         self, destination_hash: str, page_path: str, field_data: Optional[dict] = None
     ) -> dict:
+        """
+        Request a page from a destination.
+
+        Args:
+            destination_hash: The destination hash.
+            page_path: The path to the page.
+            field_data: Optional field data to send with the request.
+
+        Returns:
+            The response from the destination.
+        """
         try:
             dest_hash_bytes = bytes.fromhex(destination_hash)
             return self.transport.request_page(dest_hash_bytes, page_path, field_data)
@@ -443,11 +475,13 @@ class LXMFBot:
             raise
 
     def cleanup(self):
+        """Clean up resources."""
         self.transport.cleanup()
 
     def on_first_message(self):
         """Decorator for registering first message handlers"""
         def decorator(func):
+            """Registers a function to be called on the first message from a sender."""
             self.first_message_handlers.append(func)
             return func
         return decorator

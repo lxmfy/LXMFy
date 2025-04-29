@@ -20,13 +20,31 @@ from .permissions import DefaultPerms
 
 @dataclass
 class PathInfo:
+    """
+    Data class to store path information.
+
+    Attributes:
+        next_hop (Optional[bytes]): The next hop in the path.
+        hops (int): The number of hops in the path.
+        updated_at (int): The timestamp of the last path update.
+    """
     next_hop: Optional[bytes]
     hops: int
     updated_at: int
 
 
 class Transport:
+    """
+    Manages network transport for LXMFy, handling links and paths.
+    """
+
     def __init__(self, storage):
+        """
+        Initializes the Transport instance.
+
+        Args:
+            storage: The storage backend to use for caching paths.
+        """
         self.storage = storage
         self.logger = logging.getLogger(__name__)
         self.cached_links = {}
@@ -35,27 +53,65 @@ class Transport:
         self._request_handlers = {}
 
     def register_path_handler(self, handler: Callable):
+        """
+        Registers a handler for path discovery events.
+
+        Args:
+            handler (Callable): The handler function to register.
+        """
         self._path_handlers.append(handler)
 
     def deregister_path_handler(self, handler: Callable):
+        """
+        Deregisters a path discovery event handler.
+
+        Args:
+            handler (Callable): The handler function to deregister.
+        """
         if handler in self._path_handlers:
             self._path_handlers.remove(handler)
 
     def register_request_handler(self, request_type: str, handler: Callable):
+        """
+        Registers a handler for specific request types.
+
+        Args:
+            request_type (str): The request type to handle.
+            handler (Callable): The handler function to register.
+        """
         self._request_handlers[request_type] = handler
 
     def deregister_request_handler(self, request_type: str):
+        """
+        Deregisters a request handler for a specific request type.
+
+        Args:
+            request_type (str): The request type to deregister.
+        """
         self._request_handlers.pop(request_type, None)
 
     def load_paths(self):
+        """Loads cached paths from storage."""
         self.paths = self.storage.get("transport:paths", {})
 
     def save_paths(self):
+        """Saves cached paths to storage."""
         self.storage.set("transport:paths", self.paths)
 
     def establish_link(self, destination_hash: bytes, timeout: int = 15) -> RNS.Link:
-        """Establish a link with path discovery"""
-        # Check if user has permission to establish links
+        """
+        Establish a link with path discovery.
+
+        Args:
+            destination_hash (bytes): The destination hash to establish a link with.
+            timeout (int): The timeout in seconds for path discovery.
+
+        Returns:
+            RNS.Link: The established RNS link.
+
+        Raises:
+            Exception: If the user does not have permission to establish links or if path lookup times out.
+        """
         sender = RNS.hexrep(destination_hash, delimit=False)
         if not self.bot.permissions.has_permission(sender, DefaultPerms.USE_BOT):
             raise Exception("User does not have permission to establish links")
@@ -82,7 +138,19 @@ class Transport:
             self.save_paths()
 
     def _create_link(self, destination_hash: bytes, timeout: int) -> RNS.Link:
-        """Create and establish a link"""
+        """
+        Create and establish a link.
+
+        Args:
+            destination_hash (bytes): The destination hash for the link.
+            timeout (int): The timeout in seconds for link establishment.
+
+        Returns:
+            RNS.Link: The established RNS link.
+
+        Raises:
+            Exception: If the identity is not found or if link establishment times out.
+        """
         try:
             identity = RNS.Identity.recall(destination_hash)
             if not identity:
@@ -112,7 +180,7 @@ class Transport:
             raise
 
     def cleanup(self):
-        """Clean up inactive links"""
+        """Clean up inactive links."""
         for link in list(self.cached_links.values()):
             if link.status != RNS.Link.ACTIVE:
                 link.teardown()

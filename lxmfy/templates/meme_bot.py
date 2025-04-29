@@ -1,3 +1,5 @@
+import argparse
+
 import requests
 
 from lxmfy import Attachment, AttachmentType, LXMFBot, command
@@ -5,8 +7,19 @@ from lxmfy.events import Event, EventPriority
 
 MEME_API_URL = "https://memeapi.zachl.tech/pic/json"
 
+
 class MemeBot:
+    """
+    A bot that sends random memes.
+    """
+
     def __init__(self, debug_mode=False):
+        """
+        Initializes the MemeBot.
+
+        Args:
+            debug_mode (bool): Enables debug logging if True.
+        """
         self.debug_mode = debug_mode
 
         self.bot = LXMFBot(
@@ -21,8 +34,14 @@ class MemeBot:
         self.bot.command(name="meme", description="Sends a random meme picture")(self.send_meme)
 
     def fetch_random_meme(self) -> tuple[str | None, str | None, str | None]:
-        """Fetches a random meme picture URL from the zachl.tech API."""
+        """
+        Fetches a random meme picture URL from the zachl.tech API.
 
+        Returns:
+            tuple[str | None, str | None, str | None]: A tuple containing the meme URL,
+            a result message, and the file extension. Returns (None, error_message, None)
+            if there was an error.
+        """
         try:
             response = requests.get(MEME_API_URL, timeout=15)
             response.raise_for_status()
@@ -36,11 +55,9 @@ class MemeBot:
                     print(f"[DEBUG] No meme URL found in API response: {data}")
                 return None, "API did not return a meme URL.", None
 
-            # Extract file extension from URL, ignoring query parameters
             url_path = meme_url.split('?')[0]
             file_extension = url_path.split('.')[-1].lower() if '.' in url_path else None
 
-            # Validate common image types
             if file_extension not in ["jpg", "jpeg", "png", "gif"]:
                 if self.debug_mode:
                     print(f"[DEBUG] Unsupported meme format or invalid URL path: {file_extension} from {url_path}")
@@ -61,7 +78,15 @@ class MemeBot:
             return None, f"Processing error: {e}", None
 
     def fetch_image_data(self, url: str) -> bytes | None:
-        """Fetches image data from a URL."""
+        """
+        Fetches image data from a URL.
+
+        Args:
+            url (str): The URL of the image to fetch.
+
+        Returns:
+            bytes | None: The image data as bytes, or None if there was an error.
+        """
         try:
             headers = {'User-Agent': 'LXMFy-MemeBot/1.0'}
             response = requests.get(url, headers=headers, timeout=20)
@@ -83,7 +108,12 @@ class MemeBot:
             return None
 
     def send_meme(self, ctx):
-        """Callback function for the /meme command."""
+        """
+        Callback function for the /meme command.
+
+        Args:
+            ctx: The command context.
+        """
         sender = ctx.sender
 
         try:
@@ -133,11 +163,14 @@ class MemeBot:
             ctx.reply("An unexpected error occurred while fetching a meme.")
 
     def run(self):
+        """
+        Runs the MemeBot.
+        """
         print("Starting Meme Bot...")
         self.bot.run()
 
+
 if __name__ == "__main__":
-    import argparse
     parser = argparse.ArgumentParser(description='Run the LXMF Meme Bot.')
     parser.add_argument(
         '--debug',

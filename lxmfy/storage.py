@@ -13,7 +13,7 @@ import sqlite3
 from abc import ABC, abstractmethod
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import RNS
 from LXMF import LXMessage
@@ -22,7 +22,15 @@ from .attachments import Attachment, AttachmentType
 
 
 def serialize_value(obj: Any) -> Any:
-    """Serialize complex objects to JSON-compatible format."""
+    """
+    Serialize complex objects to JSON-compatible format.
+
+    Args:
+        obj: The object to serialize.
+
+    Returns:
+        A JSON-compatible representation of the object.
+    """
     if isinstance(obj, (bytes, bytearray)):
         return {"__type": "bytes", "data": base64.b64encode(obj).decode()}
     if isinstance(obj, datetime):
@@ -59,7 +67,15 @@ def serialize_value(obj: Any) -> Any:
 
 
 def deserialize_value(obj: Any) -> Any:
-    """Deserialize from storage format."""
+    """
+    Deserialize from storage format.
+
+    Args:
+        obj: The object to deserialize.
+
+    Returns:
+        The deserialized object.
+    """
     if isinstance(obj, dict):
         if "__type" in obj:
             if obj["__type"] == "bytes":
@@ -91,35 +107,100 @@ def deserialize_value(obj: Any) -> Any:
 
 
 class StorageBackend(ABC):
+    """
+    Abstract base class for storage backends.
+    """
+
     @abstractmethod
     def get(self, key: str, default: Any = None) -> Any:
+        """
+        Retrieve a value from storage.
+
+        Args:
+            key: The key to retrieve.
+            default: The default value to return if the key is not found.
+
+        Returns:
+            The value associated with the key, or the default value if not found.
+        """
         pass
 
     @abstractmethod
     def set(self, key: str, value: Any) -> None:
+        """
+        Store a value in storage.
+
+        Args:
+            key: The key to store the value under.
+            value: The value to store.
+        """
         pass
 
     @abstractmethod
     def delete(self, key: str) -> None:
+        """
+        Delete a value from storage.
+
+        Args:
+            key: The key to delete.
+        """
         pass
 
     @abstractmethod
     def exists(self, key: str) -> bool:
+        """
+        Check if a key exists in storage.
+
+        Args:
+            key: The key to check.
+
+        Returns:
+            True if the key exists, False otherwise.
+        """
         pass
 
     @abstractmethod
     def scan(self, prefix: str) -> list:
+        """
+        Scan for keys with a given prefix.
+
+        Args:
+            prefix: The prefix to scan for.
+
+        Returns:
+            A list of keys that start with the prefix.
+        """
         pass
 
 
 class JSONStorage(StorageBackend):
+    """
+    JSON file-based storage backend.
+    """
+
     def __init__(self, directory: str):
+        """
+        Initialize a new JSONStorage instance.
+
+        Args:
+            directory: The directory to store the JSON files in.
+        """
         self.directory = Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True)
         self.cache: dict[str, Any] = {}
         self.logger = logging.getLogger(__name__)
 
     def get(self, key: str, default: Any = None) -> Any:
+        """
+        Retrieve a value from storage.
+
+        Args:
+            key: The key to retrieve.
+            default: The default value to return if the key is not found.
+
+        Returns:
+            The value associated with the key, or the default value if not found.
+        """
         if key in self.cache:
             return self.cache[key]
 
@@ -135,6 +216,13 @@ class JSONStorage(StorageBackend):
         return default
 
     def set(self, key: str, value: Any) -> None:
+        """
+        Store a value in storage.
+
+        Args:
+            key: The key to store the value under.
+            value: The value to store.
+        """
         file_path = self.directory / f"{key}.json"
         try:
             with open(file_path, "w") as f:
@@ -145,6 +233,12 @@ class JSONStorage(StorageBackend):
             raise
 
     def delete(self, key: str) -> None:
+        """
+        Delete a value from storage.
+
+        Args:
+            key: The key to delete.
+        """
         file_path = self.directory / f"{key}.json"
         try:
             if file_path.exists():
@@ -155,10 +249,27 @@ class JSONStorage(StorageBackend):
             raise
 
     def exists(self, key: str) -> bool:
+        """
+        Check if a key exists in storage.
+
+        Args:
+            key: The key to check.
+
+        Returns:
+            True if the key exists, False otherwise.
+        """
         return (self.directory / f"{key}.json").exists()
 
     def scan(self, prefix: str) -> list:
-        """Scan for keys with given prefix"""
+        """
+        Scan for keys with a given prefix.
+
+        Args:
+            prefix: The prefix to scan for.
+
+        Returns:
+            A list of keys that start with the prefix.
+        """
         results = []
         try:
             for file in self.directory.glob(f"{prefix}*.json"):
@@ -171,7 +282,17 @@ class JSONStorage(StorageBackend):
 
 
 class SQLiteStorage(StorageBackend):
+    """
+    SQLite database storage backend.
+    """
+
     def __init__(self, database_path: str):
+        """
+        Initialize a new SQLiteStorage instance.
+
+        Args:
+            database_path: The path to the SQLite database file.
+        """
         self.database_path = database_path
         self.cache: dict[str, Any] = {}
         self.logger = logging.getLogger(__name__)
@@ -179,6 +300,7 @@ class SQLiteStorage(StorageBackend):
         self._init_db()
 
     def _ensure_db_dir(self):
+        """Ensure the database directory exists."""
         db_path = Path(self.database_path)
         db_dir = db_path.parent
         try:
@@ -188,6 +310,7 @@ class SQLiteStorage(StorageBackend):
             raise
 
     def _init_db(self):
+        """Initialize the database table."""
         try:
             with sqlite3.connect(self.database_path) as conn:
                 conn.execute("""
@@ -210,6 +333,16 @@ class SQLiteStorage(StorageBackend):
             raise
 
     def get(self, key: str, default: Any = None) -> Any:
+        """
+        Retrieve a value from storage.
+
+        Args:
+            key: The key to retrieve.
+            default: The default value to return if the key is not found.
+
+        Returns:
+            The value associated with the key, or the default value if not found.
+        """
         if key in self.cache:
             return self.cache[key]
 
@@ -219,18 +352,24 @@ class SQLiteStorage(StorageBackend):
                 row = cursor.fetchone()
                 if row:
                     try:
-                        value = json.loads(row[0])  # Deserialize JSON string
+                        value = json.loads(row[0])
                         self.cache[key] = value
                         return value
                     except json.JSONDecodeError:
-                        return row[0]  # Return raw value if not JSON
+                        return row[0]
         except Exception as e:
             self.logger.error("Error reading %s: %s", key, str(e))
         return default
 
     def set(self, key: str, value: Any) -> None:
+        """
+        Store a value in storage.
+
+        Args:
+            key: The key to store the value under.
+            value: The value to store.
+        """
         try:
-            # Convert value to JSON string
             if isinstance(value, (dict, list)):
                 serialized = json.dumps(value)
             else:
@@ -247,6 +386,12 @@ class SQLiteStorage(StorageBackend):
             raise
 
     def delete(self, key: str) -> None:
+        """
+        Delete a value from storage.
+
+        Args:
+            key: The key to delete.
+        """
         try:
             with sqlite3.connect(self.database_path) as conn:
                 conn.execute("DELETE FROM key_value WHERE key = ?", (key,))
@@ -256,6 +401,15 @@ class SQLiteStorage(StorageBackend):
             raise
 
     def exists(self, key: str) -> bool:
+        """
+        Check if a key exists in storage.
+
+        Args:
+            key: The key to check.
+
+        Returns:
+            True if the key exists, False otherwise.
+        """
         try:
             with sqlite3.connect(self.database_path) as conn:
                 cursor = conn.execute("SELECT 1 FROM key_value WHERE key = ?", (key,))
@@ -265,6 +419,15 @@ class SQLiteStorage(StorageBackend):
             return False
 
     def scan(self, prefix: str) -> list:
+        """
+        Scan for keys with a given prefix.
+
+        Args:
+            prefix: The prefix to scan for.
+
+        Returns:
+            A list of keys that start with the prefix.
+        """
         try:
             with sqlite3.connect(self.database_path) as conn:
                 cursor = conn.execute(
@@ -278,38 +441,117 @@ class SQLiteStorage(StorageBackend):
 
 
 class Storage:
+    """
+    Facade for the underlying storage backend.
+    """
+
     def __init__(self, backend: StorageBackend):
+        """
+        Initialize a new Storage instance.
+
+        Args:
+            backend: The storage backend to use.
+        """
         self.backend = backend
 
     def get(self, key: str, default: Any = None) -> Any:
+        """
+        Retrieve a value from storage.
+
+        Args:
+            key: The key to retrieve.
+            default: The default value to return if the key is not found.
+
+        Returns:
+            The value associated with the key, or the default value if not found.
+        """
         value = self.backend.get(key, default)
         return deserialize_value(value)
 
     def set(self, key: str, value: Any) -> None:
+        """
+        Store a value in storage.
+
+        Args:
+            key: The key to store the value under.
+            value: The value to store.
+        """
         serialized = serialize_value(value)
         self.backend.set(key, serialized)
 
     def delete(self, key: str) -> None:
+        """
+        Delete a value from storage.
+
+        Args:
+            key: The key to delete.
+        """
         self.backend.delete(key)
 
     def exists(self, key: str) -> bool:
+        """
+        Check if a key exists in storage.
+
+        Args:
+            key: The key to check.
+
+        Returns:
+            True if the key exists, False otherwise.
+        """
         return self.backend.exists(key)
 
     def scan(self, prefix: str) -> list:
+        """
+        Scan for keys with a given prefix.
+
+        Args:
+            prefix: The prefix to scan for.
+
+        Returns:
+            A list of keys that start with the prefix.
+        """
         return self.backend.scan(prefix)
 
     def get_role_data(self, role_name: str) -> dict:
-        """Helper method for permission system"""
+        """
+        Helper method for permission system.
+
+        Args:
+            role_name: The name of the role.
+
+        Returns:
+            The role data.
+        """
         return self.get(f"roles:{role_name}", {})
 
     def set_role_data(self, role_name: str, data: dict):
-        """Helper method for permission system"""
+        """
+        Helper method for permission system.
+
+        Args:
+            role_name: The name of the role.
+            data: The role data.
+        """
         self.set(f"roles:{role_name}", data)
 
     def get_user_roles(self, user_hash: str) -> list[str]:
-        """Helper method for permission system"""
+        """
+        Helper method for permission system.
+
+        Args:
+            user_hash: The hash of the user.
+
+        Returns:
+            The list of roles for the user.
+        """
         return self.get(f"user_roles:{user_hash}", [])
 
     def set_user_roles(self, user_hash: str, roles: list[str]):
-        """Helper method for permission system"""
+        """
+        Helper method for permission system.
+
+        Args:
+            user_hash: The hash of the user.
+            roles: The list of roles for the user.
+        """
         self.set(f"user_roles:{user_hash}", roles)
