@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.6.6] - 2025-04-29
+
+- **Fix Basic Tests**
+- **Docstrings**
+- **Code Cleanup**
+- **Meme Bot Template**
+- **Update dependencies**
+- **Add ARMv7 and ARM64 Builds**
+- **Remove Bandit**
+
 ## [0.6.5] - 2025-04-07
 
 - **Fix Attachment System**
@@ -288,3 +298,4 @@ bot = LXMFBot(
 [0.6.3]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.3
 [0.6.4]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.4
 [0.6.5]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.5
+[0.6.6]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.6
