@@ -1,0 +1,25 @@
+FROM python:3.11-slim
+
+WORKDIR /build
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    python3-dev \
+    git \
+    libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy project files
+COPY requirements.txt setup.py README.md LICENSE ./
+COPY lxmfy ./lxmfy
+
+# Install build dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir wheel setuptools
+
+# Build the package
+RUN python setup.py bdist_wheel
+
+# The built wheel will be in the dist/ directory
+CMD ["cp", "-r", "dist/", "/output/"] 
