@@ -8,7 +8,7 @@ setup(
     version="0.6.5",
     packages=find_packages(),
     install_requires=["RNS", "LXMF"],
-    author="Sudo-Ivan",
+    author="Quad4",
     author_email="",
     description="An easy to use bot framework for LXMF",
     long_description=long_description,
@@ -19,5 +19,5 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.13",
+    python_requires=">=3.11",
 )
