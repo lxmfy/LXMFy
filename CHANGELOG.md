@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.6.8] - 2025-04-29
+
+- **Update setup.py package name**
+- **Add Dockerfile.Build**
+- **CLI: Colors and Interactive**
+
 ## [0.6.7] - 2025-04-29
 
 - **Fix Workflow**
@@ -306,3 +312,4 @@ bot = LXMFBot(
 [0.6.5]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.5
 [0.6.6]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.6
 [0.6.7]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.7
+[0.6.8]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.8

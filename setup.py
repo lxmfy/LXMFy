@@ -4,8 +4,8 @@ with open("README.md", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="LXMFy",
-    version="0.6.7",
+    name="lxmfy",
+    version="0.6.8",
     packages=find_packages(),
     install_requires=["RNS", "LXMF"],
     author="Quad4",

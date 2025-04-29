@@ -43,14 +43,14 @@ jobs:
           bash -c "apt-get update && apt-get install -y build-essential python3-dev libffi-dev && \
           pip install --no-cache-dir -r requirements.txt && \
           pip install --no-cache-dir wheel setuptools && \
-          python setup.py bdist_wheel"
+          python setup.py bdist_wheel --plat-name=linux_armv7l"
     - name: Build for ARM64
       run: |
         docker run --rm --platform linux/arm64 -v $(pwd):/build -w /build python:3.11-slim \
           bash -c "apt-get update && apt-get install -y build-essential python3-dev libffi-dev && \
           pip install --no-cache-dir -r requirements.txt && \
           pip install --no-cache-dir wheel setuptools && \
-          python setup.py bdist_wheel"
+          python setup.py bdist_wheel --plat-name=linux_aarch64"
     - name: Build source distribution
       run: python3 -m build --sdist
     - name: Store the distribution packages
