@@ -2,6 +2,13 @@
 version: '3.8'
 
 services:
+  build:
+    build:
+      context: .
+      dockerfile: Dockerfile.Build
+    volumes:
+      - ./dist:/output
+
   lxmfy-bot:
     build: .
     volumes:
