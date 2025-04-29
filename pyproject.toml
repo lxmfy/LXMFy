@@ -2,7 +2,7 @@
 name = "lxmfy"
 version = "0.6.5"
 description = "LXMF bot framework for creating bots for the Reticulum Network"
-authors = ["Ivan"]
+authors = ["Quad4"]
 readme = "README.md"
 packages = [{include = "lxmfy"}]
 
@@ -13,11 +13,10 @@ rns = "^0.9.4"
 requests = "^2.32.3"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.3.4"
-bandit = "^1.8.0"
-pytest-cov = "^6.0.0"
+pytest = "^8.3.5"
+bandit = "^1.8.3"
 pytest-mock = "^3.14.0"
-ruff = "^0.8.4"
+ruff = "^0.11.7"
 interrogate = "^1.7.0"
 
 [build-system]
