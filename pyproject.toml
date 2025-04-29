@@ -14,7 +14,6 @@ requests = "^2.32.3"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
-bandit = "^1.8.3"
 pytest-mock = "^3.14.0"
 ruff = "^0.11.7"
 interrogate = "^1.7.0"
@@ -45,6 +44,3 @@ ignore = ["F401", "E501"]
 exclude = [
     "tests/test_basic.py",
 ]
-
-[tool.bandit]
-exclude_dirs = ["tests"]
