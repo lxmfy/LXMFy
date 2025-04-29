@@ -9,7 +9,7 @@ packages = [{include = "lxmfy"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 lxmf = "^0.6.3"
-rns = "^0.9.3"
+rns = "^0.9.4"
 requests = "^2.32.3"
 
 [tool.poetry.group.dev.dependencies]
@@ -18,6 +18,7 @@ bandit = "^1.8.0"
 pytest-cov = "^6.0.0"
 pytest-mock = "^3.14.0"
 ruff = "^0.8.4"
+interrogate = "^1.7.0"
 
 [build-system]
 requires = ["poetry-core"]
