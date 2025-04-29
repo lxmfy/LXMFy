@@ -1,6 +1,6 @@
 """CLI module for LXMFy bot framework.
 
-Provides command-line interface functionality for creating and managing LXMF bots,
+Provides an interactive and colorful command-line interface for creating and managing LXMF bots,
 including bot file creation, example cog generation, and bot analysis.
 """
 
@@ -19,6 +19,239 @@ from typing import Any, Optional
 from .templates import EchoBot, NoteBot, ReminderBot
 from .validation import format_validation_results, validate_bot
 
+# Custom colors for CLI
+class Colors:
+    """Custom color codes for CLI output."""
+    HEADER = '\033[95m'
+    BLUE = '\033[94m'
+    CYAN = '\033[96m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'
+    RED = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+def print_header(text: str) -> None:
+    """Print a formatted header with custom styling."""
+    print(f"\n{Colors.HEADER}{Colors.BOLD}{'=' * 50}{Colors.ENDC}")
+    print(f"{Colors.HEADER}{Colors.BOLD}{text.center(50)}{Colors.ENDC}")
+    print(f"{Colors.HEADER}{Colors.BOLD}{'=' * 50}{Colors.ENDC}\n")
+
+def print_success(text: str) -> None:
+    """Print a success message with custom styling."""
+    print(f"{Colors.GREEN}{Colors.BOLD}✓ {text}{Colors.ENDC}")
+
+def print_error(text: str) -> None:
+    """Print an error message with custom styling."""
+    print(f"{Colors.RED}{Colors.BOLD}✗ {text}{Colors.ENDC}")
+
+def print_info(text: str) -> None:
+    """Print an info message with custom styling."""
+    print(f"{Colors.BLUE}{Colors.BOLD}ℹ {text}{Colors.ENDC}")
+
+def print_warning(text: str) -> None:
+    """Print a warning message with custom styling."""
+    print(f"{Colors.YELLOW}{Colors.BOLD}⚠ {text}{Colors.ENDC}")
+
+def print_menu() -> None:
+    """Print the interactive menu."""
+    print_header("LXMFy Bot Framework")
+    print(f"{Colors.CYAN}Available Commands:{Colors.ENDC}")
+    print(f"{Colors.BOLD}1.{Colors.ENDC} Create a new bot")
+    print(f"{Colors.BOLD}2.{Colors.ENDC} Run a template bot")
+    print(f"{Colors.BOLD}3.{Colors.ENDC} Analyze a bot")
+    print(f"{Colors.BOLD}4.{Colors.ENDC} Verify wheel signature")
+    print(f"{Colors.BOLD}5.{Colors.ENDC} Exit")
+    print()
+
+def get_user_choice() -> str:
+    """Get user's choice from the menu."""
+    while True:
+        try:
+            choice = input(f"{Colors.CYAN}Enter your choice (1-5): {Colors.ENDC}")
+            if choice in ['1', '2', '3', '4', '5']:
+                return choice
+            print_error("Invalid choice. Please enter a number between 1 and 5.")
+        except KeyboardInterrupt:
+            print("\nExiting...")
+            sys.exit(0)
+
+def get_bot_name() -> str:
+    """Get bot name from user input."""
+    while True:
+        name = input(f"{Colors.CYAN}Enter bot name: {Colors.ENDC}")
+        try:
+            return validate_bot_name(name)
+        except ValueError as ve:
+            print_error(f"Invalid bot name: {ve}")
+
+def get_template_choice() -> str:
+    """Get template choice from user input."""
+    templates = ["basic", "echo", "reminder", "note"]
+    print(f"\n{Colors.CYAN}Available templates:{Colors.ENDC}")
+    for i, template in enumerate(templates, 1):
+        print(f"{Colors.BOLD}{i}.{Colors.ENDC} {template}")
+    
+    while True:
+        try:
+            choice = input(f"\n{Colors.CYAN}Select template (1-4): {Colors.ENDC}")
+            if choice in ['1', '2', '3', '4']:
+                return templates[int(choice) - 1]
+            print_error("Invalid choice. Please enter a number between 1 and 4.")
+        except KeyboardInterrupt:
+            print("\nExiting...")
+            sys.exit(0)
+
+def interactive_create() -> None:
+    """Interactive bot creation process."""
+    print_header("Create New Bot")
+    bot_name = get_bot_name()
+    template = get_template_choice()
+    
+    output_path = input(f"{Colors.CYAN}Enter output path (default: {bot_name}.py): {Colors.ENDC}") or f"{bot_name}.py"
+    
+    try:
+        bot_path = create_from_template(template, output_path, bot_name)
+        if template == "basic":
+            create_example_cog(bot_path)
+            print_success("Bot created successfully!")
+            print_info(f"""
+Files created:
+  - {bot_path} (main bot file)
+  - {os.path.join(os.path.dirname(bot_path), 'cogs')}
+    - __init__.py
+    - basic.py (example cog)
+
+To start your bot:
+  python {bot_path}
+
+To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
+            """)
+        else:
+            print_success("Bot created successfully!")
+            print_info(f"""
+Files created:
+  - {bot_path} (main bot file)
+
+To start your bot:
+  python {bot_path}
+
+To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
+            """)
+    except Exception as e:
+        print_error(f"Error creating bot: {str(e)}")
+
+def interactive_run() -> None:
+    """Interactive bot running process."""
+    print_header("Run Template Bot")
+    template = get_template_choice()
+    
+    custom_name = input(f"{Colors.CYAN}Enter custom name (optional): {Colors.ENDC}")
+    if custom_name:
+        try:
+            custom_name = validate_bot_name(custom_name)
+        except ValueError as ve:
+            print_warning(f"Invalid custom name provided. Using default. ({ve})")
+            custom_name = None
+    
+    try:
+        template_map = {
+            "echo": EchoBot,
+            "reminder": ReminderBot,
+            "note": NoteBot
+        }
+        
+        BotClass = template_map[template]
+        print_header(f"Starting {template} Bot")
+        bot_instance = BotClass()
+        
+        if custom_name:
+            if hasattr(bot_instance, 'bot'):
+                bot_instance.bot.config.name = custom_name
+                bot_instance.bot.name = custom_name
+            else:
+                bot_instance.config.name = custom_name
+                bot_instance.name = custom_name
+            print_info(f"Running with custom name: {custom_name}")
+        
+        bot_instance.run()
+    except Exception as e:
+        print_error(f"Error running template bot: {str(e)}")
+
+def interactive_analyze() -> None:
+    """Interactive bot analysis process."""
+    print_header("Analyze Bot")
+    bot_path = input(f"{Colors.CYAN}Enter bot file path: {Colors.ENDC}")
+    
+    if not os.path.exists(bot_path):
+        print_error(f"Bot file not found: {bot_path}")
+        return
+    
+    results = analyze_bot_file(bot_path)
+    
+    if results.get('errors'):
+        print_error('Errors:')
+        for error in results['errors']:
+            print(f"  - {error}")
+    
+    if results.get('warnings'):
+        print_warning('Warnings:')
+        for warning in results['warnings']:
+            print(f"  - {warning}")
+    
+    print_info('Configuration:')
+    for key, value in results.get('config', {}).items():
+        print(f"  {key}: {value}")
+    
+    print_info('Commands: ' + ', '.join(results.get('commands', [])))
+    print_info('Events: ' + ', '.join(results.get('events', [])))
+    print_info('Middleware: ' + ', '.join(results.get('middleware', [])))
+    print_info('Permissions: ' + ', '.join(results.get('permissions', [])))
+
+def interactive_verify() -> None:
+    """Interactive wheel verification process."""
+    print_header("Verify Wheel Signature")
+    whl_path = input(f"{Colors.CYAN}Enter wheel file path (or press Enter to use latest): {Colors.ENDC}")
+    
+    if not whl_path:
+        whl_path = find_latest_wheel()
+        if not whl_path:
+            print_error("No wheel files found in current directory")
+            return
+    
+    sigstore_path = input(f"{Colors.CYAN}Enter sigstore file path (default: sigstore.json): {Colors.ENDC}") or "sigstore.json"
+    
+    if not os.path.exists(whl_path):
+        print_error(f"Wheel file not found: {whl_path}")
+        return
+    
+    if not os.path.exists(sigstore_path):
+        print_error(f"Sigstore file not found: {sigstore_path}")
+        return
+    
+    if not verify_wheel_signature(whl_path, sigstore_path):
+        print_error("Verification failed")
+
+def interactive_mode() -> None:
+    """Run the CLI in interactive mode."""
+    while True:
+        print_menu()
+        choice = get_user_choice()
+        
+        if choice == '1':
+            interactive_create()
+        elif choice == '2':
+            interactive_run()
+        elif choice == '3':
+            interactive_analyze()
+        elif choice == '4':
+            interactive_verify()
+        elif choice == '5':
+            print_success("Goodbye!")
+            sys.exit(0)
+        
+        input(f"\n{Colors.CYAN}Press Enter to continue...{Colors.ENDC}")
 
 def sanitize_filename(filename: str) -> str:
     """Sanitizes the filename while preserving the extension.
@@ -185,20 +418,20 @@ def verify_wheel_signature(whl_path: str, sigstore_path: str) -> bool:
             whl_hash = hashlib.sha256(whl_content).hexdigest()
 
         if "hash" not in sigstore_data:
-            print(f"Error: No hash found in {sigstore_path}")
+            print_error(f"No hash found in {sigstore_path}")
             return False
 
         if whl_hash != sigstore_data["hash"]:
-            print("Hash verification failed!")
-            print(f"Wheel hash: {whl_hash}")
-            print(f"Sigstore hash: {sigstore_data['hash']}")
+            print_error("Hash verification failed!")
+            print_info(f"Wheel hash: {whl_hash}")
+            print_info(f"Sigstore hash: {sigstore_data['hash']}")
             return False
 
-        print("✓ Signature verification successful!")
+        print_success("Signature verification successful!")
         return True
 
     except Exception as e:
-        print(f"Error during verification: {str(e)}")
+        print_error(f"Error during verification: {str(e)}")
         return False
 
 
@@ -423,6 +656,12 @@ def analyze_bot_file(file_path: str) -> dict[str, Any]:
 
 def main() -> None:
     """Main CLI entry point."""
+    if len(sys.argv) == 1:
+        interactive_mode()
+        return
+
+    print_header("LXMFy Bot Framework")
+    
     parser = argparse.ArgumentParser(
         description="LXMFy Bot Tool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -488,34 +727,35 @@ Examples:
 
     if args.command == "analyze":
         if not args.name:
-            print("Error: Please specify a bot file to analyze")
+            print_error("Please specify a bot file to analyze")
             sys.exit(1)
 
         bot_path = args.name
         if not os.path.exists(bot_path):
-            print(f"Error: Bot file not found: {bot_path}")
+            print_error(f"Bot file not found: {bot_path}")
             sys.exit(1)
 
+        print_header("Bot Analysis Results")
         results = analyze_bot_file(bot_path)
 
         if results.get('errors'):
-            print('Errors:')
+            print_error('Errors:')
             for error in results['errors']:
-                print(f'  - {error}')
+                print(f"  - {error}")
 
         if results.get('warnings'):
-            print('Warnings:')
+            print_warning('Warnings:')
             for warning in results['warnings']:
-                print(f'  - {warning}')
+                print(f"  - {warning}")
 
-        print('Configuration:')
+        print_info('Configuration:')
         for key, value in results.get('config', {}).items():
-            print(f'  {key}: {value}')
+            print(f"  {key}: {value}")
 
-        print('Commands:', ', '.join(results.get('commands', [])))
-        print('Events:', ', '.join(results.get('events', [])))
-        print('Middleware:', ', '.join(results.get('middleware', [])))
-        print('Permissions:', ', '.join(results.get('permissions', [])))
+        print_info('Commands: ' + ', '.join(results.get('commands', [])))
+        print_info('Events: ' + ', '.join(results.get('events', [])))
+        print_info('Middleware: ' + ', '.join(results.get('middleware', [])))
+        print_info('Permissions: ' + ', '.join(results.get('permissions', [])))
 
     elif args.command == "create":
         try:
@@ -532,24 +772,22 @@ Examples:
                          bot_name = os.path.splitext(os.path.basename(args.name))[0]
                 else:
                     output_path = f"{args.name}.py"
-
             else:
                 output_path = "bot.py"
 
             try:
                 bot_name = validate_bot_name(bot_name)
             except ValueError as ve:
-                print(f"Error: Invalid bot name '{bot_name}'. {ve}", file=sys.stderr)
+                print_error(f"Invalid bot name '{bot_name}'. {ve}")
                 sys.exit(1)
 
+            print_header("Creating New Bot")
             bot_path = create_from_template(args.template, output_path, bot_name)
 
             if args.template == "basic":
                 create_example_cog(bot_path)
-                print(
-                    f"""
-✨ Successfully created new LXMFy bot!
-
+                print_success("Bot created successfully!")
+                print_info(f"""
 Files created:
   - {bot_path} (main bot file)
   - {os.path.join(os.path.dirname(bot_path), 'cogs')}
@@ -560,13 +798,10 @@ To start your bot:
   python {bot_path}
 
 To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
-                """
-                )
+                """)
             else:
-                print(
-                    f"""
-✨ Successfully created new LXMFy bot!
-
+                print_success("Bot created successfully!")
+                print_info(f"""
 Files created:
   - {bot_path} (main bot file)
 
@@ -574,10 +809,9 @@ To start your bot:
   python {bot_path}
 
 To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
-                """
-                )
+                """)
         except Exception as e:
-            print(f"Error creating bot: {str(e)}", file=sys.stderr)
+            print_error(f"Error creating bot: {str(e)}")
             sys.exit(1)
 
     elif args.command == "verify":
@@ -587,27 +821,28 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
         if not whl_path:
             whl_path = find_latest_wheel()
             if not whl_path:
-                print("Error: No wheel files found in current directory")
+                print_error("No wheel files found in current directory")
                 sys.exit(1)
 
         if not sigstore_path:
             sigstore_path = "sigstore.json"
 
         if not os.path.exists(whl_path):
-            print(f"Error: Wheel file not found: {whl_path}")
+            print_error(f"Wheel file not found: {whl_path}")
             sys.exit(1)
 
         if not os.path.exists(sigstore_path):
-            print(f"Error: Sigstore file not found: {sigstore_path}")
+            print_error(f"Sigstore file not found: {sigstore_path}")
             sys.exit(1)
 
+        print_header("Verifying Wheel Signature")
         if not verify_wheel_signature(whl_path, sigstore_path):
             sys.exit(1)
 
     elif args.command == "run":
         template_name = args.name
         if not template_name:
-            print("Error: Please specify a template name to run (echo, reminder, note)")
+            print_error("Please specify a template name to run (echo, reminder, note)")
             sys.exit(1)
 
         template_map = {
@@ -617,12 +852,12 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
         }
 
         if template_name not in template_map:
-             print(f"Error: Invalid template name '{template_name}'. Choose from: {', '.join(template_map.keys())}")
+             print_error(f"Invalid template name '{template_name}'. Choose from: {', '.join(template_map.keys())}")
              sys.exit(1)
 
         try:
             BotClass = template_map[template_name]
-            print(f"Starting {template_name} bot...")
+            print_header(f"Starting {template_name} Bot")
             bot_instance = BotClass()
 
             custom_name = args.name_opt
@@ -635,14 +870,14 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
                      else:
                          bot_instance.config.name = validated_name
                          bot_instance.name = validated_name
-                     print(f"Running with custom name: {validated_name}")
+                     print_info(f"Running with custom name: {validated_name}")
                  except ValueError as ve:
-                     print(f"Warning: Invalid custom name '{custom_name}' provided. Using default. ({ve})")
+                     print_warning(f"Invalid custom name '{custom_name}' provided. Using default. ({ve})")
 
             bot_instance.run()
 
         except Exception as e:
-            print(f"Error running template bot '{template_name}': {str(e)}", file=sys.stderr)
+            print_error(f"Error running template bot '{template_name}': {str(e)}")
             sys.exit(1)
 
 
