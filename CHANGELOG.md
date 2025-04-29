@@ -9,6 +9,8 @@
 - **Update dependencies**
 - **Add ARMv7 and ARM64 Builds**
 - **Remove Bandit**
+- **Remove Meme Bot (Meme API no longer working)**
+- **Remove Requests (Meme Bot dependency)**
 
 ## [0.6.5] - 2025-04-07
 
