@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.6.7] - 2025-04-29
+
+- **Fix Workflow**
+
 ## [0.6.6] - 2025-04-29
 
 - **Fix Basic Tests**
@@ -301,3 +305,4 @@ bot = LXMFBot(
 [0.6.4]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.4
 [0.6.5]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.5
 [0.6.6]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.6
+[0.6.7]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.7
