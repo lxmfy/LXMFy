@@ -33,6 +33,10 @@ jobs:
         sudo apt-get install -y build-essential python3-dev libffi-dev
     - name: Install pypa/build
       run: python3 -m pip install build --user
+    - name: Create dist directory
+      run: |
+        mkdir -p dist
+        chmod 777 dist
     - name: Build for ARMv7
       run: |
         docker run --rm --platform linux/arm/v7 -v $(pwd):/build -w /build python:3.11-slim \
