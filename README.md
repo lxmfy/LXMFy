@@ -1,5 +1,7 @@
 # LXMFy
 
+[![Socket Badge](https://socket.dev/api/badge/pypi/package/lxmfy/0.6.8?artifact_id=tar-gz)](https://socket.dev/pypi/package/lxmfy/overview/0.6.8/tar-gz)
+
 Easily create LXMF bots for the Reticulum Network with this extensible framework.
 
 ## Features
