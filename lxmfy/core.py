@@ -10,6 +10,7 @@ import importlib
 import inspect
 import logging
 import os
+import re
 import sys
 import time
 from queue import Queue
@@ -161,21 +162,34 @@ class LXMFBot:
 
         return decorator
 
-    def load_extension(self, name):
+    def load_extension(self, name: str) -> None:
         """
         Load an extension (cog) by name.
 
         Args:
             name: The name of the extension to load.
-        """
-        if self.hot_reloading and name in sys.modules:
-            module = importlib.reload(sys.modules[name])
-        else:
-            module = importlib.import_module(name)
 
-        if not hasattr(module, "setup"):
-            raise ImportError(f"Extension {name} missing setup function")
-        module.setup(self)
+        Raises:
+            ValueError: If the module name contains invalid characters.
+            ImportError: If the extension is missing setup function or fails to load.
+        """
+        if not re.match(r'^[a-zA-Z0-9_\.]+$', name):
+            raise ValueError(f"Invalid module name format: {name}")
+
+        if not name.startswith('cogs.'):
+            name = f'cogs.{name}'
+
+        try:
+            if self.hot_reloading and name in sys.modules:
+                module = importlib.reload(sys.modules[name])
+            else:
+                module = importlib.import_module(name)
+
+            if not hasattr(module, "setup"):
+                raise ImportError(f"Extension {name} missing setup function")
+            module.setup(self)
+        except ImportError as e:
+            raise ImportError(f"Failed to load extension {name}: {str(e)}")
 
     def add_cog(self, cog):
         """
