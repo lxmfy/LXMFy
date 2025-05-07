@@ -9,7 +9,7 @@ setup(
     packages=find_packages(),
     install_requires=["RNS", "LXMF"],
     author="Quad4",
-    author_email="",
+    author_email="team@quad4.io",
     description="An easy to use bot framework for LXMF",
     long_description=long_description,
     long_description_content_type="text/markdown",
