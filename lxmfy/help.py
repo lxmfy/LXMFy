@@ -35,9 +35,7 @@ class HelpFormatter:
 
         if command.permissions != DefaultPerms.USE_COMMANDS:
             help_text.append("Required Permissions:")
-            for perm in DefaultPerms:
-                if perm.value & command.permissions:
-                    help_text.append(f"  - {perm.name}")
+            help_text.extend(f"  - {perm.name}" for perm in DefaultPerms if perm.value & command.permissions)
 
         if command.admin_only:
             help_text.append("Note: Admin only command")
@@ -57,8 +55,7 @@ class HelpFormatter:
             str: A formatted string containing the category's help information.
         """
         help_text = [f"\n=== {category} ==="]
-        for cmd in commands:
-            help_text.append(f"{cmd.name}: {cmd.help.description}")
+        help_text.extend(f"{cmd.name}: {cmd.help.description}" for cmd in commands)
         return "\n".join(help_text)
 
     @staticmethod

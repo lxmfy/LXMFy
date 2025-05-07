@@ -62,14 +62,10 @@ def print_menu() -> None:
 def get_user_choice() -> str:
     """Get user's choice from the menu."""
     while True:
-        try:
-            choice = input(f"{Colors.CYAN}Enter your choice (1-3): {Colors.ENDC}")
-            if choice in ['1', '2', '3']:
-                return choice
-            print_error("Invalid choice. Please enter a number between 1 and 3.")
-        except KeyboardInterrupt:
-            print("\nExiting...")
-            sys.exit(0)
+        choice = input(f"{Colors.CYAN}Enter your choice (1-3): {Colors.ENDC}")
+        if choice in ['1', '2', '3']:
+            return choice
+        print_error("Invalid choice. Please enter a number between 1 and 3.")
 
 def get_bot_name() -> str:
     """Get bot name from user input."""
@@ -88,14 +84,10 @@ def get_template_choice() -> str:
         print(f"{Colors.BOLD}{i}.{Colors.ENDC} {template}")
 
     while True:
-        try:
-            choice = input(f"\n{Colors.CYAN}Select template (1-4): {Colors.ENDC}")
-            if choice in ['1', '2', '3', '4']:
-                return templates[int(choice) - 1]
-            print_error("Invalid choice. Please enter a number between 1 and 4.")
-        except KeyboardInterrupt:
-            print("\nExiting...")
-            sys.exit(0)
+        choice = input(f"\n{Colors.CYAN}Select template (1-4): {Colors.ENDC}")
+        if choice in ['1', '2', '3', '4']:
+            return templates[int(choice) - 1]
+        print_error("Invalid choice. Please enter a number between 1 and 4.")
 
 def interactive_create() -> None:
     """Interactive bot creation process."""
@@ -409,16 +401,17 @@ def is_safe_path(path: str, base_path: str = None) -> bool:
 
 def main() -> None:
     """Main CLI entry point."""
-    if len(sys.argv) == 1:
-        interactive_mode()
-        return
+    try:
+        if len(sys.argv) == 1:
+            interactive_mode()
+            return
 
-    print_header("LXMFy Bot Framework")
+        print_header("LXMFy Bot Framework")
 
-    parser = argparse.ArgumentParser(
-        description="LXMFy Bot Tool",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
+        parser = argparse.ArgumentParser(
+            description="LXMFy Bot Tool",
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            epilog="""
 Examples:
   lxmfy create                          # Create basic bot file 'bot.py'
   lxmfy create mybot                    # Create basic bot file 'mybot.py'
@@ -429,82 +422,82 @@ Examples:
   lxmfy run echo                        # Run the built-in echo bot
   lxmfy run reminder --name "MyReminder"  # Run the reminder bot with a custom name
   lxmfy run note                        # Run the built-in note bot
-        """,
-    )
+            """,
+        )
 
-    parser.add_argument(
-        "command",
-        choices=["create", "run"],
-        help="Create a bot file or run a template bot",
-    )
-    parser.add_argument(
-        "name",
-        nargs="?",
-        default=None,
-        help="Name for 'create' (bot name/path) or 'run' (template name: echo, reminder, note)",
-    )
-    parser.add_argument(
-        "directory",
-        nargs="?",
-        default=None,
-        help="Output directory for 'create' command (optional)",
-    )
-    parser.add_argument(
-        "--template",
-        choices=["basic", "echo", "reminder", "note"],
-        default="basic",
-        help="Bot template to use for 'create' command (default: basic)",
-    )
-    parser.add_argument(
-        "--name",
-        dest="name_opt",
-        default=None,
-        help="Optional custom name for the bot (used with 'create' or 'run')",
-    )
-    parser.add_argument(
-        "--output",
-        default=None,
-        help="Output file path or directory for 'create' command",
-    )
-    parser.add_argument(
-        "--no-cogs",
-        action="store_true",
-        help="Disable cogs loading for 'create' command",
-    )
+        parser.add_argument(
+            "command",
+            choices=["create", "run"],
+            help="Create a bot file or run a template bot",
+        )
+        parser.add_argument(
+            "name",
+            nargs="?",
+            default=None,
+            help="Name for 'create' (bot name/path) or 'run' (template name: echo, reminder, note)",
+        )
+        parser.add_argument(
+            "directory",
+            nargs="?",
+            default=None,
+            help="Output directory for 'create' command (optional)",
+        )
+        parser.add_argument(
+            "--template",
+            choices=["basic", "echo", "reminder", "note"],
+            default="basic",
+            help="Bot template to use for 'create' command (default: basic)",
+        )
+        parser.add_argument(
+            "--name",
+            dest="name_opt",
+            default=None,
+            help="Optional custom name for the bot (used with 'create' or 'run')",
+        )
+        parser.add_argument(
+            "--output",
+            default=None,
+            help="Output file path or directory for 'create' command",
+        )
+        parser.add_argument(
+            "--no-cogs",
+            action="store_true",
+            help="Disable cogs loading for 'create' command",
+        )
 
-    args = parser.parse_args()
+        args = parser.parse_args()
 
-    if args.command == "create":
-        try:
-            bot_name = args.name_opt or args.name or "MyLXMFBot"
-
-            if args.output:
-                output_path = args.output
-            elif args.directory:
-                output_path = os.path.join(args.directory, "bot.py")
-            elif args.name:
-                if '.' in args.name:
-                     output_path = args.name
-                     if not args.name_opt:
-                         bot_name = os.path.splitext(os.path.basename(args.name))[0]
-                else:
-                    output_path = f"{args.name}.py"
-            else:
-                output_path = "bot.py"
-
+        if args.command == "create":
             try:
-                bot_name = validate_bot_name(bot_name)
-            except ValueError as ve:
-                print_error(f"Invalid bot name '{bot_name}'. {ve}")
-                sys.exit(1)
+                bot_name = args.name_opt or args.name or "MyLXMFBot"
 
-            print_header("Creating New Bot")
-            bot_path = create_from_template(args.template, output_path, bot_name)
+                if args.output:
+                    output_path = args.output
+                elif args.directory:
+                    output_path = os.path.join(args.directory, "bot.py")
+                elif args.name:
+                    if '.' in args.name:
+                         output_path = args.name
+                         if not args.name_opt:
+                             bot_name = os.path.splitext(os.path.basename(args.name))[0]
+                    else:
+                        output_path = f"{args.name}.py"
+                else:
+                    output_path = "bot.py"
 
-            if args.template == "basic":
-                create_example_cog(bot_path)
-                print_success("Bot created successfully!")
-                print_info(f"""
+                try:
+                    bot_name = validate_bot_name(bot_name)
+                except ValueError as ve:
+                    print_error(f"Invalid bot name '{bot_name}'. {ve}")
+                    sys.exit(1)
+
+                print_header("Creating New Bot")
+                bot_path = create_from_template(args.template, output_path, bot_name)
+
+                if args.template == "basic":
+                    create_example_cog(bot_path)
+                    print_success("Bot created successfully!")
+                    print_info(f"""
 Files created:
   - {bot_path} (main bot file)
   - {os.path.join(os.path.dirname(bot_path), 'cogs')}
@@ -515,10 +508,10 @@ To start your bot:
   python {bot_path}
 
 To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
-                """)
-            else:
-                print_success("Bot created successfully!")
-                print_info(f"""
+                    """)
+                else:
+                    print_success("Bot created successfully!")
+                    print_info(f"""
 Files created:
   - {bot_path} (main bot file)
 
@@ -526,51 +519,54 @@ To start your bot:
   python {bot_path}
 
 To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
-                """)
-        except Exception as e:
-            print_error(f"Error creating bot: {str(e)}")
-            sys.exit(1)
+                    """)
+            except Exception as e:
+                print_error(f"Error creating bot: {str(e)}")
+                sys.exit(1)
 
-    elif args.command == "run":
-        template_name = args.name
-        if not template_name:
-            print_error("Please specify a template name to run (echo, reminder, note)")
-            sys.exit(1)
+        elif args.command == "run":
+            template_name = args.name
+            if not template_name:
+                print_error("Please specify a template name to run (echo, reminder, note)")
+                sys.exit(1)
 
-        template_map = {
-            "echo": EchoBot,
-            "reminder": ReminderBot,
-            "note": NoteBot
-        }
+            template_map = {
+                "echo": EchoBot,
+                "reminder": ReminderBot,
+                "note": NoteBot
+            }
 
-        if template_name not in template_map:
-             print_error(f"Invalid template name '{template_name}'. Choose from: {', '.join(template_map.keys())}")
-             sys.exit(1)
+            if template_name not in template_map:
+                 print_error(f"Invalid template name '{template_name}'. Choose from: {', '.join(template_map.keys())}")
+                 sys.exit(1)
 
-        try:
-            BotClass = template_map[template_name]
-            print_header(f"Starting {template_name} Bot")
-            bot_instance = BotClass()
+            try:
+                BotClass = template_map[template_name]
+                print_header(f"Starting {template_name} Bot")
+                bot_instance = BotClass()
 
-            custom_name = args.name_opt
-            if custom_name:
-                 try:
-                     validated_name = validate_bot_name(custom_name)
-                     if hasattr(bot_instance, 'bot'):
-                         bot_instance.bot.config.name = validated_name
-                         bot_instance.bot.name = validated_name
-                     else:
-                         bot_instance.config.name = validated_name
-                         bot_instance.name = validated_name
-                     print_info(f"Running with custom name: {validated_name}")
-                 except ValueError as ve:
-                     print_warning(f"Invalid custom name '{custom_name}' provided. Using default. ({ve})")
+                custom_name = args.name_opt
+                if custom_name:
+                     try:
+                         validated_name = validate_bot_name(custom_name)
+                         if hasattr(bot_instance, 'bot'):
+                             bot_instance.bot.config.name = validated_name
+                             bot_instance.bot.name = validated_name
+                         else:
+                             bot_instance.config.name = validated_name
+                             bot_instance.name = validated_name
+                         print_info(f"Running with custom name: {validated_name}")
+                     except ValueError as ve:
+                         print_warning(f"Invalid custom name '{custom_name}' provided. Using default. ({ve})")
 
-            bot_instance.run()
+                bot_instance.run()
 
-        except Exception as e:
-            print_error(f"Error running template bot '{template_name}': {str(e)}")
-            sys.exit(1)
+            except Exception as e:
+                print_error(f"Error running template bot '{template_name}': {str(e)}")
+                sys.exit(1)
+    except KeyboardInterrupt:
+        print("\nExiting...")
+        sys.exit(0)
 
 
 if __name__ == "__main__":
