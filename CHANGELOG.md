@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.6.9] - 2025-05-07
+
+- **Add opencontainers metadata**
+- **Remove bot Scan (AST)**
+- **Remove bot verification**
+- **Update dependencies**
+- **Performance fixes (Ruff PERF)**
+- **cog loading validation and error handling**
+
 ## [0.6.8] - 2025-04-29
 
 - **Update setup.py package name**
