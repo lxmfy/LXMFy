@@ -12,8 +12,6 @@ lxmf = "^0.6.3"
 rns = "^0.9.4"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.3.5"
-pytest-mock = "^3.14.0"
 ruff = "^0.11.7"
 interrogate = "^1.7.0"
 
