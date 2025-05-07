@@ -39,8 +39,8 @@ class DefaultPerms(Flag):
     BYPASS_EVENT_CHECKS = auto()
 
     # Combined permissions
-    ALL = (USE_BOT | SEND_MESSAGES | USE_COMMANDS | 
-          MANAGE_MESSAGES | MANAGE_COMMANDS | MANAGE_USERS | 
+    ALL = (USE_BOT | SEND_MESSAGES | USE_COMMANDS |
+          MANAGE_MESSAGES | MANAGE_COMMANDS | MANAGE_USERS |
           BYPASS_RATELIMIT | BYPASS_SPAM | VIEW_ADMIN_COMMANDS |
           VIEW_EVENTS | MANAGE_EVENTS | BYPASS_EVENT_CHECKS)
 
@@ -165,4 +165,4 @@ class PermissionManager:
         if not self.enabled:
             return True
         user_perms = self.get_user_permissions(user)
-        return (user_perms & permission) == permission 
+        return (user_perms & permission) == permission

@@ -86,4 +86,4 @@ class MiddlewareManager:
 
         except Exception as e:
             self.logger.error("Error executing middleware chain: %s", str(e))
-            return data 
+            return data

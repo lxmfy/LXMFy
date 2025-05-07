@@ -1,23 +1,18 @@
 """CLI module for LXMFy bot framework.
 
 Provides an interactive and colorful command-line interface for creating and managing LXMF bots,
-including bot file creation, example cog generation, and bot analysis.
+including bot file creation and example cog generation.
 """
 
 import argparse
-import ast
-import hashlib
-import importlib.util
-import json
 import os
 import re
 import sys
-from glob import glob
 from pathlib import Path
 from typing import Any, Optional
 
 from .templates import EchoBot, NoteBot, ReminderBot
-from .validation import format_validation_results, validate_bot
+from .validation import validate_bot
 
 
 # Custom colors for CLI
@@ -61,19 +56,17 @@ def print_menu() -> None:
     print(f"{Colors.CYAN}Available Commands:{Colors.ENDC}")
     print(f"{Colors.BOLD}1.{Colors.ENDC} Create a new bot")
     print(f"{Colors.BOLD}2.{Colors.ENDC} Run a template bot")
-    print(f"{Colors.BOLD}3.{Colors.ENDC} Analyze a bot")
-    print(f"{Colors.BOLD}4.{Colors.ENDC} Verify wheel signature")
-    print(f"{Colors.BOLD}5.{Colors.ENDC} Exit")
+    print(f"{Colors.BOLD}3.{Colors.ENDC} Exit")
     print()
 
 def get_user_choice() -> str:
     """Get user's choice from the menu."""
     while True:
         try:
-            choice = input(f"{Colors.CYAN}Enter your choice (1-5): {Colors.ENDC}")
-            if choice in ['1', '2', '3', '4', '5']:
+            choice = input(f"{Colors.CYAN}Enter your choice (1-3): {Colors.ENDC}")
+            if choice in ['1', '2', '3']:
                 return choice
-            print_error("Invalid choice. Please enter a number between 1 and 5.")
+            print_error("Invalid choice. Please enter a number between 1 and 3.")
         except KeyboardInterrupt:
             print("\nExiting...")
             sys.exit(0)
@@ -180,60 +173,6 @@ def interactive_run() -> None:
     except Exception as e:
         print_error(f"Error running template bot: {str(e)}")
 
-def interactive_analyze() -> None:
-    """Interactive bot analysis process."""
-    print_header("Analyze Bot")
-    bot_path = input(f"{Colors.CYAN}Enter bot file path: {Colors.ENDC}")
-
-    if not os.path.exists(bot_path):
-        print_error(f"Bot file not found: {bot_path}")
-        return
-
-    results = analyze_bot_file(bot_path)
-
-    if results.get('errors'):
-        print_error('Errors:')
-        for error in results['errors']:
-            print(f"  - {error}")
-
-    if results.get('warnings'):
-        print_warning('Warnings:')
-        for warning in results['warnings']:
-            print(f"  - {warning}")
-
-    print_info('Configuration:')
-    for key, value in results.get('config', {}).items():
-        print(f"  {key}: {value}")
-
-    print_info('Commands: ' + ', '.join(results.get('commands', [])))
-    print_info('Events: ' + ', '.join(results.get('events', [])))
-    print_info('Middleware: ' + ', '.join(results.get('middleware', [])))
-    print_info('Permissions: ' + ', '.join(results.get('permissions', [])))
-
-def interactive_verify() -> None:
-    """Interactive wheel verification process."""
-    print_header("Verify Wheel Signature")
-    whl_path = input(f"{Colors.CYAN}Enter wheel file path (or press Enter to use latest): {Colors.ENDC}")
-
-    if not whl_path:
-        whl_path = find_latest_wheel()
-        if not whl_path:
-            print_error("No wheel files found in current directory")
-            return
-
-    sigstore_path = input(f"{Colors.CYAN}Enter sigstore file path (default: sigstore.json): {Colors.ENDC}") or "sigstore.json"
-
-    if not os.path.exists(whl_path):
-        print_error(f"Wheel file not found: {whl_path}")
-        return
-
-    if not os.path.exists(sigstore_path):
-        print_error(f"Sigstore file not found: {sigstore_path}")
-        return
-
-    if not verify_wheel_signature(whl_path, sigstore_path):
-        print_error("Verification failed")
-
 def interactive_mode() -> None:
     """Run the CLI in interactive mode."""
     while True:
@@ -245,10 +184,6 @@ def interactive_mode() -> None:
         elif choice == '2':
             interactive_run()
         elif choice == '3':
-            interactive_analyze()
-        elif choice == '4':
-            interactive_verify()
-        elif choice == '5':
             print_success("Goodbye!")
             sys.exit(0)
 
@@ -271,7 +206,6 @@ def sanitize_filename(filename: str) -> str:
 
     return f"{base}{ext}"
 
-
 def validate_bot_name(name: str) -> str:
     """Validates and sanitizes a bot name.
 
@@ -292,7 +226,6 @@ def validate_bot_name(name: str) -> str:
         raise ValueError("Bot name must contain valid characters")
 
     return sanitized
-
 
 def create_bot_file(name: str, output_path: str, no_cogs: bool = False) -> str:
     """Creates a new bot file from a template.
@@ -359,7 +292,6 @@ if __name__ == "__main__":
     except Exception as e:
         raise RuntimeError(f"Failed to create bot file: {str(e)}") from e
 
-
 def create_example_cog(bot_path: str) -> None:
     """Creates an example cog and the necessary directory structure.
 
@@ -398,55 +330,6 @@ def setup(bot):
 
     except Exception as e:
         raise RuntimeError(f"Failed to create example cog: {str(e)}") from e
-
-
-def verify_wheel_signature(whl_path: str, sigstore_path: str) -> bool:
-    """Verifies the signature of a wheel file.
-
-    Args:
-        whl_path: The path to the wheel file.
-        sigstore_path: The path to the sigstore file.
-
-    Returns:
-        True if the signature is valid, False otherwise.
-    """
-    try:
-        with open(sigstore_path) as f:
-            sigstore_data = json.load(f)
-
-        with open(whl_path, "rb") as f:
-            whl_content = f.read()
-            whl_hash = hashlib.sha256(whl_content).hexdigest()
-
-        if "hash" not in sigstore_data:
-            print_error(f"No hash found in {sigstore_path}")
-            return False
-
-        if whl_hash != sigstore_data["hash"]:
-            print_error("Hash verification failed!")
-            print_info(f"Wheel hash: {whl_hash}")
-            print_info(f"Sigstore hash: {sigstore_data['hash']}")
-            return False
-
-        print_success("Signature verification successful!")
-        return True
-
-    except Exception as e:
-        print_error(f"Error during verification: {str(e)}")
-        return False
-
-
-def find_latest_wheel():
-    """Finds the latest wheel file in the current directory.
-
-    Returns:
-        The path to the latest wheel file, or None if no wheel files are found.
-    """
-    wheels = glob("*.whl")
-    if not wheels:
-        return None
-    return sorted(wheels)[-1]
-
 
 def create_from_template(template_name: str, output_path: str, bot_name: str) -> str:
     """Creates a bot from a template.
@@ -505,51 +388,6 @@ if __name__ == "__main__":
     except Exception as e:
         raise RuntimeError(f"Failed to create bot from template: {str(e)}") from e
 
-
-def create_full_bot(name: str, output_path: str) -> str:
-    """Creates a full-featured bot with storage and admin commands.
-
-    Args:
-        name: The name of the bot.
-        output_path: The desired output path.
-
-    Returns:
-        The path to the created bot file.
-
-    Raises:
-        RuntimeError: If the bot creation fails.
-    """
-    try:
-        name = validate_bot_name(name)
-
-        output_dir = os.path.dirname(output_path)
-        if output_dir:
-            os.makedirs(output_dir, exist_ok=True)
-
-        if output_path.endswith("/") or output_path.endswith("\\"):
-            base_name = "bot.py"
-            output_path = os.path.join(output_path, base_name)
-        elif not output_path.endswith(".py"):
-            output_path += ".py"
-
-        safe_path = os.path.abspath(output_path)
-
-        template = f"""from lxmfy.templates import FullBot
-
-if __name__ == "__main__":
-    bot = FullBot()
-    bot.bot.name = "{name}"  # Set custom name
-    bot.run()
-"""
-        with open(safe_path, "w", encoding="utf-8") as f:
-            f.write(template)
-
-        return os.path.relpath(safe_path)
-
-    except Exception as e:
-        raise RuntimeError(f"Failed to create full bot: {str(e)}") from e
-
-
 def is_safe_path(path: str, base_path: str = None) -> bool:
     """Checks if a path is safe and within the allowed directory.
 
@@ -568,92 +406,6 @@ def is_safe_path(path: str, base_path: str = None) -> bool:
         return True
     except Exception:
         return False
-
-
-def analyze_bot_file(file_path: str) -> dict[str, Any]:
-    """Analyzes a bot file for configuration issues and best practices.
-
-    Args:
-        file_path: The path to the bot file to analyze.
-
-    Returns:
-        A dictionary containing the analysis results.
-    """
-    try:
-        abs_path = os.path.abspath(file_path)
-        if not is_safe_path(abs_path):
-            return {'errors': ['Invalid file path']}
-
-        if not os.path.exists(abs_path):
-            return {'errors': ['File not found']}
-        if not abs_path.endswith('.py'):
-            return {'errors': ['Not a Python file']}
-
-        with open(abs_path) as f:
-            tree = ast.parse(f.read())
-
-        results = {
-            'commands': [],
-            'events': [],
-            'middleware': [],
-            'permissions': [],
-            'config': {},
-            'warnings': [],
-            'errors': []
-        }
-
-        class BotAnalyzer(ast.NodeVisitor):
-            """A visitor class to analyze the bot file's AST."""
-
-            def __init__(self, results):
-                """Initializes the BotAnalyzer with the results dictionary."""
-                self.results = results
-                super().__init__()
-
-            @staticmethod
-            def _is_bot_call(node: ast.Call) -> bool:
-                """Checks if the given call node is a call to LXMFBot."""
-                return (isinstance(node.func, ast.Name) and
-                       node.func.id == 'LXMFBot')
-
-            @staticmethod
-            def _is_bot_assign(node: ast.Assign) -> bool:
-                """Checks if the given assignment node assigns a value to a variable named 'bot' by calling LXMFBot."""
-                return (isinstance(node.targets[0], ast.Name) and
-                       node.targets[0].id == 'bot' and
-                       isinstance(node.value, ast.Call) and
-                       isinstance(node.value.func, ast.Name) and
-                       node.value.func.id == 'LXMFBot')
-
-            def visit_Call(self, node):
-                """Visits a call node in the AST."""
-                if isinstance(node.func, ast.Attribute):
-                    if node.func.attr == 'command':
-                        self.results['commands'].append(node.args[0].value)
-                    elif node.func.attr == 'on':
-                        self.results['events'].append(node.args[0].value)
-                    elif node.func.attr == 'middleware':
-                        self.results['middleware'].append(node.args[0].value)
-                    elif node.func.attr == 'permission':
-                        self.results['permissions'].append(node.args[0].value)
-                elif self._is_bot_call(node):
-                    for kw in node.keywords:
-                        self.results['config'][kw.arg] = kw.value.value
-
-            def visit_Assign(self, node):
-                """Visits an assignment node in the AST."""
-                if self._is_bot_assign(node):
-                    for kw in node.value.keywords:
-                        self.results['config'][kw.arg] = kw.value.value
-
-        analyzer = BotAnalyzer(results)
-        analyzer.visit(tree)
-
-        return results
-
-    except Exception as e:
-        return {'errors': [f'Error analyzing file: {str(e)}']}
-
 
 def main() -> None:
     """Main CLI entry point."""
@@ -677,29 +429,25 @@ Examples:
   lxmfy run echo                        # Run the built-in echo bot
   lxmfy run reminder --name "MyReminder"  # Run the reminder bot with a custom name
   lxmfy run note                        # Run the built-in note bot
-
-  lxmfy analyze bot.py                  # Analyze bot configuration
-  lxmfy verify                          # Verify latest wheel in current directory
-  lxmfy verify package.whl sigstore.json # Verify specific wheel and signature
         """,
     )
 
     parser.add_argument(
         "command",
-        choices=["create", "verify", "analyze", "run"],
-        help="Create a bot file, verify signature, analyze config, or run a template bot",
+        choices=["create", "run"],
+        help="Create a bot file or run a template bot",
     )
     parser.add_argument(
         "name",
         nargs="?",
         default=None,
-        help="Name for 'create' (bot name/path), 'analyze' (file path), 'verify' (wheel path), or 'run' (template name: echo, reminder, note)",
+        help="Name for 'create' (bot name/path) or 'run' (template name: echo, reminder, note)",
     )
     parser.add_argument(
         "directory",
         nargs="?",
         default=None,
-        help="Output directory for 'create', or sigstore path for 'verify' (optional)",
+        help="Output directory for 'create' command (optional)",
     )
     parser.add_argument(
         "--template",
@@ -726,39 +474,7 @@ Examples:
 
     args = parser.parse_args()
 
-    if args.command == "analyze":
-        if not args.name:
-            print_error("Please specify a bot file to analyze")
-            sys.exit(1)
-
-        bot_path = args.name
-        if not os.path.exists(bot_path):
-            print_error(f"Bot file not found: {bot_path}")
-            sys.exit(1)
-
-        print_header("Bot Analysis Results")
-        results = analyze_bot_file(bot_path)
-
-        if results.get('errors'):
-            print_error('Errors:')
-            for error in results['errors']:
-                print(f"  - {error}")
-
-        if results.get('warnings'):
-            print_warning('Warnings:')
-            for warning in results['warnings']:
-                print(f"  - {warning}")
-
-        print_info('Configuration:')
-        for key, value in results.get('config', {}).items():
-            print(f"  {key}: {value}")
-
-        print_info('Commands: ' + ', '.join(results.get('commands', [])))
-        print_info('Events: ' + ', '.join(results.get('events', [])))
-        print_info('Middleware: ' + ', '.join(results.get('middleware', [])))
-        print_info('Permissions: ' + ', '.join(results.get('permissions', [])))
-
-    elif args.command == "create":
+    if args.command == "create":
         try:
             bot_name = args.name_opt or args.name or "MyLXMFBot"
 
@@ -813,31 +529,6 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
                 """)
         except Exception as e:
             print_error(f"Error creating bot: {str(e)}")
-            sys.exit(1)
-
-    elif args.command == "verify":
-        whl_path = args.name
-        sigstore_path = args.directory
-
-        if not whl_path:
-            whl_path = find_latest_wheel()
-            if not whl_path:
-                print_error("No wheel files found in current directory")
-                sys.exit(1)
-
-        if not sigstore_path:
-            sigstore_path = "sigstore.json"
-
-        if not os.path.exists(whl_path):
-            print_error(f"Wheel file not found: {whl_path}")
-            sys.exit(1)
-
-        if not os.path.exists(sigstore_path):
-            print_error(f"Sigstore file not found: {sigstore_path}")
-            sys.exit(1)
-
-        print_header("Verifying Wheel Signature")
-        if not verify_wheel_signature(whl_path, sigstore_path):
             sys.exit(1)
 
     elif args.command == "run":
