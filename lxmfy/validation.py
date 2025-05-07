@@ -212,7 +212,6 @@ def format_validation_results(results: dict[str, list[ValidationResult]]) -> str
         for result in checks:
             prefix = "❌" if not result.valid and result.severity == "error" else \
                      "⚠️" if result.severity == "warning" else "ℹ️"
-            for msg in result.messages:
-                output.append(f"{prefix} {msg}")
+            output.extend(f"{prefix} {msg}" for msg in result.messages)
 
     return "\n".join(output)

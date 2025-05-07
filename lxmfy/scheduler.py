@@ -185,11 +185,11 @@ class TaskScheduler:
             current_time = datetime.now()
 
             for task in self.tasks.values():
-                try:
-                    if task.should_run(current_time):
+                if task.should_run(current_time):
+                    try:
                         task.callback()
                         task.last_run = current_time
-                except Exception as e:
-                    self.logger.error("Error running task %s: %s", task.name, str(e))
+                    except Exception as e:
+                        self.logger.error("Error running task %s: %s", task.name, str(e))
 
             time.sleep(60 - datetime.now().second)
