@@ -7,18 +7,17 @@ Easily create LXMF bots for the Reticulum Network with this extensible framework
 
 ## Features
 
-- Hot reloading (Cog system similar to discord.py)
-- Moderation commands (unban, stats, etc.)
 - Spam protection (rate limiting, command cooldown, warnings, banning)
 - Command prefix (set to None to process all messages as commands)
 - Announcements (announce in seconds, set to 0 to disable)
-- Extensible Storage Backend
-- Permission System
+- Extensible Storage Backend (JSON, SQLite)
+- Permission System (Role-based)
 - Middleware System
-- Task Scheduler
+- Task Scheduler (Cron-style)
 - Event System
 - Help on first message
 - LXMF Attachments (File, Image, Audio)
+- Customizable Bot Icon (via LXMF Icon Appearance field)
 
 ## Installation
 
