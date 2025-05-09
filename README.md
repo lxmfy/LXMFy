@@ -108,4 +108,18 @@ docker run -d \
     --restart unless-stopped \
     lxmfy-test
 ```
+
+## Contributing
+
+Pull requests are welcome.
+
+## Donating
+
+Ko-Fi https://ko-fi.com/X8X610E5JL
+BTC: bc1qwgwdwj6d0cu50flptt0w8d3p8h2qatvzwjg40k 
+Librepay: https://liberapay.com/Sudo-Ivan
+
+## License
+
+MIT
 Credit to https://github.com/randogoth/lxmf-bot, helped me learning to create LXMF bots.
