@@ -39,3 +39,6 @@ config/
 testing/
 
 scripts/
+
+# Exclude simulated testing for now
+tests/
