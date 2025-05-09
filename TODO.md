@@ -5,4 +5,5 @@
 3. Improve documentation
 4. Performance Profiling and Optimization
 5. More templates/examples.
-6. Addtional Verification for admin commands or protected routes using Reticulum Identity.
+6. More [LXMF fields](https://github.com/markqvist/Reticulum/wiki/LXMF-Fields) support
+7. Addtional Verification for admin commands or protected routes using Reticulum Identity.
