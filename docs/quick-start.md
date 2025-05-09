@@ -59,6 +59,15 @@ The easiest way to start is using the LXMFy command-line tool.
     # bot.config.admins.add("your_lxmf_hash_here")
     # bot.admins = bot.config.admins # Ensure the running instance knows
 
+    # Example of preparing an LXMF icon field (optional)
+    # from lxmfy.attachments import IconAppearance, pack_icon_appearance_field
+    # try:
+    #     icon_data = IconAppearance(icon_name="emoji_objects", fg_color=b'\xFF\xA5\x00', bg_color=b'\x8B\x45\x13') # Orange on Brown
+    #     bot.icon_field = pack_icon_appearance_field(icon_data) # Store for use in send/reply
+    # except Exception as e:
+    #     print(f"Could not prepare icon field: {e}")
+    #     bot.icon_field = None
+
     if __name__ == "__main__":
         print(f"Starting bot: {bot.config.name}")
         print(f"Bot LXMF Address: {bot.local.hash}") # Prints the bot's address
@@ -81,6 +90,7 @@ The easiest way to start is using the LXMFy command-line tool.
 
 1.  **Send a message** to the bot's LXMF address from your client.
 2.  **Try the example command:** Send `/hello` to the bot. It should reply with "Hello `<your_hash>`!".
+    If you uncommented the icon example above, this reply might also carry an icon.
 3.  **Try the help command:** Send `/help`.
 
 ## Next Steps

@@ -38,7 +38,7 @@ bot = LXMFBot(
 #### Key Methods
 
 - `run(delay=10)`: Start the bot's main loop
-- `send(destination, message, title="Reply")`: Send a message to a destination
+- `send(destination, message, title="Reply", lxmf_fields=None)`: Send a message to a destination, optionally with custom LXMF fields.
 - `send_with_attachment(destination, message, attachment, title="Reply")`: Send a message with an attachment
 - `command(name, description="No description provided", admin_only=False)`: Decorator for registering commands
 - `on_first_message()`: Decorator for handling first messages from users
@@ -123,6 +123,38 @@ attachment = Attachment(
     format="jpg"
 )
 bot.send_with_attachment(destination, "Here's an image", attachment)
+```
+
+### Icon Appearance (LXMF Field)
+
+You can set a custom icon for your bot that compliant LXMF clients can display. This uses the `LXMF.FIELD_ICON_APPEARANCE`.
+
+```python
+from lxmfy.attachments import IconAppearance, pack_icon_appearance_field
+import LXMF # Required for LXMF.FIELD_ICON_APPEARANCE
+
+# Define the icon appearance
+icon_data = IconAppearance(
+    icon_name="smart_toy",  # Name from Material Symbols
+    fg_color=b'\xFF\xFF\xFF',  # White foreground (3 bytes)
+    bg_color=b'\x4A\x90\xE2'   # Blue background (3 bytes)
+)
+
+# Pack it into the LXMF field format
+icon_lxmf_field = pack_icon_appearance_field(icon_data)
+
+# Send a message with this icon
+bot.send(
+    destination_hash_str,
+    "Hello from your friendly bot!",
+    title="Bot Message",
+    lxmf_fields=icon_lxmf_field
+)
+
+# You can also combine it with other fields, like attachments:
+# attachment_field = pack_attachment(some_attachment)
+# combined_fields = {**icon_lxmf_field, **attachment_field}
+# bot.send(destination, "Message with icon and attachment", lxmf_fields=combined_fields)
 ```
 
 ### Scheduler
