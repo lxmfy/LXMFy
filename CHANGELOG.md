@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.7.1] - 2025-05-09
+
+- **Fixed workflow**
+
+## [0.7.0] - 2025-05-09
+
+- **Add LXMF fields support**
+- **Update dependencies**
+- **Update docs**
+
 ## [0.6.9] - 2025-05-07
 
 - **Add opencontainers metadata**
