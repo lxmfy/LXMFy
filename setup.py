@@ -5,7 +5,7 @@ with open("README.md", encoding="utf-8") as fh:
 
 setup(
     name="lxmfy",
-    version="0.6.9",
+    version="0.7.0",
     packages=find_packages(),
     install_requires=["RNS", "LXMF"],
     author="Quad4",

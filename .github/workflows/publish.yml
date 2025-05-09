@@ -77,6 +77,36 @@ jobs:
       with:
         name: python-package-distributions
         path: dist/
+    - name: Checkout repository
+      uses: actions/checkout@v4.2.2
+    - name: Determine Release Version
+      id: get_version
+      run: |
+        # GITHUB_REF_NAME is like 'v0.1.0' for tag pushes (e.g. v0.6.9 -> 0.6.9)
+        VERSION_NUMBER="${GITHUB_REF_NAME#v}"
+        echo "VERSION_NUMBER=$VERSION_NUMBER" >> $GITHUB_ENV
+        echo "Determined version: $VERSION_NUMBER"
+      shell: bash
+    - name: Extract Changelog Notes
+      run: |
+        echo "Extracting notes for version ${{ env.VERSION_NUMBER }} from CHANGELOG.md"
+        # Use awk to find the section for the current version.
+        # Start capturing lines after the version header, stop at the next version header or EOF.
+        # Ignores the version header line itself. Prints non-empty lines.
+        awk -v version_tag="[${{ env.VERSION_NUMBER }}]" '
+          BEGIN { capture = 0 }
+          $0 ~ ("^## " version_tag) { capture = 1; next }
+          (capture && /^## \\[[0-9]+\\.[0-9]+\\.[0-9]+.*\\]/) { capture = 0; exit }
+          (capture && NF) { print }
+        ' CHANGELOG.md > RELEASE_NOTES.md
+
+        if ! grep -q '[^[:space:]]' RELEASE_NOTES.md; then
+          echo "No notes found for version ${{ env.VERSION_NUMBER }} in CHANGELOG.md. Release notes will be empty."
+        else
+          echo "Changelog notes for version ${{ env.VERSION_NUMBER }} extracted to RELEASE_NOTES.md:"
+          cat RELEASE_NOTES.md
+        fi
+      shell: bash
     - name: Sign the dists with Sigstore
       uses: sigstore/gh-action-sigstore-python@v3.0.0
       with:
@@ -86,11 +116,11 @@ jobs:
     - name: Create GitHub Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
-      run: >-
-        gh release create
-        "$GITHUB_REF_NAME"
-        --repo "$GITHUB_REPOSITORY"
-        --notes ""
+      run: |
+        gh release create \
+          "$GITHUB_REF_NAME" \
+          --repo "$GITHUB_REPOSITORY" \
+          --notes-file RELEASE_NOTES.md
     - name: Upload artifact signatures to GitHub Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
