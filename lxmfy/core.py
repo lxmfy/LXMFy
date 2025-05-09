@@ -189,7 +189,7 @@ class LXMFBot:
                 raise ImportError(f"Extension {name} missing setup function")
             module.setup(self)
         except ImportError as e:
-            raise ImportError(f"Failed to load extension {name}: {str(e)}")
+            raise ImportError(f"Failed to load extension {name}: {str(e)}") from e
 
     def add_cog(self, cog):
         """
@@ -237,9 +237,9 @@ class LXMFBot:
             content = message.content.decode('utf-8')
             receipt = RNS.hexrep(message.hash, delimit=False)
 
-            def reply(response):
+            def reply(response, **kwargs):
                 """Helper function to reply to a message."""
-                self.send(sender, response)
+                self.send(sender, response, **kwargs)
 
             if self.config.first_message_enabled:
                 first_messages = self.storage.get("first_messages", {})
@@ -358,90 +358,65 @@ class LXMFBot:
             self.local.announce()
             RNS.log(f"Announcement sent, next announce in {self.announce_time} seconds", RNS.LOG_INFO)
 
-    def send(self, destination, message, title="Reply"):
+    def send(self, destination: str, message: str, title: str = "Reply", lxmf_fields: Optional[dict] = None):
         """
-        Send a message to a destination.
+        Send a message to a destination, optionally with custom LXMF fields.
 
         Args:
             destination: The destination hash.
-            message: The message content.
-            title: The message title (optional).
+            message: The message content (will be utf-8 encoded).
+            title: The message title (optional, will be utf-8 encoded).
+            lxmf_fields: Optional dictionary of LXMF fields.
         """
         try:
-            hash = bytes.fromhex(destination)
-        except Exception:
-            RNS.log("Invalid destination hash", RNS.LOG_ERROR)
+            dest_hash_bytes = bytes.fromhex(destination)
+        except ValueError:
+            RNS.log(f"Invalid destination hash format: {destination}", RNS.LOG_ERROR)
             return
 
-        if len(hash) != RNS.Reticulum.TRUNCATED_HASHLENGTH // 8:
-            RNS.log("Invalid destination hash length", RNS.LOG_ERROR)
-        else:
-            id = RNS.Identity.recall(hash)
-            if id is None:
-                RNS.log(
-                    "Could not recall an Identity for the requested address. You have probably never received an announce from it. Try requesting a path from the network first. In fact, let's do this now :)",
-                    RNS.LOG_ERROR,
-                )
-                RNS.Transport.request_path(hash)
-                RNS.log(
-                    "OK, a path was requested. If the network knows a path, you will receive an announce with the Identity data shortly.",
-                    RNS.LOG_INFO,
-                )
-            else:
-                lxmf_destination = RNS.Destination(
-                    id, RNS.Destination.OUT, RNS.Destination.SINGLE, "lxmf", "delivery"
-                )
-                lxm = LXMessage(
-                    lxmf_destination,
-                    self.local,
-                    message,
-                    title=title,
-                    desired_method=LXMessage.DIRECT,
-                )
-                lxm.try_propagation_on_fail = True
-                self.queue.put(lxm)
+        if len(dest_hash_bytes) != RNS.Reticulum.TRUNCATED_HASHLENGTH // 8:
+            RNS.log(f"Invalid destination hash length for {destination}", RNS.LOG_ERROR)
+            return
+
+        identity_instance = RNS.Identity.recall(dest_hash_bytes)
+        if identity_instance is None:
+            RNS.log(
+                f"Could not recall an Identity for {destination}. Requesting path...",
+                RNS.LOG_ERROR,
+            )
+            RNS.Transport.request_path(dest_hash_bytes)
+            RNS.log(
+                "Path requested. If the network knows a path, you will receive an announce shortly.",
+                RNS.LOG_INFO,
+            )
+            return
+
+        lxmf_destination_obj = RNS.Destination(
+            identity_instance, RNS.Destination.OUT, RNS.Destination.SINGLE, "lxmf", "delivery"
+        )
+
+        # Ensure message and title are bytes
+        message_bytes = message.encode('utf-8')
+        title_bytes = title.encode('utf-8') if title else None
+
+        lxm = LXMessage(
+            lxmf_destination_obj,
+            self.local,
+            message_bytes,
+            title=title_bytes,
+            desired_method=LXMessage.DIRECT,
+            fields=lxmf_fields
+        )
+        lxm.try_propagation_on_fail = True
+        self.queue.put(lxm)
+        RNS.log(f"Message queued for {destination}", RNS.LOG_DEBUG)
 
     def send_with_attachment(self, destination: str, message: str, attachment: Attachment, title: str = "Reply"):
         """
         Send a message with an attachment to a destination.
-
-        Args:
-            destination: The destination hash.
-            message: The message content.
-            attachment: The attachment to send.
-            title: The message title (optional).
         """
-        try:
-            hash = bytes.fromhex(destination)
-            if len(hash) != RNS.Reticulum.TRUNCATED_HASHLENGTH // 8:
-                RNS.log("Invalid destination hash length", RNS.LOG_ERROR)
-                return
-
-            id = RNS.Identity.recall(hash)
-            if id is None:
-                RNS.log("Could not recall Identity, requesting path...", RNS.LOG_ERROR)
-                RNS.Transport.request_path(hash)
-                return
-
-            lxmf_destination = RNS.Destination(
-                id, RNS.Destination.OUT, RNS.Destination.SINGLE, "lxmf", "delivery"
-            )
-
-            fields = pack_attachment(attachment)
-
-            lxm = LXMessage(
-                lxmf_destination,
-                self.local,
-                message,
-                title=title,
-                desired_method=LXMessage.DIRECT,
-                fields=fields
-            )
-            lxm.try_propagation_on_fail = True
-            self.queue.put(lxm)
-
-        except Exception as e:
-            self.logger.error("Error sending message with attachment: %s", str(e))
+        attachment_specific_fields = pack_attachment(attachment)
+        self.send(destination, message, title=title, lxmf_fields=attachment_specific_fields)
 
     def run(self, delay=10):
         """Run the bot"""
