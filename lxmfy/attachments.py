@@ -37,6 +37,14 @@ class Attachment:
     format: Optional[str] = None
 
 
+@dataclass
+class IconAppearance:
+    """Represents LXMF icon appearance data."""
+    icon_name: str
+    fg_color: bytes  # Must be 3 bytes, e.g., b'\xff\x00\x00' for red
+    bg_color: bytes  # Must be 3 bytes
+
+
 def create_file_attachment(filename: str, data: bytes) -> list:
     """Create a file attachment list."""
     return [filename, data]
@@ -73,3 +81,30 @@ def pack_attachment(attachment: Attachment) -> dict:
     if attachment.type == AttachmentType.AUDIO:
         return {LXMF.FIELD_AUDIO: create_audio_attachment(int(attachment.format or 0), attachment.data)}
     raise ValueError(f"Unsupported attachment type: {attachment.type}")
+
+
+def pack_icon_appearance_field(appearance: IconAppearance) -> dict:
+    """
+    Packs an IconAppearance object into a dictionary suitable for LXMF transmission.
+
+    Args:
+        appearance: The IconAppearance object to pack.
+
+    Returns:
+        A dictionary containing the icon appearance data.
+
+    Raises:
+        ValueError: If fg_color or bg_color are not 3 bytes.
+    """
+    if not (isinstance(appearance.fg_color, bytes) and len(appearance.fg_color) == 3):
+        raise ValueError("fg_color must be 3 bytes (e.g., b'\\xff\\x00\\x00')")
+    if not (isinstance(appearance.bg_color, bytes) and len(appearance.bg_color) == 3):
+        raise ValueError("bg_color must be 3 bytes (e.g., b'\\x00\\xff\\x00')")
+
+    return {
+        LXMF.FIELD_ICON_APPEARANCE: [
+            appearance.icon_name,
+            appearance.fg_color,
+            appearance.bg_color
+        ]
+    }
