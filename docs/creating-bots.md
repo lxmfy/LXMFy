@@ -29,6 +29,7 @@ def ping_command(ctx):
     # ctx.content: Full message content
     # ctx.args: List of arguments after the command
     # ctx.reply(message): Function to send a reply
+    #   (can also take keyword arguments like title="My Title", lxmf_fields=some_fields)
     ctx.reply("Pong!")
 
 @bot.command(name="greet", description="Greets the user")
@@ -106,6 +107,33 @@ if __name__ == "__main__":
 
     bot.run()
 ```
+
+### Setting a Bot Icon (LXMF Field)
+
+You can give your bot a custom icon that appears in compatible LXMF clients. This uses the `LXMF.FIELD_ICON_APPEARANCE` and can be set when sending messages.
+
+First, ensure you have the necessary imports:
+```python
+from lxmfy.attachments import IconAppearance, pack_icon_appearance_field
+import LXMF # If LXMF.FIELD_ICON_APPEARANCE is used directly, though pack_icon_appearance_field handles it
+```
+
+Then, you can define and use the icon:
+```python
+# In your bot class or setup
+icon_data = IconAppearance(
+    icon_name="robot_2",  # Choose from Material Symbols
+    fg_color=b'\x00\xFF\x00',  # Green
+    bg_color=b'\x33\x33\x33'   # Dark Grey
+)
+self.bot_icon_field = pack_icon_appearance_field(icon_data)
+
+# When sending a message or replying:
+ctx.reply("Message from your bot!", lxmf_fields=self.bot_icon_field)
+# or
+# bot.send(destination, "Another message", lxmf_fields=self.bot_icon_field)
+```
+This `self.bot_icon_field` can be pre-calculated and reused for all messages sent by the bot.
 
 ## Using Cogs (Extensions)
 
