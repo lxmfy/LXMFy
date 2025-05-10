@@ -5,7 +5,13 @@ This package provides tools and utilities for creating and managing LXMF bots,
 including command handling, storage management, moderation features, and role-based permissions.
 """
 
-from .attachments import Attachment, AttachmentType, pack_attachment
+from .attachments import (
+    Attachment,
+    AttachmentType,
+    IconAppearance,
+    pack_attachment,
+    pack_icon_appearance_field,
+)
 from .cogs_core import load_cogs_from_directory
 from .commands import Command, command
 from .config import BotConfig
@@ -44,7 +50,9 @@ __all__ = [
     "ScheduledTask",
     "Attachment",
     "AttachmentType",
-    "pack_attachment"
+    "pack_attachment",
+    "IconAppearance",
+    "pack_icon_appearance_field"
 ]
 
 __version__ = "0.7.1"

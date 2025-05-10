@@ -2,8 +2,7 @@
 
 import LXMF  # Added import for LXMF constants if needed by pack_icon_appearance_field
 
-from lxmfy import LXMFBot
-from lxmfy.attachments import IconAppearance, pack_icon_appearance_field
+from lxmfy import IconAppearance, LXMFBot, pack_icon_appearance_field
 
 
 class EchoBot:
