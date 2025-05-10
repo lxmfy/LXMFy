@@ -60,7 +60,7 @@ The easiest way to start is using the LXMFy command-line tool.
     # bot.admins = bot.config.admins # Ensure the running instance knows
 
     # Example of preparing an LXMF icon field (optional)
-    # from lxmfy.attachments import IconAppearance, pack_icon_appearance_field
+    # from lxmfy import IconAppearance, pack_icon_appearance_field
     # try:
     #     icon_data = IconAppearance(icon_name="emoji_objects", fg_color=b'\xFF\xA5\x00', bg_color=b'\x8B\x45\x13') # Orange on Brown
     #     bot.icon_field = pack_icon_appearance_field(icon_data) # Store for use in send/reply

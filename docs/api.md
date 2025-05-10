@@ -130,7 +130,7 @@ bot.send_with_attachment(destination, "Here's an image", attachment)
 You can set a custom icon for your bot that compliant LXMF clients can display. This uses the `LXMF.FIELD_ICON_APPEARANCE`.
 
 ```python
-from lxmfy.attachments import IconAppearance, pack_icon_appearance_field
+from lxmfy import IconAppearance, pack_icon_appearance_field
 import LXMF # Required for LXMF.FIELD_ICON_APPEARANCE
 
 # Define the icon appearance
