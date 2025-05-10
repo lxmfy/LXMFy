@@ -97,8 +97,6 @@ bot = LXMFBot(
     permissions_enabled=True # Enable role-based permissions
 )
 
-# ... rest of your bot code ...
-
 if __name__ == "__main__":
     # You can also modify config after instantiation
     # Note: some settings are best set during init
@@ -114,8 +112,7 @@ You can give your bot a custom icon that appears in compatible LXMF clients. Thi
 
 First, ensure you have the necessary imports:
 ```python
-from lxmfy.attachments import IconAppearance, pack_icon_appearance_field
-import LXMF # If LXMF.FIELD_ICON_APPEARANCE is used directly, though pack_icon_appearance_field handles it
+from lxmfy import IconAppearance, pack_icon_appearance_field
 ```
 
 Then, you can define and use the icon:
