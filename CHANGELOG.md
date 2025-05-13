@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.7.2] - 2025-05-13
+
+- **Update LXMF to 0.7.0**
+- **Update dependencies**
+- **Python 3.13 now required**
+
 ## [0.7.1] - 2025-05-09
 
 - **Fixed workflow**
@@ -332,3 +338,7 @@ bot = LXMFBot(
 [0.6.6]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.6
 [0.6.7]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.7
 [0.6.8]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.8
+[0.6.9]: https://github.com/lxmfy/lxmfy/releases/tag/v0.6.9
+[0.7.0]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.0
+[0.7.1]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.1
+[0.7.2]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.2
