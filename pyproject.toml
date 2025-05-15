@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lxmfy"
-version = "0.7.2"
+version = "0.7.3"
 description = "LXMF bot framework for creating bots for the Reticulum Network"
 authors = ["Quad4"]
 readme = "README.md"
@@ -8,8 +8,8 @@ packages = [{include = "lxmfy"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-lxmf = "^0.7.0"
-rns = "^0.9.5"
+lxmf = "^0.7.1"
+rns = "^0.9.6"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.11.7"
