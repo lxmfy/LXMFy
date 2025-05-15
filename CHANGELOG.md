@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.7.3] - 2025-05-15
+
+- **Update LXMF to 0.7.1**
+- **Update RNS to 0.9.6**
+
 ## [0.7.2] - 2025-05-13
 
 - **Update LXMF to 0.7.0**
