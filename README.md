@@ -1,6 +1,6 @@
 # LXMFy
 
-[![Socket Badge](https://socket.dev/api/badge/pypi/package/lxmfy/0.7.1?artifact_id=tar-gz)](https://socket.dev/pypi/package/lxmfy/overview)
+[![Socket Badge](https://socket.dev/api/badge/pypi/package/lxmfy/0.7.3?artifact_id=tar-gz)](https://socket.dev/pypi/package/lxmfy/overview)
 [![DeepSource](https://app.deepsource.com/gh/lxmfy/LXMFy.svg/?label=active+issues&show_trend=true&token=H2_dIwKdYo9BgJkKMdhIORRD)](https://app.deepsource.com/gh/lxmfy/LXMFy/)
 
 Easily create LXMF bots for the Reticulum Network with this extensible framework.
@@ -124,4 +124,3 @@ Librepay: https://liberapay.com/Sudo-Ivan
 ## License
 
 MIT
-Credit to https://github.com/randogoth/lxmf-bot, helped me learning to create LXMF bots.
