@@ -100,9 +100,18 @@ class Command:
         """
         if obj is None:
             return self
-        return self.__class__(self.name, self.description, self.admin_only).__call__(
-            self.callback.__get__(obj, objtype)
+        new_cmd = self.__class__(
+            name=self.name,
+            description=self.description,
+            admin_only=self.admin_only,
+            permissions=self.permissions,
+            usage=self.help.usage,
+            examples=self.help.examples,
+            category=self.help.category,
+            aliases=self.help.aliases,
         )
+        new_cmd.callback = self.callback.__get__(obj, objtype)
+        return new_cmd
 
 
 def command(*args, **kwargs):
