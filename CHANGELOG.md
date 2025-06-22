@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.7.5] - 2025-06-22
+
+- **Enhanced cog command loading system**
+  - Improved add_cog method with robust error handling and command binding
+  - Added proper filtering to skip private methods and non-command attributes
+  - Enhanced command descriptor detection and binding logic
+  - Better fallback handling for edge cases in command registration
+
+- **New CogTest template**
+  - Added comprehensive cog testing template for regression prevention
+  - Includes test commands with various decorator types (@Command, admin-only)
+  - Features status reporting command to verify cog loading success
+  - Available via CLI: `lxmfy create --template cogtest` and `lxmfy run cogtest`
+  - Can be used as both standalone template and loadable cog module
+
 ## [0.7.4] - 2025-06-22
 
 - **Fix cog command loading issue**
@@ -356,3 +371,4 @@ bot = LXMFBot(
 [0.7.2]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.2
 [0.7.3]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.3
 [0.7.4]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.4
+[0.7.5]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.5
