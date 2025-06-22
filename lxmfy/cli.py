@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 from typing import Any, Optional
 
-from .templates import EchoBot, NoteBot, ReminderBot
+from .templates import CogTestBot, EchoBot, NoteBot, ReminderBot
 from .validation import validate_bot
 
 
@@ -78,16 +78,16 @@ def get_bot_name() -> str:
 
 def get_template_choice() -> str:
     """Get template choice from user input."""
-    templates = ["basic", "echo", "reminder", "note"]
+    templates = ["basic", "echo", "reminder", "note", "cogtest"]
     print(f"\n{Colors.CYAN}Available templates:{Colors.ENDC}")
     for i, template in enumerate(templates, 1):
         print(f"{Colors.BOLD}{i}.{Colors.ENDC} {template}")
 
     while True:
-        choice = input(f"\n{Colors.CYAN}Select template (1-4): {Colors.ENDC}")
-        if choice in ['1', '2', '3', '4']:
+        choice = input(f"\n{Colors.CYAN}Select template (1-5): {Colors.ENDC}")
+        if choice in ['1', '2', '3', '4', '5']:
             return templates[int(choice) - 1]
-        print_error("Invalid choice. Please enter a number between 1 and 4.")
+        print_error("Invalid choice. Please enter a number between 1 and 5.")
 
 def interactive_create() -> None:
     """Interactive bot creation process."""
@@ -145,7 +145,8 @@ def interactive_run() -> None:
         template_map = {
             "echo": EchoBot,
             "reminder": ReminderBot,
-            "note": NoteBot
+            "note": NoteBot,
+            "cogtest": CogTestBot
         }
 
         BotClass = template_map[template]
@@ -357,7 +358,8 @@ def create_from_template(template_name: str, output_path: str, bot_name: str) ->
         template_map = {
             "echo": EchoBot,
             "reminder": ReminderBot,
-            "note": NoteBot
+            "note": NoteBot,
+            "cogtest": CogTestBot
         }
 
         if template_name not in template_map:
@@ -418,10 +420,12 @@ Examples:
   lxmfy create --template echo mybot    # Create echo bot file 'mybot.py'
   lxmfy create --template reminder bot  # Create reminder bot file 'bot.py'
   lxmfy create --template note notes    # Create note-taking bot file 'notes.py'
+  lxmfy create --template cogtest test  # Create cog test bot file 'test.py'
 
   lxmfy run echo                        # Run the built-in echo bot
   lxmfy run reminder --name "MyReminder"  # Run the reminder bot with a custom name
   lxmfy run note                        # Run the built-in note bot
+  lxmfy run cogtest                     # Run the cog test bot
             """,
         )
 
@@ -444,7 +448,7 @@ Examples:
         )
         parser.add_argument(
             "--template",
-            choices=["basic", "echo", "reminder", "note"],
+            choices=["basic", "echo", "reminder", "note", "cogtest"],
             default="basic",
             help="Bot template to use for 'create' command (default: basic)",
         )
@@ -527,13 +531,14 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
         elif args.command == "run":
             template_name = args.name
             if not template_name:
-                print_error("Please specify a template name to run (echo, reminder, note)")
+                print_error("Please specify a template name to run (echo, reminder, note, cogtest)")
                 sys.exit(1)
 
             template_map = {
                 "echo": EchoBot,
                 "reminder": ReminderBot,
-                "note": NoteBot
+                "note": NoteBot,
+                "cogtest": CogTestBot
             }
 
             if template_name not in template_map:

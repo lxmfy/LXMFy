@@ -202,9 +202,26 @@ class LXMFBot:
         for _name, method in inspect.getmembers(
             cog, predicate=lambda x: hasattr(x, "command")
         ):
-            cmd = method.command
-            cmd.callback = method
-            self.commands[cmd.name] = cmd
+            if _name.startswith('_') or _name == 'bot':
+                continue
+                
+            try:
+                cmd_descriptor = method.command
+                
+                if hasattr(cmd_descriptor, '__get__') and hasattr(cmd_descriptor, 'name'):
+                    cmd = cmd_descriptor.__get__(cog, cog.__class__)
+                elif hasattr(cmd_descriptor, 'name'):
+                    cmd = cmd_descriptor
+                    if cmd.callback is None:
+                        cmd.callback = method
+                else:
+                    self.logger.warning(f"Unexpected command type for {_name}: {type(cmd_descriptor)}")
+                    continue
+                    
+                self.commands[cmd.name] = cmd
+            except Exception as e:
+                self.logger.error(f"Error adding command {_name} from cog {cog.__class__.__name__}: {e}")
+                continue
 
     def is_admin(self, sender):
         """
