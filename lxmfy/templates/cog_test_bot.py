@@ -5,7 +5,7 @@ This template demonstrates proper cog usage and serves as a test case
 for the command loading system.
 """
 
-from lxmfy import LXMFBot, Command
+from lxmfy import Command, LXMFBot
 from lxmfy.commands import Cog
 
 
@@ -64,7 +64,7 @@ class CogTestBot:
         @self.bot.command(name="status", description="Show bot status")
         def status_command(msg):
             """Show bot status and loaded commands."""
-            cog_commands = [cmd for cmd in self.bot.commands.keys() if cmd in ["cogtest", "cogadmin", "coghelp"]]
+            cog_commands = [cmd for cmd in self.bot.commands if cmd in ["cogtest", "cogadmin", "coghelp"]]
             msg.reply(f"""
 🤖 CogTest Bot Status:
 - Commands loaded: {len(self.bot.commands)}
@@ -80,4 +80,4 @@ class CogTestBot:
 
 def setup(bot):
     """Setup function for when used as a cog module."""
-    bot.add_cog(TestCog(bot)) 
+    bot.add_cog(TestCog(bot))

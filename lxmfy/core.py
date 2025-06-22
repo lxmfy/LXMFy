@@ -204,10 +204,10 @@ class LXMFBot:
         ):
             if _name.startswith('_') or _name == 'bot':
                 continue
-                
+
             try:
                 cmd_descriptor = method.command
-                
+
                 if hasattr(cmd_descriptor, '__get__') and hasattr(cmd_descriptor, 'name'):
                     cmd = cmd_descriptor.__get__(cog, cog.__class__)
                 elif hasattr(cmd_descriptor, 'name'):
@@ -217,7 +217,7 @@ class LXMFBot:
                 else:
                     self.logger.warning(f"Unexpected command type for {_name}: {type(cmd_descriptor)}")
                     continue
-                    
+
                 self.commands[cmd.name] = cmd
             except Exception as e:
                 self.logger.error(f"Error adding command {_name} from cog {cog.__class__.__name__}: {e}")
