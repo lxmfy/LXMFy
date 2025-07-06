@@ -1,4 +1,4 @@
-# May-June 2025
+# July-August 2025
 
 1. Destribute LXMFy .whl and source code over the Reticulum Network. (LXMFy Node)
 2. Tests
