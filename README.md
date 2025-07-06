@@ -138,6 +138,10 @@ poetry run lxmfy run echo
 
 Pull requests are welcome.
 
+## Part of Quad4
+
+LXMFy is a [Quad4](https://github.com/Quad4-Software) project.
+
 ## License
 
 MIT
