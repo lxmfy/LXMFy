@@ -1,5 +1,4 @@
-"""
-Spam protection module for LXMFy.
+"""Spam protection module for LXMFy.
 
 This module provides spam protection functionality for LXMFy bots,
 including rate limiting, warning system, and user banning capabilities.
@@ -23,8 +22,7 @@ class SpamConfig:
 
 
 class SpamProtection:
-    """
-    Spam protection system for LXMF bots.
+    """Spam protection system for LXMF bots.
 
     This class manages message rate limiting, user warnings, and bans to prevent
     spam abuse of the bot. It persists data across bot restarts using the provided
@@ -36,16 +34,17 @@ class SpamProtection:
         warnings: Dictionary tracking warning counts per user
         banned_users: Set of banned user hashes
         warning_times: Dictionary tracking last warning time per user
+
     """
 
     def __init__(self, storage, bot, **kwargs):
-        """
-        Initialize spam protection with the given configuration.
+        """Initialize spam protection with the given configuration.
 
         Args:
             storage: Storage backend for persisting data
             bot: Reference to the bot instance
             **kwargs: Override default spam configuration settings
+
         """
         self.storage = storage
         self.bot = bot
@@ -74,8 +73,7 @@ class SpamProtection:
         self.storage.set("spam:warning_times", dict(self.warning_times))
 
     def check_spam(self, sender) -> tuple[bool, str]:
-        """
-        Check if a message from the sender should be allowed.
+        """Check if a message from the sender should be allowed.
 
         Args:
             sender: Hash of the message sender
@@ -83,6 +81,7 @@ class SpamProtection:
         Returns:
             Tuple[bool, str]: (allowed, message) where allowed indicates if the message
             should be processed and message contains any warning/ban notification
+
         """
         # Check if user has bypass permission
         if self.bot.permissions.has_permission(sender, DefaultPerms.BYPASS_SPAM):
@@ -129,14 +128,14 @@ class SpamProtection:
         return True, None
 
     def unban(self, sender) -> bool:
-        """
-        Remove a user from the ban list.
+        """Remove a user from the ban list.
 
         Args:
             sender: Hash of the user to unban
 
         Returns:
             bool: True if the user was unbanned, False if they weren't banned
+
         """
         if sender in self.banned_users:
             self.banned_users.remove(sender)

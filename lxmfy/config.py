@@ -5,8 +5,7 @@ from dataclasses import dataclass
 
 @dataclass
 class BotConfig:
-    """
-    Configuration settings for LXMFBot.
+    """Configuration settings for LXMFBot.
 
     Attributes:
         name (str): The name of the bot. Defaults to "LXMFBot".
@@ -28,7 +27,8 @@ class BotConfig:
         event_logging_enabled (bool): Whether to enable event logging. Defaults to True.
         max_logged_events (int): The maximum number of events to log. Defaults to 1000.
         event_middleware_enabled (bool): Whether to enable event middleware. Defaults to True.
-	announce_enabled (bool): Whether to enable bot announcements. Defaults to True.
+    announce_enabled (bool): Whether to enable bot announcements. Defaults to True.
+
     """
 
     name: str = "LXMFBot"

@@ -8,16 +8,14 @@ import argparse
 import os
 import re
 import sys
-from pathlib import Path
-from typing import Any, Optional
 
 from .templates import CogTestBot, EchoBot, NoteBot, ReminderBot
-from .validation import validate_bot
 
 
 # Custom colors for CLI
 class Colors:
     """Custom color codes for CLI output."""
+
     HEADER = '\033[95m'
     BLUE = '\033[94m'
     CYAN = '\033[96m'
@@ -190,6 +188,7 @@ def sanitize_filename(filename: str) -> str:
 
     Returns:
         Sanitized filename with proper extension.
+
     """
     base, ext = os.path.splitext(os.path.basename(filename))
     base = re.sub(r"[^a-zA-Z0-9\-_]", "", base)
@@ -210,6 +209,7 @@ def validate_bot_name(name: str) -> str:
 
     Raises:
         ValueError: If the name is invalid.
+
     """
     if not name:
         raise ValueError("Bot name cannot be empty")
@@ -233,6 +233,7 @@ def create_bot_file(name: str, output_path: str, no_cogs: bool = False) -> str:
 
     Raises:
         RuntimeError: If file creation fails.
+
     """
     try:
         name = validate_bot_name(name)
@@ -290,6 +291,7 @@ def create_example_cog(bot_path: str) -> None:
 
     Args:
         bot_path: The path to the bot file to determine the cogs location.
+
     """
     try:
         bot_dir = os.path.dirname(os.path.abspath(bot_path))
@@ -337,6 +339,7 @@ def create_from_template(template_name: str, output_path: str, bot_name: str) ->
 
     Raises:
         ValueError: If the template is invalid.
+
     """
     try:
         name = validate_bot_name(bot_name)
@@ -391,6 +394,7 @@ def is_safe_path(path: str, base_path: str = None) -> bool:
 
     Returns:
         True if the path is safe, False otherwise.
+
     """
     try:
         if base_path:

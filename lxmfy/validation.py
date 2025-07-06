@@ -11,14 +11,15 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ValidationResult:
-    """
-    Result of a validation check.
+    """Result of a validation check.
 
     Attributes:
         valid (bool): Indicates whether the validation was successful.
         messages (list[str]): A list of messages associated with the validation result.
         severity (str): The severity level of the validation result ('error', 'warning', or 'info').
+
     """
+
     valid: bool
     messages: list[str]
     severity: str
@@ -29,14 +30,14 @@ class ConfigValidator:
 
     @staticmethod
     def validate_config(config: Any) -> list[ValidationResult]:
-        """
-        Validate the given bot configuration.
+        """Validate the given bot configuration.
 
         Args:
             config (Any): The bot configuration object to validate.
 
         Returns:
             list[ValidationResult]: A list of validation results.
+
         """
         results = []
 
@@ -86,14 +87,14 @@ class BestPracticesChecker:
 
     @staticmethod
     def check_bot(bot: Any) -> list[ValidationResult]:
-        """
-        Check the bot instance for best practices.
+        """Check the bot instance for best practices.
 
         Args:
             bot (Any): The bot instance to check.
 
         Returns:
             list[ValidationResult]: A list of validation results.
+
         """
         results = []
 
@@ -133,14 +134,14 @@ class PerformanceAnalyzer:
 
     @staticmethod
     def analyze_bot(bot: Any) -> list[ValidationResult]:
-        """
-        Analyze the bot instance for performance optimization opportunities.
+        """Analyze the bot instance for performance optimization opportunities.
 
         Args:
             bot (Any): The bot instance to analyze.
 
         Returns:
             list[ValidationResult]: A list of validation results.
+
         """
         results = []
 
@@ -169,14 +170,14 @@ class PerformanceAnalyzer:
 
 
 def validate_bot(bot: Any) -> dict[str, list[ValidationResult]]:
-    """
-    Run all validation checks on a bot instance.
+    """Run all validation checks on a bot instance.
 
     Args:
         bot (Any): The bot instance to validate.
 
     Returns:
         dict[str, list[ValidationResult]]: A dictionary containing validation results for different categories.
+
     """
     try:
         return {
@@ -196,14 +197,14 @@ def validate_bot(bot: Any) -> dict[str, list[ValidationResult]]:
 
 
 def format_validation_results(results: dict[str, list[ValidationResult]]) -> str:
-    """
-    Format validation results into a readable string.
+    """Format validation results into a readable string.
 
     Args:
         results (dict[str, list[ValidationResult]]): A dictionary containing validation results.
 
     Returns:
         str: A formatted string representing the validation results.
+
     """
     output = []
 

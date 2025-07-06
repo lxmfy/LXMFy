@@ -1,5 +1,4 @@
-"""
-Cogs management module for LXMFy.
+"""Cogs management module for LXMFy.
 
 This module provides functionality for loading and managing cogs (extension modules)
 in LXMFy bots. It handles dynamic loading of Python modules from a specified directory
@@ -13,8 +12,7 @@ import RNS
 
 
 def load_cogs_from_directory(bot, directory="cogs"):
-    """
-    Loads all Python modules from a specified directory as bot extensions (cogs).
+    """Loads all Python modules from a specified directory as bot extensions (cogs).
 
     Args:
         bot: The LXMFBot instance to load the cogs into.
@@ -22,6 +20,7 @@ def load_cogs_from_directory(bot, directory="cogs"):
 
     Raises:
         Exception: If there's an error loading any cog.
+
     """
     cogs_dir = os.path.join(bot.config_path, directory)
 
