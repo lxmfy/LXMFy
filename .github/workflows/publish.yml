@@ -87,7 +87,11 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        CHANGELOG_CONTENT=$(sed -n "/^## \[${GITHUB_REF_NAME#v}\]/,/^## \[/p" CHANGELOG.md | sed '$d' | sed '1d')
+        CHANGELOG_CONTENT=$(awk -v version="${GITHUB_REF_NAME#v}" '
+          /^## \['"'"'version'"'"'\]/ { found=1; next }
+          /^## \[/ { found=0 }
+          found
+        ' CHANGELOG.md)
         gh release create \
         "$GITHUB_REF_NAME" \
         --repo "$GITHUB_REPOSITORY" \
