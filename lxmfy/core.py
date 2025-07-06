@@ -13,6 +13,7 @@ import os
 import re
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
 from types import SimpleNamespace
 from typing import Optional
@@ -59,9 +60,10 @@ class LXMFBot:
         self.first_message_handlers = []
         self.delivery_callbacks = []
         self.receipts = []
-        self.queue = Queue(maxsize=5)
+        self.queue = Queue(maxsize=5) # Outbound LXMF message queue
         self.announce_time = 600
         self.logger = logging.getLogger(__name__)
+        self.thread_pool = ThreadPoolExecutor(max_workers=5) # For offloading CPU-bound or blocking I/O tasks
 
         self.config_path = os.path.join(os.getcwd(), "config")
         os.makedirs(self.config_path, exist_ok=True)
@@ -302,7 +304,12 @@ class LXMFBot:
                         msg.args = args
                         msg.is_admin = sender in self.admins
 
-                        cmd.callback(msg)
+                        if cmd.threaded:
+                            self.thread_pool.submit(cmd.callback, msg)
+                            # Optionally, send an immediate "processing..." message to the user
+                            # msg.reply("Processing your request in the background...")
+                        else:
+                            cmd.callback(msg)
 
                         self.middleware.execute(MiddlewareType.POST_COMMAND, msg)
                         return
@@ -483,6 +490,7 @@ class LXMFBot:
     def cleanup(self):
         """Clean up resources."""
         self.transport.cleanup()
+        self.thread_pool.shutdown(wait=True)
 
     def on_first_message(self):
         """Decorator for registering first message handlers"""

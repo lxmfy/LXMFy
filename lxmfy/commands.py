@@ -47,6 +47,7 @@ class Command:
         examples=None,
         category=None,
         aliases=None,
+        threaded: bool = False,
     ):
         """
         Initialize a new Command.
@@ -60,6 +61,7 @@ class Command:
         self.description = description
         self.admin_only = admin_only
         self.permissions = permissions or (DefaultPerms.ALL if admin_only else DefaultPerms.USE_COMMANDS)
+        self.threaded = threaded
         self.callback = None
         self.help = CommandHelp(
             name=name,
@@ -109,6 +111,7 @@ class Command:
             examples=self.help.examples,
             category=self.help.category,
             aliases=self.help.aliases,
+            threaded=self.threaded,
         )
         new_cmd.callback = self.callback.__get__(obj, objtype)
         return new_cmd
