@@ -14,6 +14,7 @@ rns = "^0.9.6"
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.11.7"
 interrogate = "^1.7.0"
+safety = "^3.5.2"
 
 [build-system]
 requires = ["poetry-core"]
