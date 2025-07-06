@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.7.6] - 2025-07-05
+
+- **New Feature: Threaded Commands**
+  - Introduced `threaded=True` option for `@command` decorator.
+  - Allows long-running command callbacks to execute in a separate thread, improving bot responsiveness.
+  - Implemented `ThreadPoolExecutor` in `LXMFBot` for managing threaded tasks.
+  - Updated `Command` class to support `threaded` attribute.
+  - Updated `docs/api.md` and `docs/creating-bots.md` with usage and safety guidelines.
+
+- **Dependency Updates**
+  - dependency updates for general maintenance.
+
 ## [0.7.5] - 2025-06-22
 
 - **Enhanced cog command loading system**
@@ -372,3 +384,4 @@ bot = LXMFBot(
 [0.7.3]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.3
 [0.7.4]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.4
 [0.7.5]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.5
+[0.7.6]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.6
