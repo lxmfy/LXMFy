@@ -18,6 +18,7 @@ Easily create LXMF bots for the Reticulum Network with this extensible framework
 - Help on first message
 - LXMF Attachments (File, Image, Audio)
 - Customizable Bot Icon (via LXMF Icon Appearance field)
+- Threading support for commands.
 
 ## Installation
 
@@ -36,7 +37,54 @@ pipx install lxmfy
 lxmfy create
 ```
 
-**Python**
+## Docker
+
+To build the Docker image, navigate to the root of the project and run:
+
+```bash
+docker build -t lxmfy-test .
+```
+
+Once built, you can run the Docker image:
+
+```
+docker run -d \
+    --name lxmfy-test-bot \
+    -v $(pwd)/config:/bot/config \
+    -v $(pwd)/.reticulum:/root/.reticulum \
+    --restart unless-stopped \
+    lxmfy-test
+```
+
+Auto-Interface support (network host):
+
+```
+docker run -d \
+    --name lxmfy-test-bot \
+    --network host \
+    -v $(pwd)/config:/bot/config \
+    -v $(pwd)/.reticulum:/root/.reticulum \
+    --restart unless-stopped \
+    lxmfy-test
+```
+
+### Building Wheels with Dockerfile.Build
+
+The `Dockerfile.Build` is used to build the `lxmfy` Python package into a wheel file within a Docker image.
+
+```bash
+docker build -f Dockerfile.Build -t lxmfy-wheel-builder .
+```
+
+This will create an image named `lxmfy-wheel-builder`. To extract the built wheel file from the image, you can run a container from this image and copy the `dist` directory:
+
+```bash
+docker run --rm -v "$(pwd)/dist_output:/output" lxmfy-wheel-builder
+```
+
+This command will create a `dist_output` directory in your current working directory and copy the built wheel file into it.
+
+## Example
 
 ```python
 from lxmfy import LXMFBot, load_cogs_from_directory
@@ -71,42 +119,14 @@ def echo(ctx, message: str):
 bot.run()
 ```
 
-## Framework Development
+## Development
+
+- poetry
+- python 3.11 or higher
 
 ```
-git clone https://github.com/lxmfy/lxmfy.git
-cd lxmfy
 poetry install
-```
-
-### Development
-
-```
-poetry run ruff check .
-poetry run bandit -c pyproject.toml -r .
-```
-
-### Docker
-
-```
-docker run -d \
-    --name lxmfy-test-bot \
-    -v $(pwd)/config:/bot/config \
-    -v $(pwd)/.reticulum:/root/.reticulum \
-    --restart unless-stopped \
-    lxmfy-test
-```
-
-Auto-Interface support:
-
-```
-docker run -d \
-    --name lxmfy-test-bot \
-    --network host \
-    -v $(pwd)/config:/bot/config \
-    -v $(pwd)/.reticulum:/root/.reticulum \
-    --restart unless-stopped \
-    lxmfy-test
+poetry run lxmfy run echo
 ```
 
 ## Contributing
