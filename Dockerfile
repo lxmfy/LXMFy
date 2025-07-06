@@ -7,9 +7,10 @@ LABEL org.opencontainers.image.authors="LXMFy"
 
 WORKDIR /bot
 
-# Create necessary directories for Reticulum and bot
 RUN mkdir -p /root/.reticulum /bot/config
 
-RUN pip3 install --no-cache-dir lxmfy
+COPY . /bot
+RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 install --no-cache-dir .
 
 CMD ["lxmfy", "run", "echo"]
