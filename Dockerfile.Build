@@ -1,14 +1,14 @@
-FROM python:3.11-slim
+FROM python:3.11-alpine
 
 WORKDIR /build
 
 # Install build dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
+RUN apk add --no-cache \
+    build-base \
     python3-dev \
     git \
     libffi-dev \
-    && rm -rf /var/lib/apt/lists/*
+    openssl-dev
 
 # Copy project files
 COPY requirements.txt setup.py README.md LICENSE ./
@@ -22,4 +22,4 @@ RUN pip install --no-cache-dir wheel setuptools
 RUN python setup.py bdist_wheel
 
 # The built wheel will be in the dist/ directory
-CMD ["cp", "-r", "dist/", "/output/"] 
+CMD ["cp", "-r", "dist/", "/output/"]
