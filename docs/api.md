@@ -40,7 +40,7 @@ bot = LXMFBot(
 - `run(delay=10)`: Start the bot's main loop
 - `send(destination, message, title="Reply", lxmf_fields=None)`: Send a message to a destination, optionally with custom LXMF fields.
 - `send_with_attachment(destination, message, attachment, title="Reply")`: Send a message with an attachment
-- `command(name, description="No description provided", admin_only=False)`: Decorator for registering commands
+- `command(name, description="No description provided", admin_only=False, threaded=False)`: Decorator for registering commands. Set `threaded=True` to run the command's callback in a separate thread.
 - `on_first_message()`: Decorator for handling first messages from users
 - `validate()`: Run validation checks on the bot configuration
 
@@ -73,6 +73,22 @@ Command registration and handling:
 def hello(ctx):
     ctx.reply(f"Hello {ctx.sender}!")
 ```
+
+#### Threaded Commands
+
+For long-running or blocking operations that do not interact with the Reticulum Network Stack directly, you can run commands in a separate thread to keep the bot responsive.
+
+```python
+import time
+
+@bot.command(name="long_task", description="Performs a long-running task in a separate thread", threaded=True)
+def long_task_command(ctx):
+    ctx.reply("Starting a long task... please wait.")
+    time.sleep(10) # This runs in a separate thread
+    ctx.reply("Long task completed!")
+```
+
+**Important:** Functions marked as `threaded=True` **must not** directly interact with the Reticulum Network Stack (RNS) or any components that rely on `lxmfy.transport.py`, as these are generally not thread-safe. Use `ctx.reply()` for sending messages back to the user from within a threaded command.
 
 ### Events
 
@@ -274,4 +290,4 @@ except Exception as e:
 7. Implement proper error handling
 8. Use the validation system
 9. Follow security best practices
-10. Keep dependencies updated 
+10. Keep dependencies updated

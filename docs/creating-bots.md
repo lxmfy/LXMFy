@@ -32,6 +32,15 @@ def ping_command(ctx):
     #   (can also take keyword arguments like title="My Title", lxmf_fields=some_fields)
     ctx.reply("Pong!")
 
+# For long-running tasks, you can use threaded commands:
+# import time
+# @bot.command(name="long_op", description="Performs a long operation in a separate thread", threaded=True)
+# def long_op_command(ctx):
+#     ctx.reply("Starting long operation...")
+#     time.sleep(10) # This runs in a separate thread
+#     ctx.reply("Long operation complete!")
+# Important: Threaded commands should not directly interact with RNS or lxmfy.transport.py.
+
 @bot.command(name="greet", description="Greets the user")
 def greet_command(ctx):
     if ctx.args:
@@ -167,6 +176,12 @@ class UtilityCog: # Or class UtilityCog(Cog):
         )
         ctx.reply(info)
 
+    @Command(name="threaded_cog_task", description="Performs a long task in a cog thread", threaded=True)
+    def threaded_cog_task(self, ctx):
+        ctx.reply("Starting a long cog task... this will run in a separate thread.")
+        time.sleep(7) # Simulate a long-running operation
+        ctx.reply("Long cog task completed!")
+
 # This function is required for the cog to be loaded
 def setup(bot):
     cog_instance = UtilityCog(bot)
@@ -280,4 +295,4 @@ LXMFy includes an optional role-based permission system. Enable it with `permiss
 *   **Permissions:** Granular flags defined in `DefaultPerms` (e.g., `USE_COMMANDS`, `BYPASS_SPAM`).
 *   **Assignment:** Assign roles to user hashes.
 
-See `lxmfy/permissions.py`, the API reference, and potentially example cogs (if any are created) for usage details. 
+See `lxmfy/permissions.py`, the API reference, and potentially example cogs (if any are created) for usage details.
