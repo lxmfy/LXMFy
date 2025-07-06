@@ -55,4 +55,4 @@ __all__ = [
     "pack_icon_appearance_field"
 ]
 
-__version__ = "0.7.5"
+from .__version__ import __version__

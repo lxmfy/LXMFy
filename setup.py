@@ -3,9 +3,14 @@ from setuptools import find_packages, setup
 with open("README.md", encoding="utf-8") as fh:
     long_description = fh.read()
 
+# Get the version from lxmfy/__version__.py
+about = {}
+with open("lxmfy/__version__.py") as f:
+    exec(f.read(), about)
+
 setup(
     name="lxmfy",
-    version="0.7.5",
+    version=about["__version__"],
     packages=find_packages(),
     install_requires=["RNS", "LXMF"],
     author="Quad4",
