@@ -6,8 +6,7 @@ import LXMF
 
 
 class AttachmentType(IntEnum):
-    """
-    Enumerates the different types of attachments supported.
+    """Enumerates the different types of attachments supported.
 
     FILE: Represents a generic file attachment.
     IMAGE: Represents an image attachment.
@@ -21,14 +20,14 @@ class AttachmentType(IntEnum):
 
 @dataclass
 class Attachment:
-    """
-    Represents a generic attachment.
+    """Represents a generic attachment.
 
     Attributes:
         type: The type of the attachment (AttachmentType).
         name: The name of the attachment.
         data: The binary data of the attachment.
         format: Optional format specifier (e.g., "png" for images).
+
     """
 
     type: AttachmentType
@@ -40,6 +39,7 @@ class Attachment:
 @dataclass
 class IconAppearance:
     """Represents LXMF icon appearance data."""
+
     icon_name: str
     fg_color: bytes  # Must be 3 bytes, e.g., b'\xff\x00\x00' for red
     bg_color: bytes  # Must be 3 bytes
@@ -61,8 +61,7 @@ def create_audio_attachment(mode: int, data: bytes) -> list:
 
 
 def pack_attachment(attachment: Attachment) -> dict:
-    """
-    Packs an Attachment object into a dictionary suitable for LXMF transmission.
+    """Packs an Attachment object into a dictionary suitable for LXMF transmission.
 
     Args:
         attachment: The Attachment object to pack.
@@ -73,6 +72,7 @@ def pack_attachment(attachment: Attachment) -> dict:
 
     Raises:
         ValueError: If the attachment type is not supported.
+
     """
     if attachment.type == AttachmentType.FILE:
         return {LXMF.FIELD_FILE_ATTACHMENTS: [create_file_attachment(attachment.name, attachment.data)]}
@@ -84,8 +84,7 @@ def pack_attachment(attachment: Attachment) -> dict:
 
 
 def pack_icon_appearance_field(appearance: IconAppearance) -> dict:
-    """
-    Packs an IconAppearance object into a dictionary suitable for LXMF transmission.
+    """Packs an IconAppearance object into a dictionary suitable for LXMF transmission.
 
     Args:
         appearance: The IconAppearance object to pack.
@@ -95,6 +94,7 @@ def pack_icon_appearance_field(appearance: IconAppearance) -> dict:
 
     Raises:
         ValueError: If fg_color or bg_color are not 3 bytes.
+
     """
     if not (isinstance(appearance.fg_color, bytes) and len(appearance.fg_color) == 3):
         raise ValueError("fg_color must be 3 bytes (e.g., b'\\xff\\x00\\x00')")

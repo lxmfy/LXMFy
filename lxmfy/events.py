@@ -16,8 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class EventPriority(Enum):
-    """
-    Enumeration of event priority levels.
+    """Enumeration of event priority levels.
 
     Members:
         HIGHEST: Highest priority.
@@ -34,13 +33,13 @@ class EventPriority(Enum):
 
 @dataclass(frozen=True)
 class Event:
-    """
-    Data class representing an event.
+    """Data class representing an event.
 
     Attributes:
         name (str): The name of the event.
         data (dict): A dictionary containing event-specific data.
         cancelled (bool): A flag indicating whether the event has been cancelled.
+
     """
 
     name: str
@@ -48,43 +47,42 @@ class Event:
     cancelled: bool = False
 
     def __hash__(self):
-        """
-        Returns the hash value of the event based on its name.
+        """Returns the hash value of the event based on its name.
 
         Returns:
             int: Hash value of the event name.
+
         """
         return hash(self.name)
 
     def __eq__(self, other):
-        """
-        Compares this event to another object for equality.
+        """Compares this event to another object for equality.
 
         Args:
             other (Any): The object to compare to.
 
         Returns:
             bool: True if the other object is an Event instance and has the same name, False otherwise.
+
         """
         if not isinstance(other, Event):
             return False
         return self.name == other.name
 
     def cancel(self):
-        """
-        Cancels the event, preventing further processing.
+        """Cancels the event, preventing further processing.
         """
         object.__setattr__(self, 'cancelled', True)
 
 
 @dataclass
 class EventHandler:
-    """
-    Data class representing an event handler.
+    """Data class representing an event handler.
 
     Attributes:
         callback (Callable): The function to be called when the event is dispatched.
         priority (EventPriority): The priority of the event handler.
+
     """
 
     callback: Callable
@@ -92,24 +90,22 @@ class EventHandler:
 
 
 class EventManager:
-    """
-    Manages event registration, dispatching, and logging.
+    """Manages event registration, dispatching, and logging.
     """
 
     def __init__(self, storage):
-        """
-        Initializes the EventManager.
+        """Initializes the EventManager.
 
         Args:
             storage: The storage object used for logging events.
+
         """
         self.storage = storage
         self.handlers = {}
         self.logger = logging.getLogger(__name__)
 
     def on(self, event_name: str, priority: EventPriority = EventPriority.NORMAL):
-        """
-        Registers an event handler for a specific event.
+        """Registers an event handler for a specific event.
 
         Args:
             event_name (str): The name of the event to handle.
@@ -117,6 +113,7 @@ class EventManager:
 
         Returns:
             Callable: A decorator that registers the decorated function as an event handler.
+
         """
         def decorator(func):
             """Registers the decorated function as an event handler."""
@@ -128,20 +125,20 @@ class EventManager:
         return decorator
 
     def use(self, middleware: Callable):
-        """
-        Adds middleware to the event pipeline.
+        """Adds middleware to the event pipeline.
 
         Args:
             middleware (Callable): The middleware function to add.
+
         """
         pass
 
     def dispatch(self, event: Event):
-        """
-        Dispatches an event to all registered handlers.
+        """Dispatches an event to all registered handlers.
 
         Args:
             event (Event): The event to dispatch.
+
         """
         try:
             if event.name in self.handlers:
@@ -156,11 +153,11 @@ class EventManager:
             self.logger.error("Error dispatching event: %s", str(e))
 
     def _log_event(self, event: Event):
-        """
-        Logs an event to storage.
+        """Logs an event to storage.
 
         Args:
             event (Event): The event to log.
+
         """
         try:
             events = self.storage.get("events:log", [])

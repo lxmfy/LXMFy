@@ -1,27 +1,25 @@
 """Help command system for LXMFy."""
 
 from dataclasses import dataclass
-from typing import Any, Optional
 
 from .permissions import DefaultPerms
 
 
 @dataclass
 class HelpFormatter:
-    """
-    Default help formatter for commands.
+    """Default help formatter for commands.
     """
 
     @staticmethod
     def format_command(command) -> str:
-        """
-        Format a single command's help.
+        """Format a single command's help.
 
         Args:
             command: The command object to format.
 
         Returns:
             A formatted string containing the command's help information.
+
         """
         help_text = [f"Command: {command.name}"]
         help_text.append(f"Description: {command.help.description}")
@@ -44,8 +42,7 @@ class HelpFormatter:
 
     @staticmethod
     def format_category(category: str, commands: list) -> str:
-        """
-        Format a category of commands.
+        """Format a category of commands.
 
         Args:
             category (str): The name of the category.
@@ -53,6 +50,7 @@ class HelpFormatter:
 
         Returns:
             str: A formatted string containing the category's help information.
+
         """
         help_text = [f"\n=== {category} ==="]
         help_text.extend(f"{cmd.name}: {cmd.help.description}" for cmd in commands)
@@ -60,14 +58,14 @@ class HelpFormatter:
 
     @staticmethod
     def format_all_commands(categories: dict[str, list]) -> str:
-        """
-        Format the complete help listing.
+        """Format the complete help listing.
 
         Args:
             categories (dict): A dictionary where keys are category names and values are lists of command objects.
 
         Returns:
             str: A formatted string containing help information for all commands.
+
         """
         help_text = ["Available Commands:"]
 
@@ -78,28 +76,27 @@ class HelpFormatter:
 
 
 class HelpSystem:
-    """
-    A system for providing help information about available commands.
+    """A system for providing help information about available commands.
     """
 
     def __init__(self, bot, formatter=None):
-        """
-        Initialize the HelpSystem.
+        """Initialize the HelpSystem.
 
         Args:
             bot: The bot instance.
             formatter: An optional help formatter.  Defaults to HelpFormatter.
+
         """
         self.bot = bot
         self.formatter = formatter or HelpFormatter()
 
         @bot.command(name="help", description="Show help for commands")
         def help_command(ctx):
-            """
-            Handle the 'help' command.
+            """Handle the 'help' command.
 
             Args:
                 ctx: The command context.
+
             """
             args = ctx.args
             if not args:
@@ -121,14 +118,14 @@ class HelpSystem:
             return
 
     def _get_categorized_commands(self, is_admin: bool) -> dict[str, list]:
-        """
-        Group commands by category.
+        """Group commands by category.
 
         Args:
             is_admin (bool): Whether the user is an admin.
 
         Returns:
             dict[str, list]: A dictionary where keys are category names and values are lists of command objects.
+
         """
         categories = {}
 

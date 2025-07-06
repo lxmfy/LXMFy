@@ -1,5 +1,4 @@
-"""
-LXMFy - A bot framework for creating LXMF bots on the Reticulum Network.
+"""LXMFy - A bot framework for creating LXMF bots on the Reticulum Network.
 
 This package provides tools and utilities for creating and managing LXMF bots,
 including command handling, storage management, moderation features, and role-based permissions.

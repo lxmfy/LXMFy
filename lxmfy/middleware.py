@@ -8,12 +8,13 @@ message handling pipeline.
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 logger = logging.getLogger(__name__)
 
 class MiddlewareType(Enum):
     """Types of middleware execution points"""
+
     PRE_COMMAND = "pre_command"
     POST_COMMAND = "post_command"
     PRE_EVENT = "pre_event"
@@ -24,6 +25,7 @@ class MiddlewareType(Enum):
 @dataclass
 class MiddlewareContext:
     """Context passed through middleware chain"""
+
     type: MiddlewareType
     data: Any
     metadata: dict = field(default_factory=dict)

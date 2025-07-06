@@ -7,6 +7,7 @@ from typing import Any, Optional
 
 class BasePermission(Flag):
     """Base permission flags"""
+
     NONE = 0
     READ = auto()
     WRITE = auto()
@@ -17,6 +18,7 @@ class BasePermission(Flag):
 
 class DefaultPerms(Flag):
     """Default permission set"""
+
     NONE = 0
     # Basic permissions
     USE_BOT = auto()
@@ -48,6 +50,7 @@ class DefaultPerms(Flag):
 @dataclass
 class Role:
     """Role definition with permissions"""
+
     name: str
     permissions: DefaultPerms
     priority: int = 0
@@ -57,6 +60,7 @@ class Role:
 @dataclass
 class PermissionManager:
     """Manages permissions, roles, and user assignments"""
+
     storage: Any
     enabled: bool = False
     default_role: Role = field(default_factory=lambda: Role("user", DefaultPerms.USE_BOT | DefaultPerms.SEND_MESSAGES | DefaultPerms.USE_COMMANDS))

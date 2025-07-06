@@ -1,5 +1,4 @@
-"""
-Core module for LXMFy bot framework.
+"""Core module for LXMFy bot framework.
 
 This module provides the main LXMFBot class that handles message routing,
 command processing, and bot lifecycle management for LXMF-based bots on
@@ -30,14 +29,13 @@ from .help import HelpSystem
 from .middleware import MiddlewareContext, MiddlewareManager, MiddlewareType
 from .moderation import SpamProtection
 from .permissions import DefaultPerms, PermissionManager
-from .storage import JSONStorage, SQLiteStorage, Storage
+from .storage import JSONStorage, SQLiteStorage
 from .transport import Transport
 from .validation import format_validation_results, validate_bot
 
 
 class LXMFBot:
-    """
-    Main bot class for handling LXMF messages and commands.
+    """Main bot class for handling LXMF messages and commands.
 
     This class manages the bot's lifecycle, including:
     - Message routing and delivery
@@ -48,11 +46,11 @@ class LXMFBot:
     """
 
     def __init__(self, **kwargs):
-        """
-        Initialize a new LXMFBot instance.
+        """Initialize a new LXMFBot instance.
 
         Args:
             **kwargs: Override default configuration settings
+
         """
         self.config = BotConfig(**kwargs)
         self.commands = {}
@@ -141,16 +139,15 @@ class LXMFBot:
             load_cogs_from_directory(self)
 
     def command(self, *args, **kwargs):
-        """
-        Decorator for registering commands.
+        """Decorator for registering commands.
 
         Args:
             *args: Command name (optional).
             **kwargs: Command attributes (name, description, admin_only).
+
         """
         def decorator(func):
-            """
-            The actual decorator that registers the command.
+            """The actual decorator that registers the command.
             """
             name = args[0] if len(args) > 0 else kwargs.get("name", func.__name__)
 
@@ -165,8 +162,7 @@ class LXMFBot:
         return decorator
 
     def load_extension(self, name: str) -> None:
-        """
-        Load an extension (cog) by name.
+        """Load an extension (cog) by name.
 
         Args:
             name: The name of the extension to load.
@@ -174,6 +170,7 @@ class LXMFBot:
         Raises:
             ValueError: If the module name contains invalid characters.
             ImportError: If the extension is missing setup function or fails to load.
+
         """
         if not re.match(r'^[a-zA-Z0-9_\.]+$', name):
             raise ValueError(f"Invalid module name format: {name}")
@@ -194,11 +191,11 @@ class LXMFBot:
             raise ImportError(f"Failed to load extension {name}: {str(e)}") from e
 
     def add_cog(self, cog):
-        """
-        Add a cog to the bot.
+        """Add a cog to the bot.
 
         Args:
             cog: The cog instance to add.
+
         """
         self.cogs[cog.__class__.__name__] = cog
         for _name, method in inspect.getmembers(
@@ -226,14 +223,14 @@ class LXMFBot:
                 continue
 
     def is_admin(self, sender):
-        """
-        Check if a sender is an admin.
+        """Check if a sender is an admin.
 
         Args:
             sender: The sender's identity hash.
 
         Returns:
             True if the sender is an admin, False otherwise.
+
         """
         return sender in self.admins
 
@@ -383,14 +380,14 @@ class LXMFBot:
             RNS.log(f"Announcement sent, next announce in {self.announce_time} seconds", RNS.LOG_INFO)
 
     def send(self, destination: str, message: str, title: str = "Reply", lxmf_fields: Optional[dict] = None):
-        """
-        Send a message to a destination, optionally with custom LXMF fields.
+        """Send a message to a destination, optionally with custom LXMF fields.
 
         Args:
             destination: The destination hash.
             message: The message content (will be utf-8 encoded).
             title: The message title (optional, will be utf-8 encoded).
             lxmf_fields: Optional dictionary of LXMF fields.
+
         """
         try:
             dest_hash_bytes = bytes.fromhex(destination)
@@ -436,8 +433,7 @@ class LXMFBot:
         RNS.log(f"Message queued for {destination}", RNS.LOG_DEBUG)
 
     def send_with_attachment(self, destination: str, message: str, attachment: Attachment, title: str = "Reply"):
-        """
-        Send a message with an attachment to a destination.
+        """Send a message with an attachment to a destination.
         """
         attachment_specific_fields = pack_attachment(attachment)
         self.send(destination, message, title=title, lxmf_fields=attachment_specific_fields)
@@ -457,11 +453,11 @@ class LXMFBot:
             self.transport.cleanup()
 
     def received(self, function):
-        """
-        Decorator for registering delivery callbacks.
+        """Decorator for registering delivery callbacks.
 
         Args:
             function: The function to call when a message is delivered.
+
         """
         self.delivery_callbacks.append(function)
         return function
@@ -469,8 +465,7 @@ class LXMFBot:
     def request_page(
         self, destination_hash: str, page_path: str, field_data: Optional[dict] = None
     ) -> dict:
-        """
-        Request a page from a destination.
+        """Request a page from a destination.
 
         Args:
             destination_hash: The destination hash.
@@ -479,6 +474,7 @@ class LXMFBot:
 
         Returns:
             The response from the destination.
+
         """
         try:
             dest_hash_bytes = bytes.fromhex(destination_hash)
