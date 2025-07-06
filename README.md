@@ -2,8 +2,13 @@
 
 [![Socket Badge](https://socket.dev/api/badge/pypi/package/lxmfy/0.7.6?artifact_id=tar-gz)](https://socket.dev/pypi/package/lxmfy/overview)
 [![DeepSource](https://app.deepsource.com/gh/lxmfy/LXMFy.svg/?label=active+issues&show_trend=true&token=H2_dIwKdYo9BgJkKMdhIORRD)](https://app.deepsource.com/gh/lxmfy/LXMFy/)
+[![Build Test](https://github.com/lxmfy/LXMFy/actions/workflows/build-test.yml/badge.svg)](https://github.com/lxmfy/LXMFy/actions/workflows/build-test.yml)
+[![Publish Python distribution to PyPI](https://github.com/lxmfy/LXMFy/actions/workflows/publish.yml/badge.svg)](https://github.com/lxmfy/LXMFy/actions/workflows/publish.yml)
+[![Safety](https://github.com/lxmfy/LXMFy/actions/workflows/safety.yml/badge.svg)](https://github.com/lxmfy/LXMFy/actions/workflows/safety.yml)
 
 Easily create LXMF bots for the Reticulum Network with this extensible framework.
+
+[Changelog](CHANGELOG.md) | [Quick Start Guide](docs/quick-start.md) | [Creating Bots](docs/creating-bots.md) | [API](docs/api.md)
 
 ## Features
 
