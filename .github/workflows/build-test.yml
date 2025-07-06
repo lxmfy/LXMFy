@@ -23,3 +23,5 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Build Docker Image
+      run: docker build . --file Dockerfile --tag lxmfy-test:${{ matrix.python-version }}
