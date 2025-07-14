@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "lxmfy"
-version = "0.7.6"
+version = "0.7.7"
 description = "LXMF bot framework for creating bots for the Reticulum Network"
 authors = ["Quad4"]
 readme = "README.md"
@@ -8,12 +8,12 @@ packages = [{include = "lxmfy"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-lxmf = "^0.7.1"
-rns = "^0.9.6"
+lxmf = "^0.8.0"
+rns = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
-safety = "^3.5.2"
-ruff = "^0.12.2"
+safety = "^3.6.0"
+ruff = "^0.12.3"
 
 [build-system]
 requires = ["poetry-core"]
@@ -21,23 +21,3 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 lxmfy = "lxmfy.cli:main"
-
-[tool.ruff.lint]
-select = [
-    # pycodestyle
-    "E",
-    # Pyflakes
-    "F",
-    # pyupgrade
-    "UP",
-    # flake8-bugbear
-    "B",
-    # flake8-simplify
-    "SIM",
-    # isort
-    "I",
-]
-ignore = ["F401", "E501"]
-exclude = [
-    "tests/test_basic.py",
-]
