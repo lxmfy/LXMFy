@@ -1,6 +1,6 @@
 # LXMFy
 
-[![Socket Badge](https://socket.dev/api/badge/pypi/package/lxmfy/0.7.7?artifact_id=tar-gz)](https://socket.dev/pypi/package/lxmfy/overview)
+[![Socket Badge](https://socket.dev/api/badge/pypi/package/lxmfy/0.7.6?artifact_id=tar-gz)](https://socket.dev/pypi/package/lxmfy/overview/0.7.6/tar-gz)
 [![DeepSource](https://app.deepsource.com/gh/lxmfy/LXMFy.svg/?label=active+issues&show_trend=true&token=H2_dIwKdYo9BgJkKMdhIORRD)](https://app.deepsource.com/gh/lxmfy/LXMFy/)
 [![Build Test](https://github.com/lxmfy/LXMFy/actions/workflows/build-test.yml/badge.svg)](https://github.com/lxmfy/LXMFy/actions/workflows/build-test.yml)
 [![Publish Python distribution to PyPI](https://github.com/lxmfy/LXMFy/actions/workflows/publish.yml/badge.svg)](https://github.com/lxmfy/LXMFy/actions/workflows/publish.yml)
