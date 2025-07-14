@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.7.7] - 2025-07-14
+
+- **Docker Enhancements**
+  - Added Arm64 docker support.
+  - Updated docker build test and parameterized Python version in Dockerfile for easier updates.
+
+- **Dependency Updates**
+  - Updated RNS to `1.0.0` and LXMF to `0.8.0`.
+  - Regenerated poetry.lock.
+
+- **Codebase Cleanup**
+  - General code cleanup and maintenance.
+
 ## [0.7.6] - 2025-07-05
 
 - **New Feature: Threaded Commands**
@@ -11,7 +24,6 @@
 
 - **Dependency Updates**
   - dependency updates for general maintenance.
-
 ## [0.7.5] - 2025-06-22
 
 - **Enhanced cog command loading system**
@@ -385,3 +397,4 @@ bot = LXMFBot(
 [0.7.4]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.4
 [0.7.5]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.5
 [0.7.6]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.6
+[0.7.7]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.7
