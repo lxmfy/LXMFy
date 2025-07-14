@@ -24,4 +24,4 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Build Docker Image
-      run: docker build . --file Dockerfile --tag lxmfy-test:${{ matrix.python-version }}
+      run: docker build . --file Dockerfile --build-arg PYTHON_VERSION=${{ matrix.python-version }} --tag lxmfy-test:${{ matrix.python-version }}
