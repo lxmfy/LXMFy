@@ -302,7 +302,7 @@ class SQLiteStorage(StorageBackend):
         try:
             db_dir.mkdir(parents=True, exist_ok=True)
         except Exception as e:
-            self.logger.error(f"Failed to create database directory {db_dir}: {str(e)}")
+            self.logger.error("Failed to create database directory %s: %s", db_dir, str(e))
             raise
 
     def _init_db(self):
@@ -322,10 +322,10 @@ class SQLiteStorage(StorageBackend):
                     CREATE INDEX IF NOT EXISTS idx_key_prefix ON key_value(key)
                 """)
         except sqlite3.OperationalError as e:
-            self.logger.error(f"Failed to initialize database at {self.database_path}: {str(e)}")
+            self.logger.error("Failed to initialize database at %s: %s", self.database_path, str(e))
             raise
         except Exception as e:
-            self.logger.error(f"Unexpected error initializing database: {str(e)}")
+            self.logger.error("Unexpected error initializing database: %s", str(e))
             raise
 
     def get(self, key: str, default: Any = None) -> Any:
