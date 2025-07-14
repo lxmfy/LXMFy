@@ -39,10 +39,18 @@ pipx install lxmfy
 ## Usage
 
 ```bash
+lxmfy
+```
+
+**Create bots:**
+
+```bash
 lxmfy create
 ```
 
 ## Docker
+
+### Building Manually
 
 To build the Docker image, navigate to the root of the project and run:
 
@@ -52,7 +60,7 @@ docker build -t lxmfy-test .
 
 Once built, you can run the Docker image:
 
-```
+```bash
 docker run -d \
     --name lxmfy-test-bot \
     -v $(pwd)/config:/bot/config \
@@ -63,7 +71,7 @@ docker run -d \
 
 Auto-Interface support (network host):
 
-```
+```bash
 docker run -d \
     --name lxmfy-test-bot \
     --network host \
