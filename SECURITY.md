@@ -6,4 +6,4 @@ On Developer side, [Ruff](https://docs.astral.sh/ruff/) is used for security che
 
 ## Reporting a Vulnerability
 
-Report to [rns@quad4.io](mailto:rns@quad4.io)
+Report using GitHub reporting feature or email [rns@quad4.io](mailto:rns@quad4.io)
