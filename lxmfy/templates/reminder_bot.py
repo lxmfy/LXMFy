@@ -22,7 +22,11 @@ class ReminderBot:
             storage_path="data/reminders.db"
         )
         self.setup_commands()
-        self.setup_reminder_check()
+        self.bot.scheduler.add_task(
+            "check_reminders",
+            self._check_reminders,
+            "*/1 * * * *" # Run every minute
+        )
 
     def setup_commands(self):
         """Sets up the bot's commands, specifically the 'remind' and 'list' commands."""
@@ -93,42 +97,23 @@ class ReminderBot:
 
             ctx.reply(response)
 
-    def setup_reminder_check(self):
-        """Sets up a recurring task to check for and send reminders."""
-        def check_reminders():
-            """Checks for reminders that are due and sends notifications."""
-            reminders = self.bot.storage.get("reminders", [])
-            current_time = time.time()
+    def _check_reminders(self):
+        """Checks for reminders that are due and sends notifications."""
+        reminders = self.bot.storage.get("reminders", [])
+        current_time = time.time()
 
-            due_reminders = [r for r in reminders if r["time"] <= current_time]
-            remaining = [r for r in reminders if r["time"] > current_time]
+        due_reminders = [r for r in reminders if r["time"] <= current_time]
+        remaining = [r for r in reminders if r["time"] > current_time]
 
-            for reminder in due_reminders:
-                self.bot.send(
-                    reminder["user"],
-                    f"Reminder: {reminder['message']}",
-                    "Reminder"
-                )
+        for reminder in due_reminders:
+            self.bot.send(
+                reminder["user"],
+                f"Reminder: {reminder['message']}",
+                "Reminder"
+            )
 
-            if due_reminders:
-                self.bot.storage.set("reminders", remaining)
-
-        def run_with_reminders(delay=10):
-            """Runs the bot with a reminder check loop.
-
-            Args:
-                delay (int): The delay in seconds between reminder checks.
-
-            """
-            while True:
-                check_reminders()
-                for _i in list(self.bot.queue.queue):
-                    lxm = self.bot.queue.get()
-                    self.bot.router.handle_outbound(lxm)
-                self.bot.announce()
-                time.sleep(delay)
-
-        self.bot.run = run_with_reminders
+        if due_reminders:
+            self.bot.storage.set("reminders", remaining)
 
     def run(self):
         """Runs the bot."""
