@@ -16,15 +16,15 @@ from .templates import CogTestBot, EchoBot, NoteBot, ReminderBot
 class Colors:
     """Custom color codes for CLI output."""
 
-    HEADER = '\033[95m'
-    BLUE = '\033[94m'
-    CYAN = '\033[96m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    RED = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+    HEADER = "\033[95m"
+    BLUE = "\033[94m"
+    CYAN = "\033[96m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    RED = "\033[91m"
+    ENDC = "\033[0m"
+    BOLD = "\033[1m"
+    UNDERLINE = "\033[4m"
 
 def print_header(text: str) -> None:
     """Print a formatted header with custom styling."""
@@ -61,7 +61,7 @@ def get_user_choice() -> str:
     """Get user's choice from the menu."""
     while True:
         choice = input(f"{Colors.CYAN}Enter your choice (1-3): {Colors.ENDC}")
-        if choice in ['1', '2', '3']:
+        if choice in ["1", "2", "3"]:
             return choice
         print_error("Invalid choice. Please enter a number between 1 and 3.")
 
@@ -83,7 +83,7 @@ def get_template_choice() -> str:
 
     while True:
         choice = input(f"\n{Colors.CYAN}Select template (1-5): {Colors.ENDC}")
-        if choice in ['1', '2', '3', '4', '5']:
+        if choice in ["1", "2", "3", "4", "5"]:
             return templates[int(choice) - 1]
         print_error("Invalid choice. Please enter a number between 1 and 5.")
 
@@ -152,7 +152,7 @@ def interactive_run() -> None:
         bot_instance = BotClass()
 
         if custom_name:
-            if hasattr(bot_instance, 'bot'):
+            if hasattr(bot_instance, "bot"):
                 bot_instance.bot.config.name = custom_name
                 bot_instance.bot.name = custom_name
             else:
@@ -170,11 +170,11 @@ def interactive_mode() -> None:
         print_menu()
         choice = get_user_choice()
 
-        if choice == '1':
+        if choice == "1":
             interactive_create()
-        elif choice == '2':
+        elif choice == "2":
             interactive_run()
-        elif choice == '3':
+        elif choice == "3":
             print_success("Goodbye!")
             sys.exit(0)
 
@@ -484,7 +484,7 @@ Examples:
                 elif args.directory:
                     output_path = os.path.join(args.directory, "bot.py")
                 elif args.name:
-                    if '.' in args.name:
+                    if "." in args.name:
                          output_path = args.name
                          if not args.name_opt:
                              bot_name = os.path.splitext(os.path.basename(args.name))[0]
@@ -558,7 +558,7 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
                 if custom_name:
                      try:
                          validated_name = validate_bot_name(custom_name)
-                         if hasattr(bot_instance, 'bot'):
+                         if hasattr(bot_instance, "bot"):
                              bot_instance.bot.config.name = validated_name
                              bot_instance.bot.name = validated_name
                          else:

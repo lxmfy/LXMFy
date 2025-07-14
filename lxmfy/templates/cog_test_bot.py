@@ -1,5 +1,4 @@
-"""
-CogTest Bot Template - Tests cog command loading functionality.
+"""CogTest Bot Template - Tests cog command loading functionality.
 
 This template demonstrates proper cog usage and serves as a test case
 for the command loading system.

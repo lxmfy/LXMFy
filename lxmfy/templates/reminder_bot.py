@@ -46,14 +46,14 @@ class ReminderBot:
             message = " ".join(ctx.args[1:])
 
             total_minutes = 0
-            time_parts = re.findall(r'(\d+)([dhm])', time_str)
+            time_parts = re.findall(r"(\d+)([dhm])", time_str)
 
             for value, unit in time_parts:
-                if unit == 'd':
+                if unit == "d":
                     total_minutes += int(value) * 24 * 60
-                elif unit == 'h':
+                elif unit == "h":
                     total_minutes += int(value) * 60
-                elif unit == 'm':
+                elif unit == "m":
                     total_minutes += int(value)
 
             if total_minutes == 0:
