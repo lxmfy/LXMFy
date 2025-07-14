@@ -29,6 +29,7 @@ from .help import HelpSystem
 from .middleware import MiddlewareContext, MiddlewareManager, MiddlewareType
 from .moderation import SpamProtection
 from .permissions import DefaultPerms, PermissionManager
+from .scheduler import TaskScheduler
 from .storage import JSONStorage, SQLiteStorage
 from .transport import Transport
 from .validation import format_validation_results, validate_bot
@@ -62,6 +63,7 @@ class LXMFBot:
         self.announce_time = 600
         self.logger = logging.getLogger(__name__)
         self.thread_pool = ThreadPoolExecutor(max_workers=5) # For offloading CPU-bound or blocking I/O tasks
+        self.scheduler = TaskScheduler(self) # Initialize the scheduler
 
         self.config_path = os.path.join(os.getcwd(), "config")
         os.makedirs(self.config_path, exist_ok=True)
@@ -121,13 +123,17 @@ class LXMFBot:
         self.announce_enabled = self.config.announce_enabled
         self.announce_time = self.config.announce
 
-        if self.config.announce_immediately and self.announce_enabled:
-            announce_file = os.path.join(self.config_path, "announce")
-            if os.path.isfile(announce_file):
-                os.remove(announce_file)
-                RNS.log("Announcing now. Timer reset.", RNS.LOG_INFO)
-            self.local.announce()
-            RNS.log("Initial announce sent", RNS.LOG_INFO)
+        if self.announce_enabled:
+            # Schedule the announce task
+            self.scheduler.add_task(
+                "announce_task",
+                self._announce,
+                f"*/{self.announce_time // 60} * * * *" # Convert seconds to minutes for cron
+            )
+            if self.config.announce_immediately:
+                # Force an immediate announce if configured
+                self._announce()
+                RNS.log("Initial announce sent", RNS.LOG_INFO)
 
         self.admins = set(self.config.admins or [])
         self.hot_reloading = self.config.hot_reloading
@@ -440,17 +446,17 @@ class LXMFBot:
 
     def run(self, delay=10):
         """Run the bot"""
+        self.scheduler.start() # Start the scheduler
         try:
             while True:
                 for _i in list(self.queue.queue):
                     lxm = self.queue.get()
                     self.router.handle_outbound(lxm)
 
-                self._announce()
                 time.sleep(delay)
 
         except KeyboardInterrupt:
-            self.transport.cleanup()
+            self.cleanup() # Call cleanup on KeyboardInterrupt
 
     def received(self, function):
         """Decorator for registering delivery callbacks.
@@ -487,6 +493,7 @@ class LXMFBot:
         """Clean up resources."""
         self.transport.cleanup()
         self.thread_pool.shutdown(wait=True)
+        self.scheduler.stop() # Stop the scheduler
 
     def on_first_message(self):
         """Decorator for registering first message handlers"""
