@@ -72,7 +72,7 @@ class Event:
     def cancel(self):
         """Cancels the event, preventing further processing.
         """
-        object.__setattr__(self, 'cancelled', True)
+        object.__setattr__(self, "cancelled", True)
 
 
 @dataclass

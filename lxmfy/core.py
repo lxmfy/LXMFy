@@ -178,11 +178,11 @@ class LXMFBot:
             ImportError: If the extension is missing setup function or fails to load.
 
         """
-        if not re.match(r'^[a-zA-Z0-9_\.]+$', name):
+        if not re.match(r"^[a-zA-Z0-9_\.]+$", name):
             raise ValueError(f"Invalid module name format: {name}")
 
-        if not name.startswith('cogs.'):
-            name = f'cogs.{name}'
+        if not name.startswith("cogs."):
+            name = f"cogs.{name}"
 
         try:
             if self.hot_reloading and name in sys.modules:
@@ -207,15 +207,15 @@ class LXMFBot:
         for _name, method in inspect.getmembers(
             cog, predicate=lambda x: hasattr(x, "command")
         ):
-            if _name.startswith('_') or _name == 'bot':
+            if _name.startswith("_") or _name == "bot":
                 continue
 
             try:
                 cmd_descriptor = method.command
 
-                if hasattr(cmd_descriptor, '__get__') and hasattr(cmd_descriptor, 'name'):
+                if hasattr(cmd_descriptor, "__get__") and hasattr(cmd_descriptor, "name"):
                     cmd = cmd_descriptor.__get__(cog, cog.__class__)
-                elif hasattr(cmd_descriptor, 'name'):
+                elif hasattr(cmd_descriptor, "name"):
                     cmd = cmd_descriptor
                     if cmd.callback is None:
                         cmd.callback = method
@@ -256,7 +256,7 @@ class LXMFBot:
     def _process_message(self, message, sender):
         """Process an incoming message."""
         try:
-            content = message.content.decode('utf-8')
+            content = message.content.decode("utf-8")
             receipt = RNS.hexrep(message.hash, delimit=False)
 
             def reply(response, **kwargs):
@@ -423,8 +423,8 @@ class LXMFBot:
         )
 
         # Ensure message and title are bytes
-        message_bytes = message.encode('utf-8')
-        title_bytes = title.encode('utf-8') if title else None
+        message_bytes = message.encode("utf-8")
+        title_bytes = title.encode("utf-8") if title else None
 
         lxm = LXMessage(
             lxmf_destination_obj,

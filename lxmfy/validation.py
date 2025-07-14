@@ -42,14 +42,14 @@ class ConfigValidator:
         results = []
 
         try:
-            if len(getattr(config, 'name', '')) < 3:
+            if len(getattr(config, "name", "")) < 3:
                 results.append(ValidationResult(
                     False,
                     ["Bot name should be at least 3 characters long"],
                     "error"
                 ))
 
-            announce = getattr(config, 'announce', 0)
+            announce = getattr(config, "announce", 0)
             if 0 < announce < 300:
                 results.append(ValidationResult(
                     False,
@@ -57,14 +57,14 @@ class ConfigValidator:
                     "warning"
                 ))
 
-            if getattr(config, 'rate_limit', 0) > 10:
+            if getattr(config, "rate_limit", 0) > 10:
                 results.append(ValidationResult(
                     False,
                     ["Rate limit above 10 messages per minute may be too permissive"],
                     "warning"
                 ))
 
-            if getattr(config, 'cooldown', 0) < 30:
+            if getattr(config, "cooldown", 0) < 30:
                 results.append(ValidationResult(
                     False,
                     ["Cooldown period should be at least 30 seconds"],
@@ -98,28 +98,28 @@ class BestPracticesChecker:
         """
         results = []
 
-        if not getattr(bot.config, 'permissions_enabled', False):
+        if not getattr(bot.config, "permissions_enabled", False):
             results.append(ValidationResult(
                 False,
                 ["Permission system is disabled. Consider enabling it for better security"],
                 "warning"
             ))
 
-        if getattr(bot, 'command_prefix', None) is None:
+        if getattr(bot, "command_prefix", None) is None:
             results.append(ValidationResult(
                 False,
                 ["Using no command prefix may cause high processing overhead"],
                 "warning"
             ))
 
-        if not getattr(bot, 'admins', None):
+        if not getattr(bot, "admins", None):
             results.append(ValidationResult(
                 False,
                 ["No admin users configured. Bot management will be limited"],
                 "warning"
             ))
 
-        if getattr(bot.config, 'storage_type', '') == "json":
+        if getattr(bot.config, "storage_type", "") == "json":
             results.append(ValidationResult(
                 True,
                 ["Consider using SQLite storage for better performance with large datasets"],
@@ -145,21 +145,21 @@ class PerformanceAnalyzer:
         """
         results = []
 
-        if not hasattr(bot, 'transport') or not hasattr(bot.transport, "cached_links"):
+        if not hasattr(bot, "transport") or not hasattr(bot.transport, "cached_links"):
             results.append(ValidationResult(
                 False,
                 ["Link caching is not enabled. This may impact performance"],
                 "warning"
             ))
 
-        if hasattr(bot, 'queue') and getattr(bot.queue, 'maxsize', 0) < 10:
+        if hasattr(bot, "queue") and getattr(bot.queue, "maxsize", 0) < 10:
             results.append(ValidationResult(
                 False,
                 ["Consider increasing queue size for better message handling"],
                 "info"
             ))
 
-        if hasattr(bot, 'storage') and hasattr(bot.storage, 'backend') and isinstance(bot.storage.backend, JSONStorage):
+        if hasattr(bot, "storage") and hasattr(bot.storage, "backend") and isinstance(bot.storage.backend, JSONStorage):
             results.append(ValidationResult(
                 True,
                 ["SQLite backend recommended for better performance with large datasets"],

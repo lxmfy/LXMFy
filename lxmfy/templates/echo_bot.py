@@ -20,7 +20,7 @@ class EchoBot:
         self.setup_commands()
 
         # Define and pack the icon appearance for the bot
-        icon_data = IconAppearance(icon_name="forum", fg_color=b'\xAD\xD8\xE6', bg_color=b'\x3B\x59\x98') # Light blue on dark blue
+        icon_data = IconAppearance(icon_name="forum", fg_color=b"\xAD\xD8\xE6", bg_color=b"\x3B\x59\x98") # Light blue on dark blue
         self.icon_lxmf_field = pack_icon_appearance_field(icon_data)
 
     def setup_commands(self):
