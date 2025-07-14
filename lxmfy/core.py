@@ -220,12 +220,12 @@ class LXMFBot:
                     if cmd.callback is None:
                         cmd.callback = method
                 else:
-                    self.logger.warning(f"Unexpected command type for {_name}: {type(cmd_descriptor)}")
+                    self.logger.warning("Unexpected command type for %s: %s", _name, type(cmd_descriptor))
                     continue
 
                 self.commands[cmd.name] = cmd
             except Exception as e:
-                self.logger.error(f"Error adding command {_name} from cog {cog.__class__.__name__}: {e}")
+                self.logger.error("Error adding command %s from cog %s: %s", _name, cog.__class__.__name__, e)
                 continue
 
     def is_admin(self, sender):
