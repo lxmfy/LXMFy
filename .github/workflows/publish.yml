@@ -87,15 +87,10 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        CHANGELOG_CONTENT=$(awk -v version="${GITHUB_REF_NAME#v}" '
-          /^## \['"'"'version'"'"'\]/ { found=1; next }
-          /^## \[/ { found=0 }
-          found
-        ' CHANGELOG.md)
         gh release create \
         "$GITHUB_REF_NAME" \
         --repo "$GITHUB_REPOSITORY" \
-        --notes "$CHANGELOG_CONTENT"
+        --generate-notes
     - name: Upload artifact signatures to GitHub Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
