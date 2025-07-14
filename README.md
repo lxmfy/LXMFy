@@ -8,7 +8,7 @@
 
 Easily create LXMF bots for the Reticulum Network with this extensible framework.
 
-[Changelog](CHANGELOG.md) | [Quick Start Guide](docs/quick-start.md) | [Creating Bots](docs/creating-bots.md) | [API](docs/api.md)
+[Website](https://lxmfy.quad4.io) | [Changelog](CHANGELOG.md) | [Quick Start Guide](docs/quick-start.md) | [Creating Bots](docs/creating-bots.md) | [API](docs/api.md) | [Road to V1](https://plane.quad4.io/spaces/issues/43d0b80cfd864a1b94025b175d1fdf64)
 
 ## Features
 
@@ -144,4 +144,4 @@ LXMFy is a [Quad4](https://github.com/Quad4-Software) project.
 
 ## License
 
-MIT
+[MIT](LICENSE)
