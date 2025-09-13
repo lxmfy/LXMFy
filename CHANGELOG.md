@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.7.8] - 2025-09-13
+- **Update Dependencies in poetry.lock**
+- **Add Makefile**
+
 ## [0.7.7] - 2025-07-14
 
 - **Docker Enhancements**
@@ -398,3 +402,4 @@ bot = LXMFBot(
 [0.7.5]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.5
 [0.7.6]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.6
 [0.7.7]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.7
+[0.7.8]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.8
