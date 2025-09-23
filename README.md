@@ -36,6 +36,12 @@ or pipx:
 pipx install lxmfy
 ```
 
+or via git
+
+```bash
+pipx install git+https://github.com/lxmfy/LXMFy.git
+```
+
 ## Usage
 
 ```bash
