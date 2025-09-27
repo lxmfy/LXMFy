@@ -641,7 +641,8 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
                                 self.permissions = MockPermissions()
 
                         class MockPermissions:
-                            def has_permission(self, user, perm):
+                            @staticmethod
+                            def has_permission(user, perm):
                                 return False  # No bypass for testing
 
                         bot = MockBot()

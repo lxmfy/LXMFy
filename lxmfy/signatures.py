@@ -89,7 +89,8 @@ class SignatureManager:
             self.logger.error("Failed to verify message signature: %s", str(e))
             return False
 
-    def _canonicalize_message(self, message: LXMF.LXMessage) -> bytes:
+    @staticmethod
+    def _canonicalize_message(message: LXMF.LXMessage) -> bytes:
         """Create a canonical byte representation of a message for signing.
 
         Args:
