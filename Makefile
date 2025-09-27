@@ -43,6 +43,7 @@ install:
 
 install-dev:
 	poetry install --with dev
+	poetry run pip install pytest pytest-asyncio pytest-cov
 
 build:
 	poetry build
