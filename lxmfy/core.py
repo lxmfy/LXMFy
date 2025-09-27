@@ -453,7 +453,6 @@ class LXMFBot:
         """
         if self.config.test_mode:
             # In test mode, just queue a mock message
-            from types import SimpleNamespace
             mock_message = SimpleNamespace()
             mock_message.content = message.encode("utf-8")
             mock_message.title = title.encode("utf-8") if title else None
