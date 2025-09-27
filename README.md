@@ -122,6 +122,8 @@ bot = LXMFBot(
     cooldown=5, # 5 seconds cooldown
     max_warnings=3, # 3 warnings before ban
     warning_timeout=300, # Warnings reset after 5 minutes
+    signature_verification_enabled=True, # Enable cryptographic signature verification
+    require_message_signatures=False, # Allow unsigned messages but log them
 )
 
 # Dynamically load all cogs
