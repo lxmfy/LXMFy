@@ -22,7 +22,7 @@ class HelpFormatter:
         """
         help_text = [
             f"Command: {command.name}",
-            f"Description: {command.help.description}"
+            f"Description: {command.help.description}",
         ]
 
         if command.help.usage:
