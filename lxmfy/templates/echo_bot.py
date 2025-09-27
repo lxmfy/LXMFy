@@ -1,18 +1,21 @@
-"""Simple echo bot template."""
+"""Simple echo bot template with cryptographic signature verification."""
 
 from lxmfy import IconAppearance, LXMFBot, pack_icon_appearance_field
 
 
 class EchoBot:
-    """A simple echo bot that repeats messages."""
+    """A simple echo bot that repeats messages with cryptographic signature verification."""
 
     def __init__(self):
-        """Initializes the EchoBot with basic configurations and sets up commands."""
+        """Initializes the EchoBot with signature verification enabled."""
         self.bot = LXMFBot(
             name="Echo Bot",
             announce=600,
             command_prefix="",
             first_message_enabled=True,
+            # Enable cryptographic signature verification
+            signature_verification_enabled=True,
+            require_message_signatures=False,  # Log but don't reject unsigned messages
         )
         self.setup_commands()
 
@@ -53,7 +56,8 @@ class EchoBot:
             content = message.content.decode("utf-8").strip()
             self.bot.send(
                 sender,
-                f"Hi! I'm an echo bot. You said: {content}\n\nTry echo <message> to make me repeat things!",
+                f"Hi! I'm an echo bot with cryptographic signature verification. You said: {content}\n\n"
+                "Try: echo <message> to make me repeat things!",
                 lxmf_fields=self.icon_lxmf_field,
             )
             return True
