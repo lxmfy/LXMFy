@@ -63,7 +63,7 @@ jobs:
       uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e  # v1.13.0
 
   github-release:
-    name: Sign the Python 🐍 distribution 📦 and create GitHub Release
+    name: Sign the Python 🐍 distribution 📦 and create GitHub Draft Release
     needs:
     - publish-to-pypi
     runs-on: blacksmith-4vcpu-ubuntu-2404
@@ -83,15 +83,16 @@ jobs:
         inputs: >-
           ./dist/*.tar.gz
           ./dist/*.whl
-    - name: Create GitHub Release
+    - name: Create GitHub Draft Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: |
         gh release create \
         "$GITHUB_REF_NAME" \
         --repo "$GITHUB_REPOSITORY" \
-        --generate-notes
-    - name: Upload artifact signatures to GitHub Release
+        --generate-notes \
+        --draft
+    - name: Upload artifact signatures to GitHub Draft Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: >-
