@@ -41,10 +41,20 @@ class DefaultPerms(Flag):
     BYPASS_EVENT_CHECKS = auto()
 
     # Combined permissions
-    ALL = (USE_BOT | SEND_MESSAGES | USE_COMMANDS |
-          MANAGE_MESSAGES | MANAGE_COMMANDS | MANAGE_USERS |
-          BYPASS_RATELIMIT | BYPASS_SPAM | VIEW_ADMIN_COMMANDS |
-          VIEW_EVENTS | MANAGE_EVENTS | BYPASS_EVENT_CHECKS)
+    ALL = (
+        USE_BOT
+        | SEND_MESSAGES
+        | USE_COMMANDS
+        | MANAGE_MESSAGES
+        | MANAGE_COMMANDS
+        | MANAGE_USERS
+        | BYPASS_RATELIMIT
+        | BYPASS_SPAM
+        | VIEW_ADMIN_COMMANDS
+        | VIEW_EVENTS
+        | MANAGE_EVENTS
+        | BYPASS_EVENT_CHECKS
+    )
 
 
 @dataclass
@@ -63,13 +73,22 @@ class PermissionManager:
 
     storage: Any
     enabled: bool = False
-    default_role: Role = field(default_factory=lambda: Role("user", DefaultPerms.USE_BOT | DefaultPerms.SEND_MESSAGES | DefaultPerms.USE_COMMANDS))
-    admin_role: Role = field(default_factory=lambda: Role("admin", DefaultPerms.ALL, priority=100))
+    default_role: Role = field(
+        default_factory=lambda: Role(
+            "user",
+            DefaultPerms.USE_BOT
+            | DefaultPerms.SEND_MESSAGES
+            | DefaultPerms.USE_COMMANDS,
+        )
+    )
+    admin_role: Role = field(
+        default_factory=lambda: Role("admin", DefaultPerms.ALL, priority=100)
+    )
 
     def __post_init__(self):
         self.roles: dict[str, Role] = {
             "user": self.default_role,
-            "admin": self.admin_role
+            "admin": self.admin_role,
         }
         self.user_roles: dict[str, set[str]] = {}
         self.load_data()
@@ -86,7 +105,7 @@ class PermissionManager:
                     name=role_data["name"],
                     permissions=DefaultPerms(role_data["permissions"]),
                     priority=role_data["priority"],
-                    description=role_data.get("description")
+                    description=role_data.get("description"),
                 )
 
         self.user_roles = {
@@ -101,17 +120,24 @@ class PermissionManager:
                 "name": role.name,
                 "permissions": role.permissions.value,
                 "priority": role.priority,
-                "description": role.description
+                "description": role.description,
             }
             for name, role in self.roles.items()
         }
 
         self.storage.set("permissions:roles", roles_data)
-        self.storage.set("permissions:user_roles", {
-            user: list(roles) for user, roles in self.user_roles.items()
-        })
+        self.storage.set(
+            "permissions:user_roles",
+            {user: list(roles) for user, roles in self.user_roles.items()},
+        )
 
-    def create_role(self, name: str, permissions: DefaultPerms, priority: int = 0, description: Optional[str] = None) -> Role:
+    def create_role(
+        self,
+        name: str,
+        permissions: DefaultPerms,
+        priority: int = 0,
+        description: Optional[str] = None,
+    ) -> Role:
         """Create a new role"""
         if name in self.roles:
             raise ValueError(f"Role {name} already exists")
@@ -148,7 +174,11 @@ class PermissionManager:
 
     def remove_role(self, user: str, role_name: str):
         """Remove a role from a user"""
-        if user in self.user_roles and role_name in self.user_roles[user] and role_name != self.default_role.name:
+        if (
+            user in self.user_roles
+            and role_name in self.user_roles[user]
+            and role_name != self.default_role.name
+        ):
             self.user_roles[user].remove(role_name)
             self.save_data()
 

@@ -39,4 +39,4 @@ def load_cogs_from_directory(bot, directory="cogs"):
                 bot.load_extension(cog_name)
                 RNS.log(f"Loaded extension: {cog_name}", RNS.LOG_INFO)
             except Exception as e:  # pylint: disable=broad-except
-                RNS.log(f"Failed to load extension {cog_name}: {str(e)}", RNS.LOG_ERROR)
+                RNS.log(f"Failed to load extension {cog_name}: {e!s}", RNS.LOG_ERROR)

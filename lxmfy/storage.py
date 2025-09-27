@@ -41,7 +41,7 @@ def serialize_value(obj: Any) -> Any:
             "destination_hash": RNS.hexrep(obj.destination_hash, delimit=False),
             "content": base64.b64encode(obj.content).decode() if obj.content else None,
             "title": obj.title,
-            "timestamp": obj.timestamp.isoformat() if obj.timestamp else None
+            "timestamp": obj.timestamp.isoformat() if obj.timestamp else None,
         }
 
         if hasattr(obj, "fields") and obj.fields:
@@ -56,7 +56,7 @@ def serialize_value(obj: Any) -> Any:
             "type": obj.type,
             "name": obj.name,
             "data": base64.b64encode(obj.data).decode(),
-            "format": obj.format
+            "format": obj.format,
         }
     if isinstance(obj, (list, tuple)):
         return [serialize_value(item) for item in obj]
@@ -85,9 +85,13 @@ def deserialize_value(obj: Any) -> Any:
                 msg_data = {
                     "source_hash": obj["source_hash"],
                     "destination_hash": obj["destination_hash"],
-                    "content": base64.b64decode(obj["data"]) if obj["content"] else None,
+                    "content": base64.b64decode(obj["data"])
+                    if obj["content"]
+                    else None,
                     "title": obj["title"],
-                    "timestamp": datetime.fromisoformat(obj["timestamp"]) if obj["timestamp"] else None
+                    "timestamp": datetime.fromisoformat(obj["timestamp"])
+                    if obj["timestamp"]
+                    else None,
                 }
                 if "fields" in obj:
                     msg_data["fields"] = deserialize_value(obj["fields"])
@@ -97,7 +101,7 @@ def deserialize_value(obj: Any) -> Any:
                     type=AttachmentType(obj["type"]),
                     name=obj["name"],
                     data=base64.b64decode(obj["data"]),
-                    format=obj["format"]
+                    format=obj["format"],
                 )
         return {k: deserialize_value(v) for k, v in obj.items()}
     if isinstance(obj, list):
@@ -106,8 +110,7 @@ def deserialize_value(obj: Any) -> Any:
 
 
 class StorageBackend(ABC):
-    """Abstract base class for storage backends.
-    """
+    """Abstract base class for storage backends."""
 
     @abstractmethod
     def get(self, key: str, default: Any = None) -> Any:
@@ -121,7 +124,6 @@ class StorageBackend(ABC):
             The value associated with the key, or the default value if not found.
 
         """
-        pass
 
     @abstractmethod
     def set(self, key: str, value: Any) -> None:
@@ -132,7 +134,6 @@ class StorageBackend(ABC):
             value: The value to store.
 
         """
-        pass
 
     @abstractmethod
     def delete(self, key: str) -> None:
@@ -142,7 +143,6 @@ class StorageBackend(ABC):
             key: The key to delete.
 
         """
-        pass
 
     @abstractmethod
     def exists(self, key: str) -> bool:
@@ -155,7 +155,6 @@ class StorageBackend(ABC):
             True if the key exists, False otherwise.
 
         """
-        pass
 
     @abstractmethod
     def scan(self, prefix: str) -> list:
@@ -168,12 +167,10 @@ class StorageBackend(ABC):
             A list of keys that start with the prefix.
 
         """
-        pass
 
 
 class JSONStorage(StorageBackend):
-    """JSON file-based storage backend.
-    """
+    """JSON file-based storage backend."""
 
     def __init__(self, directory: str):
         """Initialize a new JSONStorage instance.
@@ -279,8 +276,7 @@ class JSONStorage(StorageBackend):
 
 
 class SQLiteStorage(StorageBackend):
-    """SQLite database storage backend.
-    """
+    """SQLite database storage backend."""
 
     def __init__(self, database_path: str):
         """Initialize a new SQLiteStorage instance.
@@ -302,7 +298,9 @@ class SQLiteStorage(StorageBackend):
         try:
             db_dir.mkdir(parents=True, exist_ok=True)
         except Exception as e:
-            self.logger.error("Failed to create database directory %s: %s", db_dir, str(e))
+            self.logger.error(
+                "Failed to create database directory %s: %s", db_dir, str(e)
+            )
             raise
 
     def _init_db(self):
@@ -322,7 +320,9 @@ class SQLiteStorage(StorageBackend):
                     CREATE INDEX IF NOT EXISTS idx_key_prefix ON key_value(key)
                 """)
         except sqlite3.OperationalError as e:
-            self.logger.error("Failed to initialize database at %s: %s", self.database_path, str(e))
+            self.logger.error(
+                "Failed to initialize database at %s: %s", self.database_path, str(e)
+            )
             raise
         except Exception as e:
             self.logger.error("Unexpected error initializing database: %s", str(e))
@@ -344,7 +344,9 @@ class SQLiteStorage(StorageBackend):
 
         try:
             with sqlite3.connect(self.database_path) as conn:
-                cursor = conn.execute("SELECT value FROM key_value WHERE key = ?", (key,))
+                cursor = conn.execute(
+                    "SELECT value FROM key_value WHERE key = ?", (key,)
+                )
                 row = cursor.fetchone()
                 if row:
                     try:
@@ -372,10 +374,13 @@ class SQLiteStorage(StorageBackend):
                 serialized = str(value)
 
             with sqlite3.connect(self.database_path) as conn:
-                conn.execute("""
+                conn.execute(
+                    """
                     INSERT OR REPLACE INTO key_value (key, value, type, updated_at)
                     VALUES (?, ?, ?, CURRENT_TIMESTAMP)
-                """, (key, serialized, type(value).__name__))
+                """,
+                    (key, serialized, type(value).__name__),
+                )
             self.cache[key] = value
         except Exception as e:
             self.logger.error("Error writing %s: %s", key, str(e))
@@ -428,7 +433,7 @@ class SQLiteStorage(StorageBackend):
             with sqlite3.connect(self.database_path) as conn:
                 cursor = conn.execute(
                     "SELECT key FROM key_value WHERE key LIKE ? ORDER BY key",
-                    (f"{prefix}%",)
+                    (f"{prefix}%",),
                 )
                 return [row[0] for row in cursor.fetchall()]
         except Exception as e:
@@ -437,8 +442,7 @@ class SQLiteStorage(StorageBackend):
 
 
 class Storage:
-    """Facade for the underlying storage backend.
-    """
+    """Facade for the underlying storage backend."""
 
     def __init__(self, backend: StorageBackend):
         """Initialize a new Storage instance.

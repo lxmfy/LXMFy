@@ -68,11 +68,11 @@ class ScheduledTask:
         minute, hour, day, month, weekday = parts
 
         return (
-            self._match_field(minute, dt.minute, 0, 59) and
-            self._match_field(hour, dt.hour, 0, 23) and
-            self._match_field(day, dt.day, 1, 31) and
-            self._match_field(month, dt.month, 1, 12) and
-            ScheduledTask._match_field(weekday, dt.weekday(), 0, 6)
+            self._match_field(minute, dt.minute, 0, 59)
+            and self._match_field(hour, dt.hour, 0, 23)
+            and self._match_field(day, dt.day, 1, 31)
+            and self._match_field(month, dt.month, 1, 12)
+            and ScheduledTask._match_field(weekday, dt.weekday(), 0, 6)
         )
 
     @staticmethod
@@ -109,8 +109,7 @@ class ScheduledTask:
 
 
 class TaskScheduler:
-    """Manages scheduled tasks and background processes.
-    """
+    """Manages scheduled tasks and background processes."""
 
     def __init__(self, bot):
         """Initialize the TaskScheduler.
@@ -133,10 +132,12 @@ class TaskScheduler:
             cron_expr (str): The cron expression for the task.
 
         """
+
         def decorator(func):
             """Adds the task to the scheduler."""
             self.add_task(name, func, cron_expr)
             return func
+
         return decorator
 
     def add_task(self, name: str, callback: Callable, cron_expr: str):
@@ -160,24 +161,21 @@ class TaskScheduler:
         self.tasks.pop(name, None)
 
     def start(self):
-        """Start the scheduler.
-        """
+        """Start the scheduler."""
         self.stop_event.clear()
         scheduler_thread = Thread(target=self._scheduler_loop, daemon=True)
         scheduler_thread.start()
         self.background_tasks.append(scheduler_thread)
 
     def stop(self):
-        """Stop the scheduler.
-        """
+        """Stop the scheduler."""
         self.stop_event.set()
         for task in self.background_tasks:
             task.join()
         self.background_tasks.clear()
 
     def _scheduler_loop(self):
-        """Main scheduler loop.  Checks and runs tasks based on their cron expressions.
-        """
+        """Main scheduler loop.  Checks and runs tasks based on their cron expressions."""
         while not self.stop_event.is_set():
             current_time = datetime.now()
 
@@ -187,6 +185,8 @@ class TaskScheduler:
                         task.callback()
                         task.last_run = current_time
                     except Exception as e:
-                        self.logger.error("Error running task %s: %s", task.name, str(e))
+                        self.logger.error(
+                            "Error running task %s: %s", task.name, str(e)
+                        )
 
             time.sleep(60 - datetime.now().second)

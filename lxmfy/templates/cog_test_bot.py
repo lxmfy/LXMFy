@@ -19,12 +19,16 @@ class TestCog(Cog):
         """Test basic cog command functionality."""
         msg.reply("✅ Cog command working correctly!")
 
-    @Command(name="cogadmin", description="Admin test command from cog", admin_only=True)
+    @Command(
+        name="cogadmin", description="Admin test command from cog", admin_only=True
+    )
     def cog_admin_command(self, msg):
         """Test admin cog command functionality."""
         msg.reply("🔒 Admin cog command working correctly!")
 
-    @Command(name="coghelp", description="Help command from cog using Command decorator")
+    @Command(
+        name="coghelp", description="Help command from cog using Command decorator"
+    )
     def cog_help_command(self, msg):
         """Test Command decorator in cog."""
         msg.reply("""
@@ -63,13 +67,17 @@ class CogTestBot:
         @self.bot.command(name="status", description="Show bot status")
         def status_command(msg):
             """Show bot status and loaded commands."""
-            cog_commands = [cmd for cmd in self.bot.commands if cmd in ["cogtest", "cogadmin", "coghelp"]]
+            cog_commands = [
+                cmd
+                for cmd in self.bot.commands
+                if cmd in ["cogtest", "cogadmin", "coghelp"]
+            ]
             msg.reply(f"""
 🤖 CogTest Bot Status:
 - Commands loaded: {len(self.bot.commands)}
-- Cog commands: {', '.join(cog_commands)}
+- Cog commands: {", ".join(cog_commands)}
 - Cogs loaded: {len(self.bot.cogs)}
-- Test status: {'✅ PASS' if len(cog_commands) == 3 else '❌ FAIL'}
+- Test status: {"✅ PASS" if len(cog_commands) == 3 else "❌ FAIL"}
             """)
 
     def run(self):

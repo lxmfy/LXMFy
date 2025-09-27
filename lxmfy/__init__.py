@@ -20,38 +20,49 @@ from .help import HelpFormatter, HelpSystem
 from .middleware import MiddlewareContext, MiddlewareManager, MiddlewareType
 from .permissions import DefaultPerms, PermissionManager, Role
 from .scheduler import ScheduledTask, TaskScheduler
+from .signatures import (
+    FIELD_SIGNATURE,
+    SignatureManager,
+    sign_outgoing_message,
+    verify_incoming_message,
+)
 from .storage import JSONStorage, SQLiteStorage, Storage
 from .validation import format_validation_results, validate_bot
 
 __all__ = [
-    "LXMFBot",
-    "Storage",
-    "JSONStorage",
-    "SQLiteStorage",
-    "Command",
-    "command",
-    "load_cogs_from_directory",
-    "HelpSystem",
-    "HelpFormatter",
-    "DefaultPerms",
-    "Role",
-    "PermissionManager",
-    "validate_bot",
-    "format_validation_results",
+    "FIELD_SIGNATURE",
+    "Attachment",
+    "AttachmentType",
     "BotConfig",
+    "Command",
+    "DefaultPerms",
     "Event",
     "EventManager",
     "EventPriority",
+    "HelpFormatter",
+    "HelpSystem",
+    "IconAppearance",
+    "JSONStorage",
+    "LXMFBot",
+    "MiddlewareContext",
     "MiddlewareManager",
     "MiddlewareType",
-    "MiddlewareContext",
-    "TaskScheduler",
+    "PermissionManager",
+    "Role",
+    "SQLiteStorage",
     "ScheduledTask",
-    "Attachment",
-    "AttachmentType",
+    "SignatureManager",
+    "Storage",
+    "TaskScheduler",
+    "__version__",
+    "command",
+    "format_validation_results",
+    "load_cogs_from_directory",
     "pack_attachment",
-    "IconAppearance",
-    "pack_icon_appearance_field"
+    "pack_icon_appearance_field",
+    "sign_outgoing_message",
+    "validate_bot",
+    "verify_incoming_message",
 ]
 
 from .__version__ import __version__

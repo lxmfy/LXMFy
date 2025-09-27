@@ -26,27 +26,33 @@ class Colors:
     BOLD = "\033[1m"
     UNDERLINE = "\033[4m"
 
+
 def print_header(text: str) -> None:
     """Print a formatted header with custom styling."""
     print(f"\n{Colors.HEADER}{Colors.BOLD}{'=' * 50}{Colors.ENDC}")
     print(f"{Colors.HEADER}{Colors.BOLD}{text.center(50)}{Colors.ENDC}")
     print(f"{Colors.HEADER}{Colors.BOLD}{'=' * 50}{Colors.ENDC}\n")
 
+
 def print_success(text: str) -> None:
     """Print a success message with custom styling."""
     print(f"{Colors.GREEN}{Colors.BOLD}✓ {text}{Colors.ENDC}")
+
 
 def print_error(text: str) -> None:
     """Print an error message with custom styling."""
     print(f"{Colors.RED}{Colors.BOLD}✗ {text}{Colors.ENDC}")
 
+
 def print_info(text: str) -> None:
     """Print an info message with custom styling."""
     print(f"{Colors.BLUE}{Colors.BOLD}ℹ {text}{Colors.ENDC}")
 
+
 def print_warning(text: str) -> None:
     """Print a warning message with custom styling."""
     print(f"{Colors.YELLOW}{Colors.BOLD}⚠ {text}{Colors.ENDC}")
+
 
 def print_menu() -> None:
     """Print the interactive menu."""
@@ -57,6 +63,7 @@ def print_menu() -> None:
     print(f"{Colors.BOLD}3.{Colors.ENDC} Exit")
     print()
 
+
 def get_user_choice() -> str:
     """Get user's choice from the menu."""
     while True:
@@ -64,6 +71,7 @@ def get_user_choice() -> str:
         if choice in ["1", "2", "3"]:
             return choice
         print_error("Invalid choice. Please enter a number between 1 and 3.")
+
 
 def get_bot_name() -> str:
     """Get bot name from user input."""
@@ -73,6 +81,7 @@ def get_bot_name() -> str:
             return validate_bot_name(name)
         except ValueError as ve:
             print_error(f"Invalid bot name: {ve}")
+
 
 def get_template_choice() -> str:
     """Get template choice from user input."""
@@ -87,13 +96,17 @@ def get_template_choice() -> str:
             return templates[int(choice) - 1]
         print_error("Invalid choice. Please enter a number between 1 and 5.")
 
+
 def interactive_create() -> None:
     """Interactive bot creation process."""
     print_header("Create New Bot")
     bot_name = get_bot_name()
     template = get_template_choice()
 
-    output_path = input(f"{Colors.CYAN}Enter output path (default: {bot_name}.py): {Colors.ENDC}") or f"{bot_name}.py"
+    output_path = (
+        input(f"{Colors.CYAN}Enter output path (default: {bot_name}.py): {Colors.ENDC}")
+        or f"{bot_name}.py"
+    )
 
     try:
         bot_path = create_from_template(template, output_path, bot_name)
@@ -103,7 +116,7 @@ def interactive_create() -> None:
             print_info(f"""
 Files created:
   - {bot_path} (main bot file)
-  - {os.path.join(os.path.dirname(bot_path), 'cogs')}
+  - {os.path.join(os.path.dirname(bot_path), "cogs")}
     - __init__.py
     - basic.py (example cog)
 
@@ -124,7 +137,8 @@ To start your bot:
 To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
             """)
     except Exception as e:
-        print_error(f"Error creating bot: {str(e)}")
+        print_error(f"Error creating bot: {e!s}")
+
 
 def interactive_run() -> None:
     """Interactive bot running process."""
@@ -144,7 +158,7 @@ def interactive_run() -> None:
             "echo": EchoBot,
             "reminder": ReminderBot,
             "note": NoteBot,
-            "cogtest": CogTestBot
+            "cogtest": CogTestBot,
         }
 
         BotClass = template_map[template]
@@ -162,7 +176,8 @@ def interactive_run() -> None:
 
         bot_instance.run()
     except Exception as e:
-        print_error(f"Error running template bot: {str(e)}")
+        print_error(f"Error running template bot: {e!s}")
+
 
 def interactive_mode() -> None:
     """Run the CLI in interactive mode."""
@@ -179,6 +194,7 @@ def interactive_mode() -> None:
             sys.exit(0)
 
         input(f"\n{Colors.CYAN}Press Enter to continue...{Colors.ENDC}")
+
 
 def sanitize_filename(filename: str) -> str:
     """Sanitizes the filename while preserving the extension.
@@ -197,6 +213,7 @@ def sanitize_filename(filename: str) -> str:
         ext = ".py"
 
     return f"{base}{ext}"
+
 
 def validate_bot_name(name: str) -> str:
     """Validates and sanitizes a bot name.
@@ -219,6 +236,7 @@ def validate_bot_name(name: str) -> str:
         raise ValueError("Bot name must contain valid characters")
 
     return sanitized
+
 
 def create_bot_file(name: str, output_path: str, no_cogs: bool = False) -> str:
     """Creates a new bot file from a template.
@@ -284,7 +302,8 @@ if __name__ == "__main__":
         return os.path.relpath(safe_path)
 
     except Exception as e:
-        raise RuntimeError(f"Failed to create bot file: {str(e)}") from e
+        raise RuntimeError(f"Failed to create bot file: {e!s}") from e
+
 
 def create_example_cog(bot_path: str) -> None:
     """Creates an example cog and the necessary directory structure.
@@ -324,7 +343,8 @@ def setup(bot):
             f.write(template)
 
     except Exception as e:
-        raise RuntimeError(f"Failed to create example cog: {str(e)}") from e
+        raise RuntimeError(f"Failed to create example cog: {e!s}") from e
+
 
 def create_from_template(template_name: str, output_path: str, bot_name: str) -> str:
     """Creates a bot from a template.
@@ -362,12 +382,12 @@ def create_from_template(template_name: str, output_path: str, bot_name: str) ->
             "echo": EchoBot,
             "reminder": ReminderBot,
             "note": NoteBot,
-            "cogtest": CogTestBot
+            "cogtest": CogTestBot,
         }
 
         if template_name not in template_map:
             raise ValueError(
-                f"Invalid template: {template_name}. Available templates: basic, {', '.join(template_map.keys())}"
+                f"Invalid template: {template_name}. Available templates: basic, {', '.join(template_map.keys())}",
             )
 
         template = f"""from lxmfy.templates import {template_map[template_name].__name__}
@@ -383,7 +403,8 @@ if __name__ == "__main__":
         return os.path.relpath(safe_path)
 
     except Exception as e:
-        raise RuntimeError(f"Failed to create bot from template: {str(e)}") from e
+        raise RuntimeError(f"Failed to create bot from template: {e!s}") from e
+
 
 def is_safe_path(path: str, base_path: str = None) -> bool:
     """Checks if a path is safe and within the allowed directory.
@@ -404,6 +425,7 @@ def is_safe_path(path: str, base_path: str = None) -> bool:
         return True
     except Exception:
         return False
+
 
 def main() -> None:
     """Main CLI entry point."""
@@ -430,13 +452,17 @@ Examples:
   lxmfy run reminder --name "MyReminder"  # Run the reminder bot with a custom name
   lxmfy run note                        # Run the built-in note bot
   lxmfy run cogtest                     # Run the cog test bot
+
+  lxmfy signatures test                 # Test signature functionality
+  lxmfy signatures enable               # Show how to enable signatures
+  lxmfy signatures disable              # Show how to disable signatures
             """,
         )
 
         parser.add_argument(
             "command",
-            choices=["create", "run"],
-            help="Create a bot file or run a template bot",
+            choices=["create", "run", "signatures"],
+            help="Create a bot file, run a template bot, or manage signatures",
         )
         parser.add_argument(
             "name",
@@ -485,9 +511,9 @@ Examples:
                     output_path = os.path.join(args.directory, "bot.py")
                 elif args.name:
                     if "." in args.name:
-                         output_path = args.name
-                         if not args.name_opt:
-                             bot_name = os.path.splitext(os.path.basename(args.name))[0]
+                        output_path = args.name
+                        if not args.name_opt:
+                            bot_name = os.path.splitext(os.path.basename(args.name))[0]
                     else:
                         output_path = f"{args.name}.py"
                 else:
@@ -508,7 +534,7 @@ Examples:
                     print_info(f"""
 Files created:
   - {bot_path} (main bot file)
-  - {os.path.join(os.path.dirname(bot_path), 'cogs')}
+  - {os.path.join(os.path.dirname(bot_path), "cogs")}
     - __init__.py
     - basic.py (example cog)
 
@@ -529,25 +555,29 @@ To start your bot:
 To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
                     """)
             except Exception as e:
-                print_error(f"Error creating bot: {str(e)}")
+                print_error(f"Error creating bot: {e!s}")
                 sys.exit(1)
 
         elif args.command == "run":
             template_name = args.name
             if not template_name:
-                print_error("Please specify a template name to run (echo, reminder, note, cogtest)")
+                print_error(
+                    "Please specify a template name to run (echo, reminder, note, cogtest)"
+                )
                 sys.exit(1)
 
             template_map = {
                 "echo": EchoBot,
                 "reminder": ReminderBot,
                 "note": NoteBot,
-                "cogtest": CogTestBot
+                "cogtest": CogTestBot,
             }
 
             if template_name not in template_map:
-                 print_error(f"Invalid template name '{template_name}'. Choose from: {', '.join(template_map.keys())}")
-                 sys.exit(1)
+                print_error(
+                    f"Invalid template name '{template_name}'. Choose from: {', '.join(template_map.keys())}"
+                )
+                sys.exit(1)
 
             try:
                 BotClass = template_map[template_name]
@@ -556,23 +586,160 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
 
                 custom_name = args.name_opt
                 if custom_name:
-                     try:
-                         validated_name = validate_bot_name(custom_name)
-                         if hasattr(bot_instance, "bot"):
-                             bot_instance.bot.config.name = validated_name
-                             bot_instance.bot.name = validated_name
-                         else:
-                             bot_instance.config.name = validated_name
-                             bot_instance.name = validated_name
-                         print_info(f"Running with custom name: {validated_name}")
-                     except ValueError as ve:
-                         print_warning(f"Invalid custom name '{custom_name}' provided. Using default. ({ve})")
+                    try:
+                        validated_name = validate_bot_name(custom_name)
+                        if hasattr(bot_instance, "bot"):
+                            bot_instance.bot.config.name = validated_name
+                            bot_instance.bot.name = validated_name
+                        else:
+                            bot_instance.config.name = validated_name
+                            bot_instance.name = validated_name
+                        print_info(f"Running with custom name: {validated_name}")
+                    except ValueError as ve:
+                        print_warning(
+                            f"Invalid custom name '{custom_name}' provided. Using default. ({ve})"
+                        )
 
                 bot_instance.run()
 
             except Exception as e:
-                print_error(f"Error running template bot '{template_name}': {str(e)}")
+                print_error(f"Error running template bot '{template_name}': {e!s}")
                 sys.exit(1)
+
+        elif args.command == "signatures":
+            try:
+                print_header("Signature Management")
+                if not args.name:
+                    print_error("Please specify a subcommand: test, enable, disable")
+                    print_info("Usage: lxmfy signatures <subcommand>")
+                    print_info(
+                        "  test     - Test signature verification with sample data"
+                    )
+                    print_info("  enable   - Show how to enable signature verification")
+                    print_info(
+                        "  disable  - Show how to disable signature verification"
+                    )
+                    sys.exit(1)
+
+                subcommand = args.name
+
+                if subcommand == "test":
+                    print_info("Testing signature functionality...")
+                    try:
+                        # Test signature creation and verification
+                        import RNS
+
+                        from lxmfy.signatures import FIELD_SIGNATURE, SignatureManager
+
+                        # Create test identities
+                        identity1 = RNS.Identity()
+                        identity2 = RNS.Identity()
+
+                        # Create a mock bot-like object
+                        class MockBot:
+                            def __init__(self):
+                                self.permissions = MockPermissions()
+
+                        class MockPermissions:
+                            def has_permission(self, user, perm):
+                                return False  # No bypass for testing
+
+                        bot = MockBot()
+                        sig_manager = SignatureManager(
+                            bot, verification_enabled=True, require_signatures=False
+                        )
+
+                        # Create mock LXMF message
+                        class MockMessage:
+                            def __init__(
+                                self,
+                                source_hash,
+                                dest_hash,
+                                content,
+                                title=None,
+                                fields=None,
+                            ):
+                                self.source_hash = source_hash
+                                self.destination_hash = dest_hash
+                                self.content = content
+                                self.title = title or b"Test"
+                                self.fields = fields or {}
+
+                        # Test signing
+                        test_msg = MockMessage(
+                            identity1.hash,
+                            identity2.hash,
+                            b"Hello, World!",
+                            b"Test Message",
+                        )
+
+                        signature = sig_manager.sign_message(test_msg, identity1)
+                        print_success(
+                            f"✓ Message signed successfully (signature length: {len(signature)} bytes)"
+                        )
+
+                        # Test verification
+                        test_msg.fields[FIELD_SIGNATURE] = signature
+                        is_valid = sig_manager.verify_message_signature(
+                            test_msg,
+                            signature,
+                            RNS.hexrep(identity1.hash, delimit=False),
+                        )
+                        if is_valid:
+                            print_success("✓ Signature verification successful")
+                        else:
+                            print_error("✗ Signature verification failed")
+
+                        print_info("Signature test completed successfully!")
+
+                    except Exception as e:
+                        print_error(f"Signature test failed: {e!s}")
+                        print_info("This may be due to RNS initialization requirements")
+                        sys.exit(1)
+
+                elif subcommand == "enable":
+                    print_info(
+                        "To enable signature verification in your bot, add these parameters to your LXMFBot constructor:"
+                    )
+                    print()
+                    print(
+                        "signature_verification_enabled=True,   # Enable signature checking"
+                    )
+                    print(
+                        "require_message_signatures=False,      # Set to True to reject unsigned messages"
+                    )
+                    print()
+                    print_info("Example:")
+                    print("bot = LXMFBot(")
+                    print("    name='MyBot',")
+                    print("    signature_verification_enabled=True,")
+                    print("    require_message_signatures=False")
+                    print(")")
+
+                elif subcommand == "disable":
+                    print_info(
+                        "Signature verification is disabled by default. To explicitly disable:"
+                    )
+                    print()
+                    print(
+                        "signature_verification_enabled=False,  # Disable signature checking"
+                    )
+                    print(
+                        "require_message_signatures=False,      # Not required when disabled"
+                    )
+                    print()
+                    print_info(
+                        "Or simply omit these parameters (they default to False)"
+                    )
+
+                else:
+                    print_error(f"Unknown subcommand: {subcommand}")
+                    print_info("Available subcommands: test, enable, disable")
+
+            except Exception as e:
+                print_error(f"Error in signatures command: {e!s}")
+                sys.exit(1)
+
     except KeyboardInterrupt:
         print("\nExiting...")
         sys.exit(0)

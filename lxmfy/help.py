@@ -7,8 +7,7 @@ from .permissions import DefaultPerms
 
 @dataclass
 class HelpFormatter:
-    """Default help formatter for commands.
-    """
+    """Default help formatter for commands."""
 
     @staticmethod
     def format_command(command) -> str:
@@ -33,7 +32,11 @@ class HelpFormatter:
 
         if command.permissions != DefaultPerms.USE_COMMANDS:
             help_text.append("Required Permissions:")
-            help_text.extend(f"  - {perm.name}" for perm in DefaultPerms if perm.value & command.permissions)
+            help_text.extend(
+                f"  - {perm.name}"
+                for perm in DefaultPerms
+                if perm.value & command.permissions
+            )
 
         if command.admin_only:
             help_text.append("Note: Admin only command")
@@ -76,8 +79,7 @@ class HelpFormatter:
 
 
 class HelpSystem:
-    """A system for providing help information about available commands.
-    """
+    """A system for providing help information about available commands."""
 
     def __init__(self, bot, formatter=None):
         """Initialize the HelpSystem.

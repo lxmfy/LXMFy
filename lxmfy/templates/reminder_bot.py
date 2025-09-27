@@ -19,17 +19,18 @@ class ReminderBot:
             announce=600,
             command_prefix="/",
             storage_type="sqlite",
-            storage_path="data/reminders.db"
+            storage_path="data/reminders.db",
         )
         self.setup_commands()
         self.bot.scheduler.add_task(
             "check_reminders",
             self._check_reminders,
-            "*/1 * * * *" # Run every minute
+            "*/1 * * * *",  # Run every minute
         )
 
     def setup_commands(self):
         """Sets up the bot's commands, specifically the 'remind' and 'list' commands."""
+
         @self.bot.command(name="remind", description="Set a reminder")
         def remind(ctx):
             """Sets a reminder for the user.
@@ -39,7 +40,9 @@ class ReminderBot:
 
             """
             if not ctx.args or len(ctx.args) < 2:
-                ctx.reply("Usage: /remind <time> <message>\nExample: /remind 1h30m Buy groceries")
+                ctx.reply(
+                    "Usage: /remind <time> <message>\nExample: /remind 1h30m Buy groceries"
+                )
                 return
 
             time_str = ctx.args[0].lower()
@@ -57,7 +60,9 @@ class ReminderBot:
                     total_minutes += int(value)
 
             if total_minutes == 0:
-                ctx.reply("Invalid time format. Use combinations of d (days), h (hours), m (minutes)")
+                ctx.reply(
+                    "Invalid time format. Use combinations of d (days), h (hours), m (minutes)"
+                )
                 return
 
             remind_time = datetime.now() + timedelta(minutes=total_minutes)
@@ -66,14 +71,16 @@ class ReminderBot:
                 "user": ctx.sender,
                 "message": message,
                 "time": remind_time.timestamp(),
-                "created": time.time()
+                "created": time.time(),
             }
 
             reminders = self.bot.storage.get("reminders", [])
             reminders.append(reminder)
             self.bot.storage.set("reminders", reminders)
 
-            ctx.reply(f"I'll remind you about '{message}' at {remind_time.strftime('%Y-%m-%d %H:%M:%S')}")
+            ctx.reply(
+                f"I'll remind you about '{message}' at {remind_time.strftime('%Y-%m-%d %H:%M:%S')}"
+            )
 
         @self.bot.command(name="list", description="List your reminders")
         def list_reminders(ctx):
@@ -109,7 +116,7 @@ class ReminderBot:
             self.bot.send(
                 reminder["user"],
                 f"Reminder: {reminder['message']}",
-                "Reminder"
+                "Reminder",
             )
 
         if due_reminders:

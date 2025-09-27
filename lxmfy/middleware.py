@@ -12,6 +12,7 @@ from typing import Any, Callable
 
 logger = logging.getLogger(__name__)
 
+
 class MiddlewareType(Enum):
     """Types of middleware execution points"""
 
@@ -21,6 +22,7 @@ class MiddlewareType(Enum):
     POST_EVENT = "post_event"
     REQUEST = "request"
     RESPONSE = "response"
+
 
 @dataclass
 class MiddlewareContext:
@@ -34,6 +36,7 @@ class MiddlewareContext:
     def cancel(self):
         """Cancel middleware processing"""
         self.cancelled = True
+
 
 class MessageTracker:
     """Tracks processed messages to prevent duplicates"""
@@ -49,8 +52,9 @@ class MessageTracker:
 
         self.processed.add(msg_hash)
         if len(self.processed) > self.max_size:
-            self.processed = set(list(self.processed)[-self.max_size:])
+            self.processed = set(list(self.processed)[-self.max_size :])
         return False
+
 
 class MiddlewareManager:
     """Manages middleware registration and execution"""

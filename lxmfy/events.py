@@ -70,8 +70,7 @@ class Event:
         return self.name == other.name
 
     def cancel(self):
-        """Cancels the event, preventing further processing.
-        """
+        """Cancels the event, preventing further processing."""
         object.__setattr__(self, "cancelled", True)
 
 
@@ -90,8 +89,7 @@ class EventHandler:
 
 
 class EventManager:
-    """Manages event registration, dispatching, and logging.
-    """
+    """Manages event registration, dispatching, and logging."""
 
     def __init__(self, storage):
         """Initializes the EventManager.
@@ -115,6 +113,7 @@ class EventManager:
             Callable: A decorator that registers the decorated function as an event handler.
 
         """
+
         def decorator(func):
             """Registers the decorated function as an event handler."""
             if event_name not in self.handlers:
@@ -122,6 +121,7 @@ class EventManager:
             self.handlers[event_name].append((priority, func))
             self.handlers[event_name].sort(key=lambda x: x[0].value, reverse=True)
             return func
+
         return decorator
 
     def use(self, middleware: Callable):
@@ -131,7 +131,6 @@ class EventManager:
             middleware (Callable): The middleware function to add.
 
         """
-        pass
 
     def dispatch(self, event: Event):
         """Dispatches an event to all registered handlers.
@@ -148,7 +147,9 @@ class EventManager:
                         if event.cancelled:
                             break
                     except Exception as e:
-                        self.logger.error("Error in event handler %s: %s", handler.__name__, str(e))
+                        self.logger.error(
+                            "Error in event handler %s: %s", handler.__name__, str(e)
+                        )
         except Exception as e:
             self.logger.error("Error dispatching event: %s", str(e))
 
@@ -161,11 +162,13 @@ class EventManager:
         """
         try:
             events = self.storage.get("events:log", [])
-            events.append({
-                "name": event.name,
-                "data": event.data,
-                "timestamp": datetime.now().isoformat()
-            })
+            events.append(
+                {
+                    "name": event.name,
+                    "data": event.data,
+                    "timestamp": datetime.now().isoformat(),
+                }
+            )
             self.storage.set("events:log", events[-1000:])
         except Exception as e:
             self.logger.error("Error logging event: %s", str(e))

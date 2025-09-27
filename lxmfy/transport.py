@@ -34,8 +34,7 @@ class PathInfo:
 
 
 class Transport:
-    """Manages network transport for LXMFy, handling links and paths.
-    """
+    """Manages network transport for LXMFy, handling links and paths."""
 
     def __init__(self, storage):
         """Initializes the Transport instance.
@@ -185,7 +184,7 @@ class Transport:
                 link.teardown()
 
         self.cached_links = {
-            hash: link
-            for hash, link in self.cached_links.items()
+            dest_hash: link
+            for dest_hash, link in self.cached_links.items()
             if link.status == RNS.Link.ACTIVE
         }

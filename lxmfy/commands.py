@@ -59,7 +59,9 @@ class Command:
         self.name = name
         self.description = description
         self.admin_only = admin_only
-        self.permissions = permissions or (DefaultPerms.ALL if admin_only else DefaultPerms.USE_COMMANDS)
+        self.permissions = permissions or (
+            DefaultPerms.ALL if admin_only else DefaultPerms.USE_COMMANDS
+        )
         self.threaded = threaded
         self.callback = None
         self.help = CommandHelp(

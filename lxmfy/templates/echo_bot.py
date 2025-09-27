@@ -1,31 +1,30 @@
 """Simple echo bot template."""
 
-
 from lxmfy import IconAppearance, LXMFBot, pack_icon_appearance_field
 
 
 class EchoBot:
-    """A simple echo bot that repeats messages.
-    """
+    """A simple echo bot that repeats messages."""
 
     def __init__(self):
-        """Initializes the EchoBot with basic configurations and sets up commands.
-        """
+        """Initializes the EchoBot with basic configurations and sets up commands."""
         self.bot = LXMFBot(
             name="Echo Bot",
             announce=600,
             command_prefix="",
-            first_message_enabled=True
+            first_message_enabled=True,
         )
         self.setup_commands()
 
         # Define and pack the icon appearance for the bot
-        icon_data = IconAppearance(icon_name="forum", fg_color=b"\xAD\xD8\xE6", bg_color=b"\x3B\x59\x98") # Light blue on dark blue
+        icon_data = IconAppearance(
+            icon_name="forum", fg_color=b"\xad\xd8\xe6", bg_color=b"\x3b\x59\x98"
+        )  # Light blue on dark blue
         self.icon_lxmf_field = pack_icon_appearance_field(icon_data)
 
     def setup_commands(self):
-        """Sets up the bot's commands and event handlers.
-        """
+        """Sets up the bot's commands and event handlers."""
+
         @self.bot.command(name="echo", description="Echo back your message")
         def echo(ctx):
             """Echoes back the message provided by the user.
@@ -52,10 +51,13 @@ class EchoBot:
 
             """
             content = message.content.decode("utf-8").strip()
-            self.bot.send(sender, f"Hi! I'm an echo bot. You said: {content}\n\nTry echo <message> to make me repeat things!", lxmf_fields=self.icon_lxmf_field)
+            self.bot.send(
+                sender,
+                f"Hi! I'm an echo bot. You said: {content}\n\nTry echo <message> to make me repeat things!",
+                lxmf_fields=self.icon_lxmf_field,
+            )
             return True
 
     def run(self):
-        """Runs the bot.
-        """
+        """Runs the bot."""
         self.bot.run()

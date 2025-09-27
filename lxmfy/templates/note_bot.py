@@ -6,24 +6,22 @@ from lxmfy import LXMFBot
 
 
 class NoteBot:
-    """A bot that allows users to save and retrieve notes.
-    """
+    """A bot that allows users to save and retrieve notes."""
 
     def __init__(self):
-        """Initializes the NoteBot with basic configurations and sets up commands.
-        """
+        """Initializes the NoteBot with basic configurations and sets up commands."""
         self.bot = LXMFBot(
             name="Note Bot",
             announce=600,
             command_prefix="/",
             storage_type="json",
-            storage_path="data/notes"
+            storage_path="data/notes",
         )
         self.setup_commands()
 
     def setup_commands(self):
-        """Sets up the bot's commands: save note, list notes, search notes.
-        """
+        """Sets up the bot's commands: save note, list notes, search notes."""
+
         @self.bot.command(name="note", description="Save a note")
         def save_note(ctx):
             """Saves a note for the user.
@@ -39,7 +37,7 @@ class NoteBot:
             note = {
                 "text": " ".join(ctx.args),
                 "timestamp": datetime.now().isoformat(),
-                "tags": [w[1:] for w in ctx.args if w.startswith("#")]
+                "tags": [w[1:] for w in ctx.args if w.startswith("#")],
             }
 
             notes = self.bot.storage.get(f"notes:{ctx.sender}", [])
@@ -63,7 +61,11 @@ class NoteBot:
 
                 response = "Your Notes:\n"
                 for i, note in enumerate(notes[-10:], 1):
-                    tags = " ".join(f"#{tag}" for tag in note["tags"]) if note["tags"] else ""
+                    tags = (
+                        " ".join(f"#{tag}" for tag in note["tags"])
+                        if note["tags"]
+                        else ""
+                    )
                     response += f"{i}. {note['text']} {tags}\n"
 
                 if len(notes) > 10:
@@ -77,7 +79,11 @@ class NoteBot:
 
                 response = "All Your Notes:\n"
                 for i, note in enumerate(notes, 1):
-                    tags = " ".join(f"#{tag}" for tag in note["tags"]) if note["tags"] else ""
+                    tags = (
+                        " ".join(f"#{tag}" for tag in note["tags"])
+                        if note["tags"]
+                        else ""
+                    )
                     response += f"{i}. {note['text']} {tags}\n"
                 ctx.reply(response)
             elif ctx.args[0].startswith("#"):
@@ -91,7 +97,9 @@ class NoteBot:
 
                 response = f"Notes tagged #{tag}:\n"
                 for i, note in enumerate(tagged_notes, 1):
-                    tags = " ".join(f"#{t}" for t in note["tags"]) if note["tags"] else ""
+                    tags = (
+                        " ".join(f"#{t}" for t in note["tags"]) if note["tags"] else ""
+                    )
                     response += f"{i}. {note['text']} {tags}\n"
                 ctx.reply(response)
 
@@ -117,11 +125,12 @@ class NoteBot:
 
             response = f"Notes containing '{search_term}':\n"
             for i, note in enumerate(matches, 1):
-                tags = " ".join(f"#{tag}" for tag in note["tags"]) if note["tags"] else ""
+                tags = (
+                    " ".join(f"#{tag}" for tag in note["tags"]) if note["tags"] else ""
+                )
                 response += f"{i}. {note['text']} {tags}\n"
             ctx.reply(response)
 
     def run(self):
-        """Runs the bot.
-        """
+        """Runs the bot."""
         self.bot.run()

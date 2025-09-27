@@ -30,6 +30,7 @@ from .middleware import MiddlewareContext, MiddlewareManager, MiddlewareType
 from .moderation import SpamProtection
 from .permissions import DefaultPerms, PermissionManager
 from .scheduler import TaskScheduler
+from .signatures import SignatureManager, sign_outgoing_message, verify_incoming_message
 from .storage import JSONStorage, SQLiteStorage
 from .transport import Transport
 from .validation import format_validation_results, validate_bot
@@ -59,11 +60,13 @@ class LXMFBot:
         self.first_message_handlers = []
         self.delivery_callbacks = []
         self.receipts = []
-        self.queue = Queue(maxsize=5) # Outbound LXMF message queue
+        self.queue = Queue(maxsize=5)  # Outbound LXMF message queue
         self.announce_time = 600
         self.logger = logging.getLogger(__name__)
-        self.thread_pool = ThreadPoolExecutor(max_workers=5) # For offloading CPU-bound or blocking I/O tasks
-        self.scheduler = TaskScheduler(self) # Initialize the scheduler
+        self.thread_pool = ThreadPoolExecutor(
+            max_workers=5
+        )  # For offloading CPU-bound or blocking I/O tasks
+        self.scheduler = TaskScheduler(self)  # Initialize the scheduler
 
         self.config_path = os.path.join(os.getcwd(), "config")
         os.makedirs(self.config_path, exist_ok=True)
@@ -75,7 +78,7 @@ class LXMFBot:
 
         self.permissions = PermissionManager(
             storage=self.storage,
-            enabled=self.config.permissions_enabled
+            enabled=self.config.permissions_enabled,
         )
 
         self.events = EventManager(self.storage)
@@ -112,7 +115,8 @@ class LXMFBot:
         RNS.Reticulum(loglevel=RNS.LOG_VERBOSE)
         self.router = LXMRouter(identity=self.identity, storagepath=self.config_path)
         self.local = self.router.register_delivery_identity(
-            self.identity, display_name=self.config.name
+            self.identity,
+            display_name=self.config.name,
         )
         self.router.register_delivery_callback(self._message_received)
         RNS.log(
@@ -128,7 +132,7 @@ class LXMFBot:
             self.scheduler.add_task(
                 "announce_task",
                 self._announce,
-                f"*/{self.announce_time // 60} * * * *" # Convert seconds to minutes for cron
+                f"*/{self.announce_time // 60} * * * *",  # Convert seconds to minutes for cron
             )
             if self.config.announce_immediately:
                 # Force an immediate announce if configured
@@ -141,6 +145,12 @@ class LXMFBot:
 
         self.help_system = HelpSystem(self)
 
+        self.signature_manager = SignatureManager(
+            self,
+            verification_enabled=self.config.signature_verification_enabled,
+            require_signatures=self.config.require_message_signatures,
+        )
+
         if self.config.cogs_enabled:
             load_cogs_from_directory(self)
 
@@ -152,9 +162,9 @@ class LXMFBot:
             **kwargs: Command attributes (name, description, admin_only).
 
         """
+
         def decorator(func):
-            """The actual decorator that registers the command.
-            """
+            """The actual decorator that registers the command."""
             name = args[0] if len(args) > 0 else kwargs.get("name", func.__name__)
 
             description = kwargs.get("description", "No description provided")
@@ -194,7 +204,7 @@ class LXMFBot:
                 raise ImportError(f"Extension {name} missing setup function")
             module.setup(self)
         except ImportError as e:
-            raise ImportError(f"Failed to load extension {name}: {str(e)}") from e
+            raise ImportError(f"Failed to load extension {name}: {e!s}") from e
 
     def add_cog(self, cog):
         """Add a cog to the bot.
@@ -205,7 +215,8 @@ class LXMFBot:
         """
         self.cogs[cog.__class__.__name__] = cog
         for _name, method in inspect.getmembers(
-            cog, predicate=lambda x: hasattr(x, "command")
+            cog,
+            predicate=lambda x: hasattr(x, "command"),
         ):
             if _name.startswith("_") or _name == "bot":
                 continue
@@ -213,19 +224,30 @@ class LXMFBot:
             try:
                 cmd_descriptor = method.command
 
-                if hasattr(cmd_descriptor, "__get__") and hasattr(cmd_descriptor, "name"):
+                if hasattr(cmd_descriptor, "__get__") and hasattr(
+                    cmd_descriptor, "name"
+                ):
                     cmd = cmd_descriptor.__get__(cog, cog.__class__)
                 elif hasattr(cmd_descriptor, "name"):
                     cmd = cmd_descriptor
                     if cmd.callback is None:
                         cmd.callback = method
                 else:
-                    self.logger.warning("Unexpected command type for %s: %s", _name, type(cmd_descriptor))
+                    self.logger.warning(
+                        "Unexpected command type for %s: %s",
+                        _name,
+                        type(cmd_descriptor),
+                    )
                     continue
 
                 self.commands[cmd.name] = cmd
             except Exception as e:
-                self.logger.error("Error adding command %s from cog %s: %s", _name, cog.__class__.__name__, e)
+                self.logger.error(
+                    "Error adding command %s from cog %s: %s",
+                    _name,
+                    cog.__class__.__name__,
+                    e,
+                )
                 continue
 
     def is_admin(self, sender):
@@ -242,6 +264,7 @@ class LXMFBot:
 
     def _register_builtin_events(self):
         """Register built-in event handlers."""
+
         @self.events.on("message_received", EventPriority.HIGHEST)
         def handle_message(event):
             """Handles incoming messages, performing spam checks."""
@@ -291,7 +314,7 @@ class LXMFBot:
 
             if self.command_prefix is None or content.startswith(self.command_prefix):
                 command_name = (
-                    content.split()[0][len(self.command_prefix):]
+                    content.split()[0][len(self.command_prefix) :]
                     if self.command_prefix
                     else content.split()[0]
                 )
@@ -299,7 +322,9 @@ class LXMFBot:
                     cmd = self.commands[command_name]
 
                     if not self.permissions.has_permission(sender, cmd.permissions):
-                        self.send(sender, "You don't have permission to use this command.")
+                        self.send(
+                            sender, "You don't have permission to use this command."
+                        )
                         return
 
                     try:
@@ -318,7 +343,9 @@ class LXMFBot:
                         return
 
                     except Exception as e:
-                        self.logger.error("Error executing command %s: %s", command_name, str(e))
+                        self.logger.error(
+                            "Error executing command %s: %s", command_name, str(e)
+                        )
                         self.send(sender, "Error executing command: %s", str(e))
                         return
 
@@ -344,7 +371,7 @@ class LXMFBot:
             event_data = {
                 "message": message,
                 "sender": sender,
-                "receipt": receipt
+                "receipt": receipt,
             }
 
             ctx = MiddlewareContext(MiddlewareType.PRE_EVENT, event_data)
@@ -355,7 +382,14 @@ class LXMFBot:
             self.events.dispatch(event)
 
             if not event.cancelled:
-                self._process_message(message, sender)
+                # Verify message signature if enabled
+                if verify_incoming_message(self, message, sender):
+                    self._process_message(message, sender)
+                else:
+                    RNS.log(
+                        f"Rejected message from {sender} due to invalid signature",
+                        RNS.LOG_WARNING,
+                    )
 
         except Exception as e:
             self.logger.error("Error handling received message: %s", str(e))
@@ -383,9 +417,18 @@ class LXMFBot:
                 next_announce = int(time.time()) + self.announce_time
                 af.write(str(next_announce))
             self.local.announce()
-            RNS.log(f"Announcement sent, next announce in {self.announce_time} seconds", RNS.LOG_INFO)
+            RNS.log(
+                f"Announcement sent, next announce in {self.announce_time} seconds",
+                RNS.LOG_INFO,
+            )
 
-    def send(self, destination: str, message: str, title: str = "Reply", lxmf_fields: Optional[dict] = None):
+    def send(
+        self,
+        destination: str,
+        message: str,
+        title: str = "Reply",
+        lxmf_fields: Optional[dict] = None,
+    ):
         """Send a message to a destination, optionally with custom LXMF fields.
 
         Args:
@@ -419,7 +462,11 @@ class LXMFBot:
             return
 
         lxmf_destination_obj = RNS.Destination(
-            identity_instance, RNS.Destination.OUT, RNS.Destination.SINGLE, "lxmf", "delivery"
+            identity_instance,
+            RNS.Destination.OUT,
+            RNS.Destination.SINGLE,
+            "lxmf",
+            "delivery",
         )
 
         # Ensure message and title are bytes
@@ -432,21 +479,32 @@ class LXMFBot:
             message_bytes,
             title=title_bytes,
             desired_method=LXMessage.DIRECT,
-            fields=lxmf_fields
+            fields=lxmf_fields,
         )
+
+        # Sign the message if signature verification is enabled
+        lxm = sign_outgoing_message(self, lxm)
+
         lxm.try_propagation_on_fail = True
         self.queue.put(lxm)
         RNS.log(f"Message queued for {destination}", RNS.LOG_DEBUG)
 
-    def send_with_attachment(self, destination: str, message: str, attachment: Attachment, title: str = "Reply"):
-        """Send a message with an attachment to a destination.
-        """
+    def send_with_attachment(
+        self,
+        destination: str,
+        message: str,
+        attachment: Attachment,
+        title: str = "Reply",
+    ):
+        """Send a message with an attachment to a destination."""
         attachment_specific_fields = pack_attachment(attachment)
-        self.send(destination, message, title=title, lxmf_fields=attachment_specific_fields)
+        self.send(
+            destination, message, title=title, lxmf_fields=attachment_specific_fields
+        )
 
     def run(self, delay=10):
         """Run the bot"""
-        self.scheduler.start() # Start the scheduler
+        self.scheduler.start()  # Start the scheduler
         try:
             while True:
                 for _i in list(self.queue.queue):
@@ -456,7 +514,7 @@ class LXMFBot:
                 time.sleep(delay)
 
         except KeyboardInterrupt:
-            self.cleanup() # Call cleanup on KeyboardInterrupt
+            self.cleanup()  # Call cleanup on KeyboardInterrupt
 
     def received(self, function):
         """Decorator for registering delivery callbacks.
@@ -469,7 +527,10 @@ class LXMFBot:
         return function
 
     def request_page(
-        self, destination_hash: str, page_path: str, field_data: Optional[dict] = None
+        self,
+        destination_hash: str,
+        page_path: str,
+        field_data: Optional[dict] = None,
     ) -> dict:
         """Request a page from a destination.
 
@@ -493,14 +554,16 @@ class LXMFBot:
         """Clean up resources."""
         self.transport.cleanup()
         self.thread_pool.shutdown(wait=True)
-        self.scheduler.stop() # Stop the scheduler
+        self.scheduler.stop()  # Stop the scheduler
 
     def on_first_message(self):
         """Decorator for registering first message handlers"""
+
         def decorator(func):
             """Registers a function to be called on the first message from a sender."""
             self.first_message_handlers.append(func)
             return func
+
         return decorator
 
     def validate(self) -> str:

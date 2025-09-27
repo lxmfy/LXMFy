@@ -50,9 +50,9 @@ def create_file_attachment(filename: str, data: bytes) -> list:
     return [filename, data]
 
 
-def create_image_attachment(format: str, data: bytes) -> list:
+def create_image_attachment(image_format: str, data: bytes) -> list:
     """Create an image attachment list."""
-    return [format, data]
+    return [image_format, data]
 
 
 def create_audio_attachment(mode: int, data: bytes) -> list:
@@ -75,11 +75,23 @@ def pack_attachment(attachment: Attachment) -> dict:
 
     """
     if attachment.type == AttachmentType.FILE:
-        return {LXMF.FIELD_FILE_ATTACHMENTS: [create_file_attachment(attachment.name, attachment.data)]}
+        return {
+            LXMF.FIELD_FILE_ATTACHMENTS: [
+                create_file_attachment(attachment.name, attachment.data)
+            ]
+        }
     if attachment.type == AttachmentType.IMAGE:
-        return {LXMF.FIELD_IMAGE: create_image_attachment(attachment.format or "webp", attachment.data)}
+        return {
+            LXMF.FIELD_IMAGE: create_image_attachment(
+                attachment.format or "webp", attachment.data
+            )
+        }
     if attachment.type == AttachmentType.AUDIO:
-        return {LXMF.FIELD_AUDIO: create_audio_attachment(int(attachment.format or 0), attachment.data)}
+        return {
+            LXMF.FIELD_AUDIO: create_audio_attachment(
+                int(attachment.format or 0), attachment.data
+            )
+        }
     raise ValueError(f"Unsupported attachment type: {attachment.type}")
 
 
@@ -105,6 +117,6 @@ def pack_icon_appearance_field(appearance: IconAppearance) -> dict:
         LXMF.FIELD_ICON_APPEARANCE: [
             appearance.icon_name,
             appearance.fg_color,
-            appearance.bg_color
-        ]
+            appearance.bg_color,
+        ],
     }
