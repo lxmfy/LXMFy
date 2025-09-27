@@ -5,7 +5,6 @@ including command registration, method decoration, and cog support.
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
 from .permissions import BasePermission, DefaultPerms
 
@@ -16,9 +15,9 @@ class CommandHelp:
 
     name: str
     description: str
-    usage: Optional[str] = None
+    usage: str | None = None
     examples: list[str] = None
-    category: Optional[str] = None
+    category: str | None = None
     aliases: list[str] = None
 
 
@@ -41,7 +40,7 @@ class Command:
         name,
         description="No description provided",
         admin_only=False,
-        permissions: Optional[BasePermission] = None,
+        permissions: BasePermission | None = None,
         usage=None,
         examples=None,
         category=None,

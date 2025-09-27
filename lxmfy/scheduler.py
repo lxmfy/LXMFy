@@ -6,10 +6,10 @@ for LXMFy bots.
 
 import logging
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from threading import Event, Thread
-from typing import Callable, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ class ScheduledTask:
     name: str
     callback: Callable
     cron_expr: str
-    last_run: Optional[datetime] = None
+    last_run: datetime | None = None
     enabled: bool = True
 
     def should_run(self, current_time: datetime) -> bool:
@@ -186,7 +186,7 @@ class TaskScheduler:
                         task.last_run = current_time
                     except Exception as e:
                         self.logger.error(
-                            "Error running task %s: %s", task.name, str(e)
+                            "Error running task %s: %s", task.name, str(e),
                         )
 
             time.sleep(60 - datetime.now().second)

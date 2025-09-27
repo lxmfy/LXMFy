@@ -20,7 +20,7 @@ class SignatureManager:
     """Manages cryptographic signing and verification of messages."""
 
     def __init__(
-        self, bot, verification_enabled: bool = False, require_signatures: bool = False
+        self, bot, verification_enabled: bool = False, require_signatures: bool = False,
     ):
         """Initialize the SignatureManager.
 
@@ -80,7 +80,7 @@ class SignatureManager:
                 identity_to_use = RNS.Identity.recall(sender_hash_bytes)
                 if identity_to_use is None:
                     self.logger.warning(
-                        "Could not recall identity for sender: %s", sender_hash
+                        "Could not recall identity for sender: %s", sender_hash,
                     )
                     return False
             message_data = self._canonicalize_message(message)
@@ -116,7 +116,7 @@ class SignatureManager:
             )
             for field_id, field_data in sorted_fields:
                 canonical_data.append(
-                    f"field_{field_id}:".encode() + str(field_data).encode()
+                    f"field_{field_id}:".encode() + str(field_data).encode(),
                 )
         return b"|".join(canonical_data)
 
@@ -132,7 +132,9 @@ class SignatureManager:
         """
         if not self.verification_enabled:
             return False
-        if self.bot.permissions.has_permission(sender, DefaultPerms.BYPASS_SPAM):
+        # Only skip verification if permissions are enabled and user has bypass permission
+        if (hasattr(self.bot, "permissions") and self.bot.permissions.enabled and
+            self.bot.permissions.has_permission(sender, DefaultPerms.BYPASS_SPAM)):
             return False
         return True
 
@@ -149,12 +151,12 @@ class SignatureManager:
         """
         if self.require_signatures:
             self.logger.warning(
-                "Rejected unsigned message from %s (hash: %s)", sender, message_hash
+                "Rejected unsigned message from %s (hash: %s)", sender, message_hash,
             )
             return False
         if self.verification_enabled:
             self.logger.info(
-                "Accepted unsigned message from %s (hash: %s)", sender, message_hash
+                "Accepted unsigned message from %s (hash: %s)", sender, message_hash,
             )
         return True
 

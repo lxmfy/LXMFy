@@ -299,7 +299,7 @@ class SQLiteStorage(StorageBackend):
             db_dir.mkdir(parents=True, exist_ok=True)
         except Exception as e:
             self.logger.error(
-                "Failed to create database directory %s: %s", db_dir, str(e)
+                "Failed to create database directory %s: %s", db_dir, str(e),
             )
             raise
 
@@ -321,7 +321,7 @@ class SQLiteStorage(StorageBackend):
                 """)
         except sqlite3.OperationalError as e:
             self.logger.error(
-                "Failed to initialize database at %s: %s", self.database_path, str(e)
+                "Failed to initialize database at %s: %s", self.database_path, str(e),
             )
             raise
         except Exception as e:
@@ -345,7 +345,7 @@ class SQLiteStorage(StorageBackend):
         try:
             with sqlite3.connect(self.database_path) as conn:
                 cursor = conn.execute(
-                    "SELECT value FROM key_value WHERE key = ?", (key,)
+                    "SELECT value FROM key_value WHERE key = ?", (key,),
                 )
                 row = cursor.fetchone()
                 if row:

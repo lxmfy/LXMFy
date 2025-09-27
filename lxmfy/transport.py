@@ -9,8 +9,8 @@ handlers.
 
 import logging
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Optional
 
 import RNS
 
@@ -28,7 +28,7 @@ class PathInfo:
 
     """
 
-    next_hop: Optional[bytes]
+    next_hop: bytes | None
     hops: int
     updated_at: int
 

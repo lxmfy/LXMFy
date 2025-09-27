@@ -562,7 +562,7 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
             template_name = args.name
             if not template_name:
                 print_error(
-                    "Please specify a template name to run (echo, reminder, note, cogtest)"
+                    "Please specify a template name to run (echo, reminder, note, cogtest)",
                 )
                 sys.exit(1)
 
@@ -575,7 +575,7 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
 
             if template_name not in template_map:
                 print_error(
-                    f"Invalid template name '{template_name}'. Choose from: {', '.join(template_map.keys())}"
+                    f"Invalid template name '{template_name}'. Choose from: {', '.join(template_map.keys())}",
                 )
                 sys.exit(1)
 
@@ -597,7 +597,7 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
                         print_info(f"Running with custom name: {validated_name}")
                     except ValueError as ve:
                         print_warning(
-                            f"Invalid custom name '{custom_name}' provided. Using default. ({ve})"
+                            f"Invalid custom name '{custom_name}' provided. Using default. ({ve})",
                         )
 
                 bot_instance.run()
@@ -613,11 +613,11 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
                     print_error("Please specify a subcommand: test, enable, disable")
                     print_info("Usage: lxmfy signatures <subcommand>")
                     print_info(
-                        "  test     - Test signature verification with sample data"
+                        "  test     - Test signature verification with sample data",
                     )
                     print_info("  enable   - Show how to enable signature verification")
                     print_info(
-                        "  disable  - Show how to disable signature verification"
+                        "  disable  - Show how to disable signature verification",
                     )
                     sys.exit(1)
 
@@ -646,7 +646,7 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
 
                         bot = MockBot()
                         sig_manager = SignatureManager(
-                            bot, verification_enabled=True, require_signatures=False
+                            bot, verification_enabled=True, require_signatures=False,
                         )
 
                         # Create mock LXMF message
@@ -675,7 +675,7 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
 
                         signature = sig_manager.sign_message(test_msg, identity1)
                         print_success(
-                            f"✓ Message signed successfully (signature length: {len(signature)} bytes)"
+                            f"✓ Message signed successfully (signature length: {len(signature)} bytes)",
                         )
 
                         # Test verification
@@ -699,14 +699,14 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
 
                 elif subcommand == "enable":
                     print_info(
-                        "To enable signature verification in your bot, add these parameters to your LXMFBot constructor:"
+                        "To enable signature verification in your bot, add these parameters to your LXMFBot constructor:",
                     )
                     print()
                     print(
-                        "signature_verification_enabled=True,   # Enable signature checking"
+                        "signature_verification_enabled=True,   # Enable signature checking",
                     )
                     print(
-                        "require_message_signatures=False,      # Set to True to reject unsigned messages"
+                        "require_message_signatures=False,      # Set to True to reject unsigned messages",
                     )
                     print()
                     print_info("Example:")
@@ -718,18 +718,18 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
 
                 elif subcommand == "disable":
                     print_info(
-                        "Signature verification is disabled by default. To explicitly disable:"
+                        "Signature verification is disabled by default. To explicitly disable:",
                     )
                     print()
                     print(
-                        "signature_verification_enabled=False,  # Disable signature checking"
+                        "signature_verification_enabled=False,  # Disable signature checking",
                     )
                     print(
-                        "require_message_signatures=False,      # Not required when disabled"
+                        "require_message_signatures=False,      # Not required when disabled",
                     )
                     print()
                     print_info(
-                        "Or simply omit these parameters (they default to False)"
+                        "Or simply omit these parameters (they default to False)",
                     )
 
                 else:

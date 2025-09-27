@@ -24,12 +24,13 @@ class BotConfig:
         storage_type (str): The type of storage to use ("json" or "sqlite"). Defaults to "json".
         storage_path (str): The path to the storage file or directory. Defaults to "data".
         first_message_enabled (bool): Whether to enable first message handling. Defaults to True.
-    event_logging_enabled (bool): Whether to enable event logging. Defaults to True.
-    max_logged_events (int): The maximum number of events to log. Defaults to 1000.
-    event_middleware_enabled (bool): Whether to enable event middleware. Defaults to True.
-    announce_enabled (bool): Whether to enable bot announcements. Defaults to True.
-    signature_verification_enabled (bool): Whether to enable cryptographic signature verification for incoming messages. Defaults to False.
-    require_message_signatures (bool): Whether to reject unsigned messages when signature verification is enabled. Defaults to False.
+        event_logging_enabled (bool): Whether to enable event logging. Defaults to True.
+        max_logged_events (int): The maximum number of events to log. Defaults to 1000.
+        event_middleware_enabled (bool): Whether to enable event middleware. Defaults to True.
+        announce_enabled (bool): Whether to enable bot announcements. Defaults to True.
+        signature_verification_enabled (bool): Whether to enable cryptographic signature verification for incoming messages. Defaults to False.
+        require_message_signatures (bool): Whether to reject unsigned messages when signature verification is enabled. Defaults to False.
+        test_mode (bool): Whether to run in test mode (skips RNS initialization). Defaults to False.
 
     """
 
@@ -55,6 +56,7 @@ class BotConfig:
     announce_enabled: bool = True
     signature_verification_enabled: bool = False
     require_message_signatures: bool = False
+    test_mode: bool = False
 
     def __post_init__(self):
         """Post-initialization to ensure admins is a set."""
@@ -63,4 +65,4 @@ class BotConfig:
 
     def __str__(self):
         """Return a string representation of the BotConfig object."""
-        return f"BotConfig(name={self.name}, announce={self.announce}, announce_immediately={self.announce_immediately}, admins={self.admins}, hot_reloading={self.hot_reloading}, rate_limit={self.rate_limit}, cooldown={self.cooldown}, max_warnings={self.max_warnings}, warning_timeout={self.warning_timeout}, command_prefix={self.command_prefix}, cogs_dir={self.cogs_dir}, cogs_enabled={self.cogs_enabled}, permissions_enabled={self.permissions_enabled}, storage_type={self.storage_type}, storage_path={self.storage_path}, first_message_enabled={self.first_message_enabled}, event_logging_enabled={self.event_logging_enabled}, max_logged_events={self.max_logged_events}, event_middleware_enabled={self.event_middleware_enabled}, announce_enabled={self.announce_enabled}, signature_verification_enabled={self.signature_verification_enabled}, require_message_signatures={self.require_message_signatures})"
+        return f"BotConfig(name={self.name}, announce={self.announce}, announce_immediately={self.announce_immediately}, admins={self.admins}, hot_reloading={self.hot_reloading}, rate_limit={self.rate_limit}, cooldown={self.cooldown}, max_warnings={self.max_warnings}, warning_timeout={self.warning_timeout}, command_prefix={self.command_prefix}, cogs_dir={self.cogs_dir}, cogs_enabled={self.cogs_enabled}, permissions_enabled={self.permissions_enabled}, storage_type={self.storage_type}, storage_path={self.storage_path}, first_message_enabled={self.first_message_enabled}, event_logging_enabled={self.event_logging_enabled}, max_logged_events={self.max_logged_events}, event_middleware_enabled={self.event_middleware_enabled}, announce_enabled={self.announce_enabled}, signature_verification_enabled={self.signature_verification_enabled}, require_message_signatures={self.require_message_signatures}, test_mode={self.test_mode})"

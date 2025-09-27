@@ -8,7 +8,7 @@ from lxmfy import LXMFBot
 class NoteBot:
     """A bot that allows users to save and retrieve notes."""
 
-    def __init__(self):
+    def __init__(self, test_mode=False):
         """Initializes the NoteBot with basic configurations and sets up commands."""
         self.bot = LXMFBot(
             name="Note Bot",
@@ -16,6 +16,7 @@ class NoteBot:
             command_prefix="/",
             storage_type="json",
             storage_path="data/notes",
+            test_mode=test_mode,
         )
         self.setup_commands()
 

@@ -48,7 +48,7 @@ class ConfigValidator:
                         False,
                         ["Bot name should be at least 3 characters long"],
                         "error",
-                    )
+                    ),
                 )
 
             announce = getattr(config, "announce", 0)
@@ -57,10 +57,10 @@ class ConfigValidator:
                     ValidationResult(
                         False,
                         [
-                            "Announce interval should be at least 300 seconds to avoid network spam"
+                            "Announce interval should be at least 300 seconds to avoid network spam",
                         ],
                         "warning",
-                    )
+                    ),
                 )
 
             if getattr(config, "rate_limit", 0) > 10:
@@ -68,10 +68,10 @@ class ConfigValidator:
                     ValidationResult(
                         False,
                         [
-                            "Rate limit above 10 messages per minute may be too permissive"
+                            "Rate limit above 10 messages per minute may be too permissive",
                         ],
                         "warning",
-                    )
+                    ),
                 )
 
             if getattr(config, "cooldown", 0) < 30:
@@ -80,7 +80,7 @@ class ConfigValidator:
                         False,
                         ["Cooldown period should be at least 30 seconds"],
                         "warning",
-                    )
+                    ),
                 )
 
         except Exception as e:
@@ -90,7 +90,7 @@ class ConfigValidator:
                     False,
                     [f"Error validating configuration: {e!s}"],
                     "error",
-                )
+                ),
             )
 
         return results
@@ -117,10 +117,10 @@ class BestPracticesChecker:
                 ValidationResult(
                     False,
                     [
-                        "Permission system is disabled. Consider enabling it for better security"
+                        "Permission system is disabled. Consider enabling it for better security",
                     ],
                     "warning",
-                )
+                ),
             )
 
         if getattr(bot, "command_prefix", None) is None:
@@ -129,7 +129,7 @@ class BestPracticesChecker:
                     False,
                     ["Using no command prefix may cause high processing overhead"],
                     "warning",
-                )
+                ),
             )
 
         if not getattr(bot, "admins", None):
@@ -138,7 +138,7 @@ class BestPracticesChecker:
                     False,
                     ["No admin users configured. Bot management will be limited"],
                     "warning",
-                )
+                ),
             )
 
         if getattr(bot.config, "storage_type", "") == "json":
@@ -146,10 +146,10 @@ class BestPracticesChecker:
                 ValidationResult(
                     True,
                     [
-                        "Consider using SQLite storage for better performance with large datasets"
+                        "Consider using SQLite storage for better performance with large datasets",
                     ],
                     "info",
-                )
+                ),
             )
 
         sig_enabled = getattr(bot.config, "signature_verification_enabled", False)
@@ -160,30 +160,30 @@ class BestPracticesChecker:
                 ValidationResult(
                     True,
                     [
-                        "Strict signature verification enabled - all messages must be signed"
+                        "Strict signature verification enabled - all messages must be signed",
                     ],
                     "info",
-                )
+                ),
             )
         elif sig_enabled and not sig_required:
             results.append(
                 ValidationResult(
                     True,
                     [
-                        "Signature verification enabled but not required - unsigned messages will be logged"
+                        "Signature verification enabled but not required - unsigned messages will be logged",
                     ],
                     "info",
-                )
+                ),
             )
         elif not sig_enabled:
             results.append(
                 ValidationResult(
                     False,
                     [
-                        "Signature verification is disabled. Consider enabling it for enhanced security"
+                        "Signature verification is disabled. Consider enabling it for enhanced security",
                     ],
                     "warning",
-                )
+                ),
             )
 
         return results
@@ -211,7 +211,7 @@ class PerformanceAnalyzer:
                     False,
                     ["Link caching is not enabled. This may impact performance"],
                     "warning",
-                )
+                ),
             )
 
         if hasattr(bot, "queue") and getattr(bot.queue, "maxsize", 0) < 10:
@@ -220,7 +220,7 @@ class PerformanceAnalyzer:
                     False,
                     ["Consider increasing queue size for better message handling"],
                     "info",
-                )
+                ),
             )
 
         if (
@@ -232,10 +232,10 @@ class PerformanceAnalyzer:
                 ValidationResult(
                     True,
                     [
-                        "SQLite backend recommended for better performance with large datasets"
+                        "SQLite backend recommended for better performance with large datasets",
                     ],
                     "info",
-                )
+                ),
             )
 
         return results
@@ -265,7 +265,7 @@ def validate_bot(bot: Any) -> dict[str, list[ValidationResult]]:
                     False,
                     [f"Error during validation: {e!s}"],
                     "error",
-                )
+                ),
             ],
         }
 

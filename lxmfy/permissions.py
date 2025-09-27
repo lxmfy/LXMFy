@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from enum import Flag, auto
-from typing import Any, Optional
+from typing import Any
 
 
 class BasePermission(Flag):
@@ -64,7 +64,7 @@ class Role:
     name: str
     permissions: DefaultPerms
     priority: int = 0
-    description: Optional[str] = None
+    description: str | None = None
 
 
 @dataclass
@@ -79,10 +79,10 @@ class PermissionManager:
             DefaultPerms.USE_BOT
             | DefaultPerms.SEND_MESSAGES
             | DefaultPerms.USE_COMMANDS,
-        )
+        ),
     )
     admin_role: Role = field(
-        default_factory=lambda: Role("admin", DefaultPerms.ALL, priority=100)
+        default_factory=lambda: Role("admin", DefaultPerms.ALL, priority=100),
     )
 
     def __post_init__(self):
@@ -136,7 +136,7 @@ class PermissionManager:
         name: str,
         permissions: DefaultPerms,
         priority: int = 0,
-        description: Optional[str] = None,
+        description: str | None = None,
     ) -> Role:
         """Create a new role"""
         if name in self.roles:

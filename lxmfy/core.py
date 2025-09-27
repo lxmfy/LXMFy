@@ -15,7 +15,6 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
 from types import SimpleNamespace
-from typing import Optional
 
 import RNS
 from LXMF import LXMessage, LXMRouter
@@ -64,7 +63,7 @@ class LXMFBot:
         self.announce_time = 600
         self.logger = logging.getLogger(__name__)
         self.thread_pool = ThreadPoolExecutor(
-            max_workers=5
+            max_workers=5,
         )  # For offloading CPU-bound or blocking I/O tasks
         self.scheduler = TaskScheduler(self)  # Initialize the scheduler
 
@@ -94,7 +93,7 @@ class LXMFBot:
         if not os.path.exists(init_file):
             open(init_file, "w", encoding="utf-8").close()
 
-        self.transport = Transport(self)
+        self.transport = Transport(self.storage)
         self.spam_protection = SpamProtection(
             storage=self.storage,
             bot=self,
@@ -104,30 +103,44 @@ class LXMFBot:
             warning_timeout=self.config.warning_timeout,
         )
 
-        identity_file = os.path.join(self.config_path, "identity")
-        if not os.path.isfile(identity_file):
-            RNS.log("No Primary Identity file found, creating new...", RNS.LOG_INFO)
-            identity = RNS.Identity(True)
-            identity.to_file(identity_file)
-        self.identity = RNS.Identity.from_file(identity_file)
-        RNS.log("Loaded identity from file", RNS.LOG_INFO)
+        if not self.config.test_mode:
+            identity_file = os.path.join(self.config_path, "identity")
+            if not os.path.isfile(identity_file):
+                RNS.log("No Primary Identity file found, creating new...", RNS.LOG_INFO)
+                identity = RNS.Identity(True)
+                identity.to_file(identity_file)
+            self.identity = RNS.Identity.from_file(identity_file)
+            RNS.log("Loaded identity from file", RNS.LOG_INFO)
 
-        RNS.Reticulum(loglevel=RNS.LOG_VERBOSE)
-        self.router = LXMRouter(identity=self.identity, storagepath=self.config_path)
-        self.local = self.router.register_delivery_identity(
-            self.identity,
-            display_name=self.config.name,
-        )
-        self.router.register_delivery_callback(self._message_received)
-        RNS.log(
-            f"LXMF Router ready to receive on: {RNS.prettyhexrep(self.local.hash)}",
-            RNS.LOG_INFO,
-        )
+            # Initialize Reticulum (will raise exception if already running)
+            try:
+                RNS.Reticulum(loglevel=RNS.LOG_VERBOSE)
+            except OSError as e:
+                if "reinitialise" in str(e).lower():
+                    # Reticulum already running, continue
+                    pass
+                else:
+                    raise
+            self.router = LXMRouter(identity=self.identity, storagepath=self.config_path)
+            self.local = self.router.register_delivery_identity(
+                self.identity,
+                display_name=self.config.name,
+            )
+            self.router.register_delivery_callback(self._message_received)
+            RNS.log(
+                f"LXMF Router ready to receive on: {RNS.prettyhexrep(self.local.hash)}",
+                RNS.LOG_INFO,
+            )
+        else:
+            # Test mode - create mock components
+            self.identity = RNS.Identity()  # Create a basic identity for testing
+            self.router = None
+            self.local = None
 
         self.announce_enabled = self.config.announce_enabled
         self.announce_time = self.config.announce
 
-        if self.announce_enabled:
+        if self.announce_enabled and not self.config.test_mode:
             # Schedule the announce task
             self.scheduler.add_task(
                 "announce_task",
@@ -225,7 +238,7 @@ class LXMFBot:
                 cmd_descriptor = method.command
 
                 if hasattr(cmd_descriptor, "__get__") and hasattr(
-                    cmd_descriptor, "name"
+                    cmd_descriptor, "name",
                 ):
                     cmd = cmd_descriptor.__get__(cog, cog.__class__)
                 elif hasattr(cmd_descriptor, "name"):
@@ -323,7 +336,7 @@ class LXMFBot:
 
                     if not self.permissions.has_permission(sender, cmd.permissions):
                         self.send(
-                            sender, "You don't have permission to use this command."
+                            sender, "You don't have permission to use this command.",
                         )
                         return
 
@@ -344,7 +357,7 @@ class LXMFBot:
 
                     except Exception as e:
                         self.logger.error(
-                            "Error executing command %s: %s", command_name, str(e)
+                            "Error executing command %s: %s", command_name, str(e),
                         )
                         self.send(sender, "Error executing command: %s", str(e))
                         return
@@ -396,7 +409,7 @@ class LXMFBot:
 
     def _announce(self):
         """Send an announce if the configured interval has passed."""
-        if self.announce_time == 0 or not self.announce_enabled:
+        if self.announce_time == 0 or not self.announce_enabled or self.config.test_mode:
             RNS.log("Announcements disabled", RNS.LOG_DEBUG)
             return
 
@@ -427,7 +440,7 @@ class LXMFBot:
         destination: str,
         message: str,
         title: str = "Reply",
-        lxmf_fields: Optional[dict] = None,
+        lxmf_fields: dict | None = None,
     ):
         """Send a message to a destination, optionally with custom LXMF fields.
 
@@ -438,6 +451,16 @@ class LXMFBot:
             lxmf_fields: Optional dictionary of LXMF fields.
 
         """
+        if self.config.test_mode:
+            # In test mode, just queue a mock message
+            from types import SimpleNamespace
+            mock_message = SimpleNamespace()
+            mock_message.content = message.encode("utf-8")
+            mock_message.title = title.encode("utf-8") if title else None
+            mock_message.fields = lxmf_fields
+            self.queue.put(mock_message)
+            return
+
         try:
             dest_hash_bytes = bytes.fromhex(destination)
         except ValueError:
@@ -499,7 +522,7 @@ class LXMFBot:
         """Send a message with an attachment to a destination."""
         attachment_specific_fields = pack_attachment(attachment)
         self.send(
-            destination, message, title=title, lxmf_fields=attachment_specific_fields
+            destination, message, title=title, lxmf_fields=attachment_specific_fields,
         )
 
     def run(self, delay=10):
@@ -530,7 +553,7 @@ class LXMFBot:
         self,
         destination_hash: str,
         page_path: str,
-        field_data: Optional[dict] = None,
+        field_data: dict | None = None,
     ) -> dict:
         """Request a page from a destination.
 

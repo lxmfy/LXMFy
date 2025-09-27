@@ -10,7 +10,7 @@ from lxmfy import LXMFBot
 class ReminderBot:
     """A bot that reminds users of tasks at specified times."""
 
-    def __init__(self):
+    def __init__(self, test_mode=False):
         """Initializes the ReminderBot, sets up the bot instance,
         configures commands, and sets up the reminder check loop.
         """
@@ -20,6 +20,7 @@ class ReminderBot:
             command_prefix="/",
             storage_type="sqlite",
             storage_path="data/reminders.db",
+            test_mode=test_mode,
         )
         self.setup_commands()
         self.bot.scheduler.add_task(
@@ -41,7 +42,7 @@ class ReminderBot:
             """
             if not ctx.args or len(ctx.args) < 2:
                 ctx.reply(
-                    "Usage: /remind <time> <message>\nExample: /remind 1h30m Buy groceries"
+                    "Usage: /remind <time> <message>\nExample: /remind 1h30m Buy groceries",
                 )
                 return
 
@@ -61,7 +62,7 @@ class ReminderBot:
 
             if total_minutes == 0:
                 ctx.reply(
-                    "Invalid time format. Use combinations of d (days), h (hours), m (minutes)"
+                    "Invalid time format. Use combinations of d (days), h (hours), m (minutes)",
                 )
                 return
 
@@ -79,7 +80,7 @@ class ReminderBot:
             self.bot.storage.set("reminders", reminders)
 
             ctx.reply(
-                f"I'll remind you about '{message}' at {remind_time.strftime('%Y-%m-%d %H:%M:%S')}"
+                f"I'll remind you about '{message}' at {remind_time.strftime('%Y-%m-%d %H:%M:%S')}",
             )
 
         @self.bot.command(name="list", description="List your reminders")

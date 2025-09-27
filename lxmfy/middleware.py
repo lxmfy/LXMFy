@@ -6,9 +6,10 @@ message handling pipeline.
 """
 
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Callable
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -66,9 +67,17 @@ class MiddlewareManager:
         self.message_tracker = MessageTracker()
         self.logger = logging.getLogger(__name__)
 
-    def register(self, middleware_type: MiddlewareType, func: Callable):
+    def register(self, middleware_type: MiddlewareType, func: Callable = None):
         """Register a middleware function"""
+        if func is None:
+            # Decorator usage: @middleware.register(MiddlewareType.PRE_COMMAND)
+            def decorator(f):
+                self.middleware[middleware_type].append(f)
+                return f
+            return decorator
+        # Direct usage: middleware.register(MiddlewareType.PRE_COMMAND, func)
         self.middleware[middleware_type].append(func)
+        return func
 
     def remove(self, middleware_type: MiddlewareType, func: Callable):
         """Remove a middleware function"""
@@ -78,7 +87,11 @@ class MiddlewareManager:
     def execute(self, mw_type: MiddlewareType, data: Any) -> Any:
         """Execute middleware chain for given type"""
         try:
-            ctx = MiddlewareContext(mw_type, data)
+            # If data is already a MiddlewareContext, use it directly
+            if isinstance(data, MiddlewareContext):
+                ctx = data
+            else:
+                ctx = MiddlewareContext(mw_type, data)
 
             for mw in self.middleware.get(mw_type, []):
                 try:

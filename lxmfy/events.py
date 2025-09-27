@@ -7,10 +7,10 @@ This module provides a comprehensive event handling system including:
 """
 
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Callable
 
 logger = logging.getLogger(__name__)
 
@@ -148,7 +148,7 @@ class EventManager:
                             break
                     except Exception as e:
                         self.logger.error(
-                            "Error in event handler %s: %s", handler.__name__, str(e)
+                            "Error in event handler %s: %s", handler.__name__, str(e),
                         )
         except Exception as e:
             self.logger.error("Error dispatching event: %s", str(e))
@@ -167,7 +167,7 @@ class EventManager:
                     "name": event.name,
                     "data": event.data,
                     "timestamp": datetime.now().isoformat(),
-                }
+                },
             )
             self.storage.set("events:log", events[-1000:])
         except Exception as e:

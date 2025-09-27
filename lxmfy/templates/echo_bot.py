@@ -6,7 +6,7 @@ from lxmfy import IconAppearance, LXMFBot, pack_icon_appearance_field
 class EchoBot:
     """A simple echo bot that repeats messages with cryptographic signature verification."""
 
-    def __init__(self):
+    def __init__(self, test_mode=False):
         """Initializes the EchoBot with signature verification enabled."""
         self.bot = LXMFBot(
             name="Echo Bot",
@@ -16,12 +16,13 @@ class EchoBot:
             # Enable cryptographic signature verification
             signature_verification_enabled=True,
             require_message_signatures=False,  # Log but don't reject unsigned messages
+            test_mode=test_mode,
         )
         self.setup_commands()
 
         # Define and pack the icon appearance for the bot
         icon_data = IconAppearance(
-            icon_name="forum", fg_color=b"\xad\xd8\xe6", bg_color=b"\x3b\x59\x98"
+            icon_name="forum", fg_color=b"\xad\xd8\xe6", bg_color=b"\x3b\x59\x98",
         )  # Light blue on dark blue
         self.icon_lxmf_field = pack_icon_appearance_field(icon_data)
 
