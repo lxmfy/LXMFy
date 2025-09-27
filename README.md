@@ -24,6 +24,7 @@ Easily create LXMF bots for the Reticulum Network with this extensible framework
 - LXMF Attachments (File, Image, Audio)
 - Customizable Bot Icon (via LXMF Icon Appearance field)
 - Threading support for commands.
+- Cryptographic Message Signing & Verification
 
 ## Installation
 
@@ -136,6 +137,32 @@ def echo(ctx, message: str):
     ctx.reply(message)
 
 bot.run()
+```
+
+## Cryptographic Message Signing
+
+LXMFy supports cryptographic signing and verification of messages for enhanced security:
+
+```python
+bot = LXMFBot(
+    name="SecureBot",
+    signature_verification_enabled=True,  # Enable signature verification
+    require_message_signatures=False,     # Allow unsigned messages but log them
+    # ... other config
+)
+```
+
+### CLI Commands for Signatures
+
+```bash
+# Test signature functionality
+lxmfy signatures test
+
+# Get enable instructions
+lxmfy signatures enable
+
+# Get disable instructions
+lxmfy signatures disable
 ```
 
 ## Development
