@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.0.0] - 2025-09-27
+
+### Major Features
+- **Stable Release**: LXMFy reaches version 1.0.0 with full feature stability
+- **Comprehensive Test Suite**: Added extensive test coverage
+- **Code Quality Improvements**: Enhanced type hints, removed unused imports, and improved code consistency
+
+### Testing & CI/CD
+- Added pytest framework with comprehensive test suite
+- Implemented GitHub Actions CI/CD pipeline with automated testing
+- Updated DeepSource configuration to exclude test files from analysis
+- Added pytest-related development dependencies
+
+### Code Quality
+- Refactored type hints across multiple files for better consistency
+- Improved help text formatting in HelpFormatter class
+- Removed unused imports and cleaned up code
+- Updated staticmethod usage for better performance
+
+### Dependencies & Configuration
+- Updated project dependencies and configuration
+
 ## [0.8.0] - 2025-09-27
 
 ### Major Features
