@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.8.0] - 2025-09-27
+
+### Major Features
+- **Cryptographic Message Signing & Verification**
+  - Added `signature_verification_enabled` configuration option
+  - Added `require_message_signatures` configuration option
+  - Implemented `SignatureManager` class for cryptographic operations
+  - Added automatic signing of outgoing messages when verification is enabled
+  - Added verification of incoming message signatures
+  - Custom LXMF field `FIELD_SIGNATURE = 0xFA` for storing signatures
+  - CLI commands: `lxmfy signatures test/enable/disable`
+  - Integration with permission system (bypass for privileged users)
+  - Comprehensive validation and best practices checking
+
 ## [0.7.8] - 2025-09-13
 - **Update Dependencies in poetry.lock**
 - **Add Makefile**
