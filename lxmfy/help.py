@@ -20,8 +20,10 @@ class HelpFormatter:
             A formatted string containing the command's help information.
 
         """
-        help_text = [f"Command: {command.name}"]
-        help_text.append(f"Description: {command.help.description}")
+        help_text = [
+            f"Command: {command.name}",
+            f"Description: {command.help.description}"
+        ]
 
         if command.help.usage:
             help_text.append(f"Usage: {command.help.usage}")
