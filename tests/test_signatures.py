@@ -160,8 +160,8 @@ class TestSignatureManager:
         result = sig_manager._canonicalize_message(mock_message)
 
         expected_parts = [
-            b"source:source_hash",
-            b"dest:dest_hash",
+            b"source:736f757263655f68617368",  # hex of b"source_hash"
+            b"dest:646573745f68617368",      # hex of b"dest_hash"
             b"content:test content",
             b"title:test title",
             b"timestamp:1234567890",

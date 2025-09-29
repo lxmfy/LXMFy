@@ -102,9 +102,9 @@ class SignatureManager:
         """
         canonical_data = []
         if message.source_hash:
-            canonical_data.append(b"source:" + message.source_hash)
+            canonical_data.append(b"source:" + RNS.hexrep(message.source_hash, delimit=False).encode())
         if message.destination_hash:
-            canonical_data.append(b"dest:" + message.destination_hash)
+            canonical_data.append(b"dest:" + RNS.hexrep(message.destination_hash, delimit=False).encode())
         if message.content:
             canonical_data.append(b"content:" + message.content)
         if message.title:
