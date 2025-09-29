@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1] - 2025-09-28
+
+### Patch
+- **Fixed Signature Canonicalization**
+  - Fixed signature canonicalization to use the correct format
+  - updated signature test to use the correct format
+
 ## [1.0.0] - 2025-09-27
 
 ### Major Features
@@ -440,3 +447,4 @@ bot = LXMFBot(
 [0.7.7]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.7
 [0.7.8]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.8
 [1.0.0]: https://github.com/lxmfy/lxmfy/releases/tag/v1.0.0
+[1.0.1]: https://github.com/lxmfy/lxmfy/releases/tag/v1.0.1
