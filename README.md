@@ -32,10 +32,17 @@ Easily create LXMF bots for the Reticulum Network with this extensible framework
 ```bash
 pip install lxmfy
 ```
+
 or pipx:
 
 ```bash
 pipx install lxmfy
+```
+
+or uv:
+
+```bash
+uv sync
 ```
 
 or via git
@@ -44,10 +51,22 @@ or via git
 pipx install git+https://github.com/lxmfy/LXMFy.git
 ```
 
+or temporary environment with uv:
+
+```bash
+uvx --from git+https://github.com/lxmfy/LXMFy.git lxmfy
+```
+
 ## Usage
 
 ```bash
 lxmfy
+```
+
+or with uv:
+
+```bash
+uv run lxmfy
 ```
 
 **Create bots:**
@@ -170,12 +189,19 @@ lxmfy signatures disable
 
 ## Development
 
-- poetry
+- poetry or uv
 - python 3.11 or higher
 
+With poetry:
 ```
 poetry install
 poetry run lxmfy run echo
+```
+
+With uv:
+```
+uv sync
+uv run lxmfy run echo
 ```
 
 ## Contributing
