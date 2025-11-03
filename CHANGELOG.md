@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.3] - 2025-11-03
+### Patch
+- **Updated dependencies**
+  - Updated lxmf to 0.9.1 due to bug.
+
 ## [1.0.2] - 2025-11-03
 
 ### Patch
