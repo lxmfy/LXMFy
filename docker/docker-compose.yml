@@ -4,8 +4,8 @@ version: '3.8'
 services:
   build:
     build:
-      context: .
-      dockerfile: Dockerfile.Build
+      context: ..
+      dockerfile: docker/Dockerfile.Build
     volumes:
       - ./dist:/output
 
