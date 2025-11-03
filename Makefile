@@ -127,22 +127,22 @@ docker-run-host:
 		$(DOCKER_IMAGE)
 
 docker-wheel-build:
-	docker build -f Dockerfile.Build -t $(WHEEL_BUILDER_IMAGE) .
+	docker build -f docker/Dockerfile.Build -t $(WHEEL_BUILDER_IMAGE) .
 
 docker-wheel-extract:
 	docker run --rm -v "$$(pwd)/dist_output:/output" $(WHEEL_BUILDER_IMAGE)
 
 docker-compose-build:
-	docker-compose build
+	docker-compose -f docker/docker-compose.yml build
 
 docker-compose-up:
-	docker-compose up -d
+	docker-compose -f docker/docker-compose.yml up -d
 
 docker-compose-down:
-	docker-compose down
+	docker-compose -f docker/docker-compose.yml down
 
 docker-compose-logs:
-	docker-compose logs -f
+	docker-compose -f docker/docker-compose.yml logs -f
 
 docker-stop:
 	docker stop $(DOCKER_IMAGE)-bot || true
