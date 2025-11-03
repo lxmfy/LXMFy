@@ -89,12 +89,12 @@ docker run -d \
     lxmfy-test
 ```
 
-### Building Wheels with Dockerfile.Build
+### Building Wheels with docker/Dockerfile.Build
 
-The `Dockerfile.Build` is used to build the `lxmfy` Python package into a wheel file within a Docker image.
+The `docker/Dockerfile.Build` is used to build the `lxmfy` Python package into a wheel file within a Docker image.
 
 ```bash
-docker build -f Dockerfile.Build -t lxmfy-wheel-builder .
+docker build -f docker/Dockerfile.Build -t lxmfy-wheel-builder .
 ```
 
 This will create an image named `lxmfy-wheel-builder`. To extract the built wheel file from the image, you can run a container from this image and copy the `dist` directory:
