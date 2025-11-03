@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.2] - 2025-11-03
+
+### Patch
+- **Updated dependencies**
+  - Updated lxmf to 0.9.0
+  - Updated rns to 1.0.1
+  - Updated dependencies in poetry.lock
+
+- **Project Structure Cleanup**
+  - Moved docker files to docker directory
+  - Updated Makefile and README with new paths.
+
+- **UV Support**
+  - Added uv.lock
+  - Updated README with uv commands.
+
 ## [1.0.1] - 2025-09-28
 
 ### Patch
@@ -448,3 +464,4 @@ bot = LXMFBot(
 [0.7.8]: https://github.com/lxmfy/lxmfy/releases/tag/v0.7.8
 [1.0.0]: https://github.com/lxmfy/lxmfy/releases/tag/v1.0.0
 [1.0.1]: https://github.com/lxmfy/lxmfy/releases/tag/v1.0.1
+[1.0.2]: https://github.com/lxmfy/lxmfy/releases/tag/v1.0.2
