@@ -143,12 +143,13 @@ dependencies = [
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/ed/1d/dedd2fbf555f23c6b8b682a2c401ca9747c64570ee82ca2bf1f773f89f07/lxmf-0.9.0.tar.gz", hash = "sha256:54556d34898c3034962174706188607c2d22ed010934d8a2ac373ff8db0b47fb", size = 68616, upload-time = "2025-11-03T11:53:20.495Z" }
 wheels = [
+    { url = "https://files.pythonhosted.org/packages/25/de/e8d446b3274c2ea242d56836e7d8b6e927094b73501ac724c7c4a4718e98/lxmf-0.9.0-1-py3-none-any.whl", hash = "sha256:273c860b6c12ad5ac5de4400f665e20eeeb70afc49c56dc7d0f40cb9371c2ba5", size = 61789, upload-time = "2025-11-03T21:20:48.856Z" },
     { url = "https://files.pythonhosted.org/packages/3c/cf/0da54d32f82542ce4bfb8353a2718c3a5f86e1f165603811114fc3f11f9a/lxmf-0.9.0-py3-none-any.whl", hash = "sha256:d6332ebce270de1ce75d37a3bdd349ddb059d33af3574ce73d5ea43a834f7e06", size = 61762, upload-time = "2025-11-03T11:53:17.838Z" },
 ]
 
 [[package]]
 name = "lxmfy"
-version = "1.0.2"
+version = "1.0.3"
 source = { editable = "." }
 dependencies = [
     { name = "lxmf" },
