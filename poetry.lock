@@ -307,14 +307,14 @@ files = [
 
 [[package]]
 name = "lxmf"
-version = "0.9.0"
+version = "0.9.2"
 description = "Lightweight Extensible Message Format for Reticulum"
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "lxmf-0.9.0-py3-none-any.whl", hash = "sha256:d6332ebce270de1ce75d37a3bdd349ddb059d33af3574ce73d5ea43a834f7e06"},
-    {file = "lxmf-0.9.0.tar.gz", hash = "sha256:54556d34898c3034962174706188607c2d22ed010934d8a2ac373ff8db0b47fb"},
+    {file = "lxmf-0.9.2-py3-none-any.whl", hash = "sha256:0e8d3962c488228a366147fae352f7f254ca56f9dd8d12d15c71dec73b87459d"},
+    {file = "lxmf-0.9.2.tar.gz", hash = "sha256:35734b6ab409c49d718ff3f2d1e81270f9c8221437eaf0ec398639d86ab6c4d9"},
 ]
 
 [package.dependencies]
@@ -455,14 +455,14 @@ testing = ["process-tests", "pytest-xdist", "virtualenv"]
 
 [[package]]
 name = "rns"
-version = "1.0.1"
+version = "1.0.2"
 description = "Self-configuring, encrypted and resilient mesh networking stack for LoRa, packet radio, WiFi and everything in between"
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "rns-1.0.1-py3-none-any.whl", hash = "sha256:aa77b4c8e1b6899117666e1e55b05b3250416ab5fea2826254358ae320e8b3ed"},
-    {file = "rns-1.0.1.tar.gz", hash = "sha256:f45ea52b065be09b8e2257425b6fcde1a49899ea41aee349936d182aa1844b26"},
+    {file = "rns-1.0.2-py3-none-any.whl", hash = "sha256:723bcf0a839025060ff680c4202b09fa766b35093a4a08506bb85485b8a1f154"},
+    {file = "rns-1.0.2.tar.gz", hash = "sha256:19c025dadc4a85fc37c751e0e892f446456800ca8c434e007c25d8fd6939687e"},
 ]
 
 [package.dependencies]
@@ -514,4 +514,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11"
-content-hash = "5b969a5eee7e2069ba90f624aea567a28820b69308de7bcf2af3e38803828e33"
+content-hash = "774e7996c35dd4c4aa833fa7d398122117b85511caf0f94ef35a026f01f72f4e"
