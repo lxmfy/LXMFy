@@ -20,14 +20,17 @@ class TestCog(Cog):
         msg.reply("✅ Cog command working correctly!")
 
     @Command(
-        name="cogadmin", description="Admin test command from cog", admin_only=True,
+        name="cogadmin",
+        description="Admin test command from cog",
+        admin_only=True,
     )
     def cog_admin_command(self, msg):
         """Test admin cog command functionality."""
         msg.reply("🔒 Admin cog command working correctly!")
 
     @Command(
-        name="coghelp", description="Help command from cog using Command decorator",
+        name="coghelp",
+        description="Help command from cog using Command decorator",
     )
     def cog_help_command(self, msg):
         """Test Command decorator in cog."""

@@ -13,18 +13,41 @@ class EchoBot:
             announce=600,
             command_prefix="",
             first_message_enabled=True,
-            # Enable cryptographic signature verification
-            signature_verification_enabled=True,
-            require_message_signatures=False,  # Log but don't reject unsigned messages
             test_mode=test_mode,
         )
         self.setup_commands()
+        self.setup_message_handlers()
 
         # Define and pack the icon appearance for the bot
         icon_data = IconAppearance(
-            icon_name="forum", fg_color=b"\xad\xd8\xe6", bg_color=b"\x3b\x59\x98",
+            icon_name="forum",
+            fg_color=b"\xad\xd8\xe6",
+            bg_color=b"\x3b\x59\x98",
         )  # Light blue on dark blue
         self.icon_lxmf_field = pack_icon_appearance_field(icon_data)
+
+    def setup_message_handlers(self):
+        """Sets up the bot's message handlers."""
+
+        @self.bot.on_message()
+        def echo_non_command_messages(sender, message):
+            """Echoes back messages that are not commands."""
+            content = message.content.decode("utf-8").strip()
+            if not content:
+                return False
+
+            # Check if this would be processed as a command
+            command_name = content.split()[0]
+            if command_name in self.bot.commands:
+                return False  # Let the command handler take care of it
+
+            # Echo the message since it's not a command
+            self.bot.send(
+                sender,
+                content,
+                lxmf_fields=self.icon_lxmf_field,
+            )
+            return False  # Continue processing (though no commands will match)
 
     def setup_commands(self):
         """Sets up the bot's commands and event handlers."""
@@ -57,7 +80,7 @@ class EchoBot:
             content = message.content.decode("utf-8").strip()
             self.bot.send(
                 sender,
-                f"Hi! I'm an echo bot with cryptographic signature verification. You said: {content}\n\n"
+                f"Hi! I'm an echo bot, You said: {content}\n\n"
                 "Try: echo <message> to make me repeat things!",
                 lxmf_fields=self.icon_lxmf_field,
             )
