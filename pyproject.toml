@@ -1,13 +1,13 @@
 [project]
 name = "lxmfy"
-version = "1.0.3"
+version = "1.1.0"
 description = "LXMF bot framework for creating bots for the Reticulum Network"
 authors = [{name = "Quad4"}]
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "lxmf>=0.9.2",
-    "rns>=1.0.2"
+    "lxmf>=0.9.3",
+    "rns>=1.0.3"
 ]
 
 [project.scripts]
