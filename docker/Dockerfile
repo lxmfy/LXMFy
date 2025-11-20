@@ -10,8 +10,15 @@ WORKDIR /bot
 
 RUN mkdir -p /root/.reticulum /bot/config
 
+RUN apk add --no-cache curl && \
+    curl -sSL https://install.python-poetry.org | python3 - && \
+    ln -s /root/.local/bin/poetry /usr/local/bin/poetry
+
+COPY pyproject.toml poetry.lock ./
+RUN poetry config virtualenvs.create false && \
+    poetry install --only main --no-root
+
 COPY . /bot
-RUN pip3 install --no-cache-dir -r requirements.txt
-RUN pip3 install --no-cache-dir .
+RUN poetry install --only main
 
 CMD ["lxmfy", "run", "echo"]
