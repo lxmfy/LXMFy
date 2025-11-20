@@ -20,7 +20,10 @@ class SignatureManager:
     """Manages cryptographic signing and verification of messages."""
 
     def __init__(
-        self, bot, verification_enabled: bool = False, require_signatures: bool = False,
+        self,
+        bot,
+        verification_enabled: bool = False,
+        require_signatures: bool = False,
     ):
         """Initialize the SignatureManager.
 
@@ -80,7 +83,8 @@ class SignatureManager:
                 identity_to_use = RNS.Identity.recall(sender_hash_bytes)
                 if identity_to_use is None:
                     self.logger.warning(
-                        "Could not recall identity for sender: %s", sender_hash,
+                        "Could not recall identity for sender: %s",
+                        sender_hash,
                     )
                     return False
             message_data = self._canonicalize_message(message)
@@ -102,9 +106,13 @@ class SignatureManager:
         """
         canonical_data = []
         if message.source_hash:
-            canonical_data.append(b"source:" + RNS.hexrep(message.source_hash, delimit=False).encode())
+            canonical_data.append(
+                b"source:" + RNS.hexrep(message.source_hash, delimit=False).encode(),
+            )
         if message.destination_hash:
-            canonical_data.append(b"dest:" + RNS.hexrep(message.destination_hash, delimit=False).encode())
+            canonical_data.append(
+                b"dest:" + RNS.hexrep(message.destination_hash, delimit=False).encode(),
+            )
         if message.content:
             canonical_data.append(b"content:" + message.content)
         if message.title:
@@ -134,8 +142,11 @@ class SignatureManager:
         if not self.verification_enabled:
             return False
         # Only skip verification if permissions are enabled and user has bypass permission
-        if (hasattr(self.bot, "permissions") and self.bot.permissions.enabled and
-            self.bot.permissions.has_permission(sender, DefaultPerms.BYPASS_SPAM)):
+        if (
+            hasattr(self.bot, "permissions")
+            and self.bot.permissions.enabled
+            and self.bot.permissions.has_permission(sender, DefaultPerms.BYPASS_SPAM)
+        ):
             return False
         return True
 
@@ -152,45 +163,39 @@ class SignatureManager:
         """
         if self.require_signatures:
             self.logger.warning(
-                "Rejected unsigned message from %s (hash: %s)", sender, message_hash,
+                "Rejected unsigned message from %s (hash: %s)",
+                sender,
+                message_hash,
             )
             return False
         if self.verification_enabled:
             self.logger.info(
-                "Accepted unsigned message from %s (hash: %s)", sender, message_hash,
+                "Accepted unsigned message from %s (hash: %s)",
+                sender,
+                message_hash,
             )
         return True
 
 
 def sign_outgoing_message(bot, message: LXMF.LXMessage) -> LXMF.LXMessage:
-    """Sign an outgoing message if signature verification is enabled.
+    """Prepare an outgoing message for signing.
+
+    Note: LXMF automatically signs messages during pack() using the source identity.
+    This function is kept for backwards compatibility but is essentially a pass-through.
 
     Args:
         bot: The LXMFBot instance.
         message: The LXMF message to sign.
 
     Returns:
-        The message with signature field added if signing is enabled.
+        The message (LXMF will handle signing during pack()).
 
     """
-    if (
-        not hasattr(bot, "signature_manager")
-        or not bot.signature_manager.verification_enabled
-    ):
-        return message
-    try:
-        signature = bot.signature_manager.sign_message(message, bot.identity)
-        if not hasattr(message, "fields") or message.fields is None:
-            message.fields = {}
-        message.fields[FIELD_SIGNATURE] = signature
-        logger.debug("Added cryptographic signature to outgoing message")
-    except Exception as e:
-        logger.error("Failed to sign outgoing message: %s", str(e))
     return message
 
 
 def verify_incoming_message(bot, message: LXMF.LXMessage, sender: str) -> bool:
-    """Verify the signature of an incoming message.
+    """Verify the signature of an incoming LXMF message using built-in LXMF validation.
 
     Args:
         bot: The LXMFBot instance.
@@ -203,25 +208,32 @@ def verify_incoming_message(bot, message: LXMF.LXMessage, sender: str) -> bool:
     """
     if not hasattr(bot, "signature_manager"):
         return True
+
     sig_manager = bot.signature_manager
     if not sig_manager.should_verify_message(sender):
         return True
-    signature = None
-    if (
-        hasattr(message, "fields")
-        and message.fields
-        and FIELD_SIGNATURE in message.fields
-    ):
-        signature = message.fields[FIELD_SIGNATURE]
-    if signature is None:
+
+    if not message.signature_validated:
+        if message.unverified_reason == LXMF.LXMessage.SIGNATURE_INVALID:
+            logger.warning("Invalid LXMF signature for message from %s", sender)
+            return False
+        if message.unverified_reason == LXMF.LXMessage.SOURCE_UNKNOWN:
+            logger.debug(
+                "Could not verify message from %s - source identity unknown", sender,
+            )
+            if sig_manager.require_signatures:
+                logger.warning("Rejected message from %s due to unknown source", sender)
+                return False
+            return True
+        logger.warning(
+            "Message from %s not validated (reason: %s)",
+            sender,
+            message.unverified_reason,
+        )
         return sig_manager.handle_unsigned_message(
             sender,
-            getattr(message, "hash", "unknown").hex()
-            if hasattr(message, "hash")
-            else "unknown",
+            message.hash.hex() if message.hash else "unknown",
         )
-    if sig_manager.verify_message_signature(message, signature, sender):
-        logger.debug("Verified cryptographic signature for message from %s", sender)
-        return True
-    logger.warning("Invalid cryptographic signature for message from %s", sender)
-    return False
+
+    logger.debug("Verified LXMF signature for message from %s", sender)
+    return True
