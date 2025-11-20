@@ -82,13 +82,15 @@ def pack_attachment(attachment: Attachment) -> dict:
     if attachment.type == AttachmentType.IMAGE:
         return {
             LXMF.FIELD_IMAGE: create_image_attachment(
-                attachment.format or "webp", attachment.data,
+                attachment.format or "webp",
+                attachment.data,
             ),
         }
     if attachment.type == AttachmentType.AUDIO:
         return {
             LXMF.FIELD_AUDIO: create_audio_attachment(
-                int(attachment.format or 0), attachment.data,
+                int(attachment.format or 0),
+                attachment.data,
             ),
         }
     raise ValueError(f"Unsupported attachment type: {attachment.type}")
