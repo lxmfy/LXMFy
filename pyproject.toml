@@ -2,13 +2,26 @@
 name = "lxmfy"
 version = "1.1.0"
 description = "LXMF bot framework for creating bots for the Reticulum Network"
-authors = [{name = "Quad4"}]
+authors = [{name = "Quad4", email = "rns@quad4.io"}]
 readme = "README.md"
+license = "MIT"
 requires-python = ">=3.11"
+keywords = ["lxmf", "reticulum", "bot", "framework", "rns"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Operating System :: OS Independent",
+]
 dependencies = [
     "lxmf>=0.9.3",
     "rns>=1.0.3"
 ]
+
+[project.urls]
+Homepage = "https://github.com/lxmfy/LXMFy"
+Repository = "https://github.com/lxmfy/LXMFy"
 
 [project.scripts]
 lxmfy = "lxmfy.cli:main"
