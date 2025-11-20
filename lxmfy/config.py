@@ -30,6 +30,9 @@ class BotConfig:
         announce_enabled (bool): Whether to enable bot announcements. Defaults to True.
         signature_verification_enabled (bool): Whether to enable cryptographic signature verification for incoming messages. Defaults to False.
         require_message_signatures (bool): Whether to reject unsigned messages when signature verification is enabled. Defaults to False.
+        stamp_cost (int): The cost of stamps for outgoing messages. None disables stamps. Defaults to None.
+        direct_delivery_retries (int): Number of times to retry direct delivery before falling back to propagation. Defaults to 3.
+        propagation_fallback_enabled (bool): Whether to use propagation nodes as fallback after direct delivery fails. Defaults to True.
         test_mode (bool): Whether to run in test mode (skips RNS initialization). Defaults to False.
 
     """
@@ -56,6 +59,9 @@ class BotConfig:
     announce_enabled: bool = True
     signature_verification_enabled: bool = False
     require_message_signatures: bool = False
+    stamp_cost: int = None
+    direct_delivery_retries: int = 3
+    propagation_fallback_enabled: bool = True
     test_mode: bool = False
 
     def __post_init__(self):
