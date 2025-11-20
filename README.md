@@ -9,10 +9,11 @@
 
 Easily create LXMF bots for the Reticulum Network with this extensible framework.
 
-[Docs](https://lxmfy.quad4.io) | [Road to V1](https://plane.quad4.io/spaces/issues/43d0b80cfd864a1b94025b175d1fdf64)
+[Docs](https://lxmfy.quad4.io)
 
 ## Features
 
+- Interactive CLI
 - Spam protection (rate limiting, command cooldown, warnings, banning)
 - Command prefix (set to None to process all messages as commands)
 - Announcements (announce in seconds, set to 0 to disable)
@@ -24,8 +25,9 @@ Easily create LXMF bots for the Reticulum Network with this extensible framework
 - Help on first message
 - LXMF Attachments (File, Image, Audio)
 - Customizable Bot Icon (via LXMF Icon Appearance field)
+- Direct Delivery & Propagation Fallback
 - Threading support for commands.
-- Cryptographic Message Signing & Verification
+- Cryptographic Message Signing & Verification (LXMF)
 
 ## Installation
 
