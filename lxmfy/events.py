@@ -148,7 +148,9 @@ class EventManager:
                             break
                     except Exception as e:
                         self.logger.error(
-                            "Error in event handler %s: %s", handler.__name__, str(e),
+                            "Error in event handler %s: %s",
+                            handler.__name__,
+                            str(e),
                         )
         except Exception as e:
             self.logger.error("Error dispatching event: %s", str(e))
