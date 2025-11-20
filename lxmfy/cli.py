@@ -647,7 +647,9 @@ To add admin rights, edit {bot_path} and add your LXMF hash to the admins list.
 
                         bot = MockBot()
                         sig_manager = SignatureManager(
-                            bot, verification_enabled=True, require_signatures=False,
+                            bot,
+                            verification_enabled=True,
+                            require_signatures=False,
                         )
 
                         # Create mock LXMF message
