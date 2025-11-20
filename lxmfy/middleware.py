@@ -74,6 +74,7 @@ class MiddlewareManager:
             def decorator(f):
                 self.middleware[middleware_type].append(f)
                 return f
+
             return decorator
         # Direct usage: middleware.register(MiddlewareType.PRE_COMMAND, func)
         self.middleware[middleware_type].append(func)
