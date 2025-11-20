@@ -3,6 +3,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+import LXMF
 import RNS
 
 from lxmfy.signatures import (
@@ -19,7 +20,9 @@ class TestSignatureManager:
     def test_init(self):
         """Test SignatureManager initialization."""
         bot = MagicMock()
-        sig_manager = SignatureManager(bot, verification_enabled=True, require_signatures=True)
+        sig_manager = SignatureManager(
+            bot, verification_enabled=True, require_signatures=True
+        )
 
         assert sig_manager.bot == bot
         assert sig_manager.verification_enabled is True
@@ -48,8 +51,12 @@ class TestSignatureManager:
         mock_message.fields = {}
 
         # Mock the canonicalize method to return predictable data
-        expected_data = b"source:source_hash|dest:dest_hash|content:test content|title:test title"
-        with patch.object(sig_manager, "_canonicalize_message", return_value=expected_data):
+        expected_data = (
+            b"source:source_hash|dest:dest_hash|content:test content|title:test title"
+        )
+        with patch.object(
+            sig_manager, "_canonicalize_message", return_value=expected_data
+        ):
             result = sig_manager.sign_message(mock_message, identity)
 
             assert isinstance(result, bytes)
@@ -63,7 +70,9 @@ class TestSignatureManager:
         mock_message = MagicMock()
 
         # Mock the _canonicalize_message to raise an exception
-        with patch.object(sig_manager, "_canonicalize_message", side_effect=Exception("Test error")):
+        with patch.object(
+            sig_manager, "_canonicalize_message", side_effect=Exception("Test error")
+        ):
             with pytest.raises(Exception, match="Test error"):
                 sig_manager.sign_message(mock_message, identity)
 
@@ -87,7 +96,9 @@ class TestSignatureManager:
 
         # Verify the signature
         sender_hash = RNS.hexrep(identity.hash, delimit=False)
-        result = sig_manager.verify_message_signature(mock_message, signature, sender_hash, identity)
+        result = sig_manager.verify_message_signature(
+            mock_message, signature, sender_hash, identity
+        )
 
         assert result is True
 
@@ -108,7 +119,9 @@ class TestSignatureManager:
         fake_signature = b"fake_signature"
 
         sender_hash = RNS.hexrep(identity.hash, delimit=False)
-        result = sig_manager.verify_message_signature(mock_message, fake_signature, sender_hash, identity)
+        result = sig_manager.verify_message_signature(
+            mock_message, fake_signature, sender_hash, identity
+        )
 
         assert result is False
 
@@ -127,7 +140,9 @@ class TestSignatureManager:
         fake_hash = "nonexistent"
         fake_signature = b"fake_signature"
 
-        result = sig_manager.verify_message_signature(mock_message, fake_signature, fake_hash)
+        result = sig_manager.verify_message_signature(
+            mock_message, fake_signature, fake_hash
+        )
 
         assert result is False
 
@@ -140,8 +155,12 @@ class TestSignatureManager:
         mock_message.source_hash = b"source_hash"
 
         # Mock _canonicalize_message to raise exception
-        with patch.object(sig_manager, "_canonicalize_message", side_effect=Exception("Test error")):
-            result = sig_manager.verify_message_signature(mock_message, b"signature", "fake_hash")
+        with patch.object(
+            sig_manager, "_canonicalize_message", side_effect=Exception("Test error")
+        ):
+            result = sig_manager.verify_message_signature(
+                mock_message, b"signature", "fake_hash"
+            )
             assert result is False
 
     def test_canonicalize_message_basic(self):
@@ -161,7 +180,7 @@ class TestSignatureManager:
 
         expected_parts = [
             b"source:736f757263655f68617368",  # hex of b"source_hash"
-            b"dest:646573745f68617368",      # hex of b"dest_hash"
+            b"dest:646573745f68617368",  # hex of b"dest_hash"
             b"content:test content",
             b"title:test title",
             b"timestamp:1234567890",
@@ -242,7 +261,9 @@ class TestSignatureManager:
     def test_handle_unsigned_message_verification_enabled(self):
         """Test handle_unsigned_message when verification is enabled but not required."""
         bot = MagicMock()
-        sig_manager = SignatureManager(bot, verification_enabled=True, require_signatures=False)
+        sig_manager = SignatureManager(
+            bot, verification_enabled=True, require_signatures=False
+        )
 
         result = sig_manager.handle_unsigned_message("sender_hash", "message_hash")
         assert result is True
@@ -259,12 +280,11 @@ class TestSignatureManager:
 class TestSignatureFunctions:
     """Test signature utility functions."""
 
-    def test_sign_outgoing_message_enabled(self):
-        """Test sign_outgoing_message when signature verification is enabled."""
+    def test_sign_outgoing_message_passthrough(self):
+        """Test sign_outgoing_message is a pass-through (LXMF handles signing)."""
         bot = MagicMock()
         bot.signature_manager = MagicMock()
         bot.signature_manager.verification_enabled = True
-        bot.signature_manager.sign_message.return_value = b"signature"
         bot.identity = RNS.Identity()
 
         mock_message = MagicMock()
@@ -273,63 +293,21 @@ class TestSignatureFunctions:
         result = sign_outgoing_message(bot, mock_message)
 
         assert result == mock_message
-        assert mock_message.fields[FIELD_SIGNATURE] == b"signature"
-        bot.signature_manager.sign_message.assert_called_once()
+        # Should not modify fields - LXMF will handle signing during pack()
 
-    def test_sign_outgoing_message_disabled(self):
-        """Test sign_outgoing_message when signature verification is disabled."""
-        bot = MagicMock()
-        bot.signature_manager = MagicMock()
-        bot.signature_manager.verification_enabled = False
-
-        mock_message = MagicMock()
-
-        result = sign_outgoing_message(bot, mock_message)
-
-        assert result == mock_message
-        bot.signature_manager.sign_message.assert_not_called()
-
-    def test_sign_outgoing_message_no_manager(self):
-        """Test sign_outgoing_message when no signature manager exists."""
-        bot = MagicMock()
-        # No signature_manager attribute
-
-        mock_message = MagicMock()
-
-        result = sign_outgoing_message(bot, mock_message)
-
-        assert result == mock_message
-
-    def test_sign_outgoing_message_exception(self):
-        """Test sign_outgoing_message with exception."""
-        bot = MagicMock()
-        bot.signature_manager = MagicMock()
-        bot.signature_manager.verification_enabled = True
-        bot.signature_manager.sign_message.side_effect = Exception("Sign error")
-        bot.identity = RNS.Identity()
-
-        mock_message = MagicMock()
-        mock_message.fields = {}
-
-        result = sign_outgoing_message(bot, mock_message)
-
-        assert result == mock_message
-        # Should not crash, just return the message
-
-    def test_verify_incoming_message_should_verify(self):
-        """Test verify_incoming_message when verification should happen."""
+    def test_verify_incoming_message_valid_signature(self):
+        """Test verify_incoming_message with valid LXMF signature."""
         bot = MagicMock()
         bot.signature_manager = MagicMock()
         bot.signature_manager.should_verify_message.return_value = True
-        bot.signature_manager.verify_message_signature.return_value = True
 
         mock_message = MagicMock()
-        mock_message.fields = {FIELD_SIGNATURE: b"signature"}
+        mock_message.signature_validated = True
+        mock_message.hash = b"message_hash"
 
         result = verify_incoming_message(bot, mock_message, "sender_hash")
 
         assert result is True
-        bot.signature_manager.verify_message_signature.assert_called_once()
 
     def test_verify_incoming_message_skip_verification(self):
         """Test verify_incoming_message when verification should be skipped."""
@@ -342,36 +320,70 @@ class TestSignatureFunctions:
         result = verify_incoming_message(bot, mock_message, "sender_hash")
 
         assert result is True
-        bot.signature_manager.verify_message_signature.assert_not_called()
 
-    def test_verify_incoming_message_no_signature(self):
-        """Test verify_incoming_message when message has no signature."""
+    def test_verify_incoming_message_invalid_signature(self):
+        """Test verify_incoming_message when LXMF signature is invalid."""
+        bot = MagicMock()
+        bot.signature_manager = MagicMock()
+        bot.signature_manager.should_verify_message.return_value = True
+
+        mock_message = MagicMock()
+        mock_message.signature_validated = False
+        mock_message.unverified_reason = LXMF.LXMessage.SIGNATURE_INVALID
+        mock_message.hash = b"message_hash"
+
+        result = verify_incoming_message(bot, mock_message, "sender_hash")
+
+        assert result is False
+
+    def test_verify_incoming_message_source_unknown_require_sig(self):
+        """Test verify_incoming_message when source is unknown and signatures required."""
+        bot = MagicMock()
+        bot.signature_manager = MagicMock()
+        bot.signature_manager.should_verify_message.return_value = True
+        bot.signature_manager.require_signatures = True
+
+        mock_message = MagicMock()
+        mock_message.signature_validated = False
+        mock_message.unverified_reason = LXMF.LXMessage.SOURCE_UNKNOWN
+        mock_message.hash = b"message_hash"
+
+        result = verify_incoming_message(bot, mock_message, "sender_hash")
+
+        assert result is False
+
+    def test_verify_incoming_message_source_unknown_not_required(self):
+        """Test verify_incoming_message when source is unknown but signatures not required."""
+        bot = MagicMock()
+        bot.signature_manager = MagicMock()
+        bot.signature_manager.should_verify_message.return_value = True
+        bot.signature_manager.require_signatures = False
+
+        mock_message = MagicMock()
+        mock_message.signature_validated = False
+        mock_message.unverified_reason = LXMF.LXMessage.SOURCE_UNKNOWN
+        mock_message.hash = b"message_hash"
+
+        result = verify_incoming_message(bot, mock_message, "sender_hash")
+
+        assert result is True
+
+    def test_verify_incoming_message_unverified_other_reason(self):
+        """Test verify_incoming_message with other unverified reason."""
         bot = MagicMock()
         bot.signature_manager = MagicMock()
         bot.signature_manager.should_verify_message.return_value = True
         bot.signature_manager.handle_unsigned_message.return_value = True
 
         mock_message = MagicMock()
-        mock_message.fields = {}  # No signature field
+        mock_message.signature_validated = False
+        mock_message.unverified_reason = 999  # Some other reason
+        mock_message.hash = b"message_hash"
 
         result = verify_incoming_message(bot, mock_message, "sender_hash")
 
         assert result is True
         bot.signature_manager.handle_unsigned_message.assert_called_once()
-
-    def test_verify_incoming_message_invalid_signature(self):
-        """Test verify_incoming_message when signature is invalid."""
-        bot = MagicMock()
-        bot.signature_manager = MagicMock()
-        bot.signature_manager.should_verify_message.return_value = True
-        bot.signature_manager.verify_message_signature.return_value = False
-
-        mock_message = MagicMock()
-        mock_message.fields = {FIELD_SIGNATURE: b"signature"}
-
-        result = verify_incoming_message(bot, mock_message, "sender_hash")
-
-        assert result is False
 
     def test_verify_incoming_message_no_manager(self):
         """Test verify_incoming_message when no signature manager exists."""

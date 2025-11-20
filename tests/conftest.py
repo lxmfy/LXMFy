@@ -114,6 +114,7 @@ def test_bot(test_bot_config, test_config_dir):
     # Override config_path for testing
     # Use a unique config path per test
     import uuid
+
     unique_config_path = test_config_dir / f"bot_{uuid.uuid4().hex[:8]}"
     unique_config_path.mkdir(exist_ok=True)
 

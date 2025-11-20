@@ -107,6 +107,7 @@ class TestCommandSystem:
 
     def test_command_descriptor(self, test_bot):
         """Test command descriptor functionality."""
+
         class TestCog:
             def __init__(self, bot):
                 self.bot = bot
@@ -142,6 +143,7 @@ class TestSignatureSystem:
     def test_signature_verification_enabled(self, test_config_dir):
         """Test signature verification when enabled."""
         import uuid
+
         unique_config_path = test_config_dir / f"secure_bot_{uuid.uuid4().hex[:8]}"
         unique_config_path.mkdir(exist_ok=True)
 
@@ -205,6 +207,7 @@ class TestEventSystem:
             events_fired.append(event.data)
 
         from lxmfy.events import Event
+
         test_event = Event("test_event", {"test": "data"})
         test_bot.events.dispatch(test_event)
 
@@ -264,6 +267,7 @@ class TestPermissionSystem:
         import uuid
 
         from lxmfy.permissions import DefaultPerms
+
         unique_config_path = test_config_dir / f"perm_bot_{uuid.uuid4().hex[:8]}"
         unique_config_path.mkdir(exist_ok=True)
 
@@ -277,7 +281,10 @@ class TestPermissionSystem:
         RNS.Identity.from_file = lambda path: test_identity
 
         try:
-            config = BotConfig(permissions_enabled=True, storage_path=str(unique_config_path / "storage"))
+            config = BotConfig(
+                permissions_enabled=True,
+                storage_path=str(unique_config_path / "storage"),
+            )
             bot = LXMFBot(**config.__dict__)
             bot.config_path = str(unique_config_path)
 

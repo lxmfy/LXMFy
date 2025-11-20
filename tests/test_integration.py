@@ -23,7 +23,11 @@ class TestClientBotCommunication:
 
         # Mock Identity.recall to return the test identity so send() works
         original_recall = RNS.Identity.recall
-        RNS.Identity.recall = lambda hash_bytes: test_destination.identity if hash_bytes == test_destination.hash else original_recall(hash_bytes)
+        RNS.Identity.recall = (
+            lambda hash_bytes: test_destination.identity
+            if hash_bytes == test_destination.hash
+            else original_recall(hash_bytes)
+        )
 
         try:
             # Send a message using the test destination's hash

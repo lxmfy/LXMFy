@@ -160,13 +160,18 @@ class TestClientBotInteraction:
         # Mock the send method to capture what would be sent
         sent_messages = []
 
-        def mock_send(destination, message, title=None, lxmf_fields=None):
-            sent_messages.append({
-                "destination": destination,
-                "message": message,
-                "title": title,
-                "fields": lxmf_fields,
-            })
+        def mock_send(
+            destination, message, title=None, lxmf_fields=None, stamp_cost=None
+        ):
+            sent_messages.append(
+                {
+                    "destination": destination,
+                    "message": message,
+                    "title": title,
+                    "fields": lxmf_fields,
+                    "stamp_cost": stamp_cost,
+                }
+            )
 
         original_send = test_bot.send
         test_bot.send = mock_send
@@ -241,13 +246,16 @@ class TestClientBotInteraction:
         # Mock send to capture attachment data
         sent_attachments = []
 
-        def mock_send(dest, msg, title=None, lxmf_fields=None):
-            sent_attachments.append({
-                "destination": dest,
-                "message": msg,
-                "title": title,
-                "fields": lxmf_fields,
-            })
+        def mock_send(dest, msg, title=None, lxmf_fields=None, stamp_cost=None):
+            sent_attachments.append(
+                {
+                    "destination": dest,
+                    "message": msg,
+                    "title": title,
+                    "fields": lxmf_fields,
+                    "stamp_cost": stamp_cost,
+                }
+            )
 
         original_send = test_bot.send
         test_bot.send = mock_send
@@ -304,13 +312,15 @@ class TestReticulumIntegration:
     def test_reticulum_identity_persistence(self, test_config_dir):
         """Test identity persistence across bot restarts."""
         from unittest import mock
+
         config_dir = test_config_dir / "identity_test"
 
         # Mock LXMRouter to avoid RNS conflicts
-        with mock.patch("lxmfy.core.LXMRouter"), \
-             mock.patch("lxmfy.core.RNS.Reticulum"), \
-             mock.patch("lxmfy.core.RNS.Transport.register_destination"):
-
+        with (
+            mock.patch("lxmfy.core.LXMRouter"),
+            mock.patch("lxmfy.core.RNS.Reticulum"),
+            mock.patch("lxmfy.core.RNS.Transport.register_destination"),
+        ):
             # Create first bot instance
             config1 = BotConfig(storage_path=str(config_dir / "storage1"))
             bot1 = LXMFBot(**config1.__dict__)

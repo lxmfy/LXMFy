@@ -18,13 +18,19 @@ class TestCLIE2E:
 
             # Run CLI create command
             cmd = [
-                "python", "-m", "lxmfy.cli",
-                "create", "testbot", "--output", str(bot_path),
+                "python",
+                "-m",
+                "lxmfy.cli",
+                "create",
+                "testbot",
+                "--output",
+                str(bot_path),
             ]
 
             result = subprocess.run(
                 cmd,
-                check=False, capture_output=True,
+                check=False,
+                capture_output=True,
                 text=True,
                 cwd=test_config_dir,
             )
@@ -45,8 +51,13 @@ class TestCLIE2E:
         # This test would start a bot process, but for CI we just verify
         # the command doesn't fail immediately
         cmd = [
-            "python", "-m", "lxmfy.cli",
-            "run", "echo", "--name", "TestEchoBot",
+            "python",
+            "-m",
+            "lxmfy.cli",
+            "run",
+            "echo",
+            "--name",
+            "TestEchoBot",
         ]
 
         # Start the bot in a subprocess
@@ -71,13 +82,17 @@ class TestCLIE2E:
     def test_cli_signatures_test(self, test_config_dir):
         """Test CLI signatures functionality."""
         cmd = [
-            "python", "-m", "lxmfy.cli",
-            "signatures", "test",
+            "python",
+            "-m",
+            "lxmfy.cli",
+            "signatures",
+            "test",
         ]
 
         result = subprocess.run(
             cmd,
-            check=False, capture_output=True,
+            check=False,
+            capture_output=True,
             text=True,
             cwd=test_config_dir,
         )
@@ -90,13 +105,17 @@ class TestCLIE2E:
         """Test CLI signatures enable/disable instructions."""
         # Test enable command
         cmd_enable = [
-            "python", "-m", "lxmfy.cli",
-            "signatures", "enable",
+            "python",
+            "-m",
+            "lxmfy.cli",
+            "signatures",
+            "enable",
         ]
 
         result = subprocess.run(
             cmd_enable,
-            check=False, capture_output=True,
+            check=False,
+            capture_output=True,
             text=True,
             cwd=test_config_dir,
         )
@@ -106,13 +125,17 @@ class TestCLIE2E:
 
         # Test disable command
         cmd_disable = [
-            "python", "-m", "lxmfy.cli",
-            "signatures", "disable",
+            "python",
+            "-m",
+            "lxmfy.cli",
+            "signatures",
+            "disable",
         ]
 
         result = subprocess.run(
             cmd_disable,
-            check=False, capture_output=True,
+            check=False,
+            capture_output=True,
             text=True,
             cwd=test_config_dir,
         )
@@ -216,6 +239,7 @@ def setup(bot):
 
         # Load cogs
         from lxmfy import load_cogs_from_directory
+
         load_cogs_from_directory(bot, "cogs")
 
         assert "cog_hello" in bot.commands
