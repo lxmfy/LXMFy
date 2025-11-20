@@ -546,7 +546,7 @@ class LXMFBot:
         self.delivery_attempts[destination] = attempts + 1
 
         # Register callbacks to reset counter on success or increment on failure
-        def on_delivery_success(message):
+        def on_delivery_success(_message):
             if destination in self.delivery_attempts:
                 self.delivery_attempts[destination] = 0
                 RNS.log(
@@ -554,7 +554,7 @@ class LXMFBot:
                     RNS.LOG_DEBUG,
                 )
 
-        def on_delivery_failure(message):
+        def on_delivery_failure(_message):
             current_attempts = self.delivery_attempts.get(destination, 0)
             if current_attempts < max_retries:
                 RNS.log(

@@ -177,14 +177,14 @@ class SignatureManager:
         return True
 
 
-def sign_outgoing_message(bot, message: LXMF.LXMessage) -> LXMF.LXMessage:
+def sign_outgoing_message(_bot, message: LXMF.LXMessage) -> LXMF.LXMessage:
     """Prepare an outgoing message for signing.
 
     Note: LXMF automatically signs messages during pack() using the source identity.
     This function is kept for backwards compatibility but is essentially a pass-through.
 
     Args:
-        bot: The LXMFBot instance.
+        _bot: The LXMFBot instance (unused, kept for backwards compatibility).
         message: The LXMF message to sign.
 
     Returns:
