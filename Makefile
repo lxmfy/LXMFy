@@ -13,9 +13,6 @@ help:
 	@echo "  install          Install package dependencies"
 	@echo "  install-dev      Install development dependencies"
 	@echo "  build            Build package using poetry"
-	@echo "  wheel            Build wheel using setup.py"
-	@echo "  sdist            Build source distribution"
-	@echo "  dist             Build both wheel and sdist"
 	@echo "  clean            Clean build artifacts"
 	@echo "  test             Run tests"
 	@echo "  lint             Run linting (ruff)"
@@ -47,14 +44,6 @@ install-dev:
 
 build:
 	poetry build
-
-wheel:
-	python setup.py bdist_wheel
-
-sdist:
-	python setup.py sdist
-
-dist: wheel sdist
 
 clean:
 	rm -rf build/
