@@ -57,9 +57,11 @@ class LXMFBot:
         self.commands = {}
         self.cogs = {}
         self.first_message_handlers = []
+        self.message_handlers = []
         self.delivery_callbacks = []
         self.receipts = []
         self.queue = Queue(maxsize=5)  # Outbound LXMF message queue
+        self.delivery_attempts = {}  # Track delivery attempts per destination
         self.announce_time = 600
         self.logger = logging.getLogger(__name__)
         self.thread_pool = ThreadPoolExecutor(
@@ -121,7 +123,9 @@ class LXMFBot:
                     pass
                 else:
                     raise
-            self.router = LXMRouter(identity=self.identity, storagepath=self.config_path)
+            self.router = LXMRouter(
+                identity=self.identity, storagepath=self.config_path,
+            )
             self.local = self.router.register_delivery_identity(
                 self.identity,
                 display_name=self.config.name,
@@ -238,7 +242,8 @@ class LXMFBot:
                 cmd_descriptor = method.command
 
                 if hasattr(cmd_descriptor, "__get__") and hasattr(
-                    cmd_descriptor, "name",
+                    cmd_descriptor,
+                    "name",
                 ):
                     cmd = cmd_descriptor.__get__(cog, cog.__class__)
                 elif hasattr(cmd_descriptor, "name"):
@@ -312,6 +317,11 @@ class LXMFBot:
             if not self.permissions.has_permission(sender, DefaultPerms.USE_BOT):
                 return
 
+            # Call message handlers
+            for handler in self.message_handlers:
+                if handler(sender, message):
+                    return
+
             msg_ctx = {
                 "lxmf": message,
                 "reply": reply,
@@ -336,7 +346,8 @@ class LXMFBot:
 
                     if not self.permissions.has_permission(sender, cmd.permissions):
                         self.send(
-                            sender, "You don't have permission to use this command.",
+                            sender,
+                            "You don't have permission to use this command.",
                         )
                         return
 
@@ -357,7 +368,9 @@ class LXMFBot:
 
                     except Exception as e:
                         self.logger.error(
-                            "Error executing command %s: %s", command_name, str(e),
+                            "Error executing command %s: %s",
+                            command_name,
+                            str(e),
                         )
                         self.send(sender, "Error executing command: %s", str(e))
                         return
@@ -409,7 +422,11 @@ class LXMFBot:
 
     def _announce(self):
         """Send an announce if the configured interval has passed."""
-        if self.announce_time == 0 or not self.announce_enabled or self.config.test_mode:
+        if (
+            self.announce_time == 0
+            or not self.announce_enabled
+            or self.config.test_mode
+        ):
             RNS.log("Announcements disabled", RNS.LOG_DEBUG)
             return
 
@@ -441,6 +458,7 @@ class LXMFBot:
         message: str,
         title: str = "Reply",
         lxmf_fields: dict | None = None,
+        stamp_cost: int | None = None,
     ):
         """Send a message to a destination, optionally with custom LXMF fields.
 
@@ -449,6 +467,7 @@ class LXMFBot:
             message: The message content (will be utf-8 encoded).
             title: The message title (optional, will be utf-8 encoded).
             lxmf_fields: Optional dictionary of LXMF fields.
+            stamp_cost: Optional stamp cost override. If None, uses config.stamp_cost.
 
         """
         if self.config.test_mode:
@@ -495,21 +514,77 @@ class LXMFBot:
         message_bytes = message.encode("utf-8")
         title_bytes = title.encode("utf-8") if title else None
 
+        # Determine delivery method based on retry count
+        attempts = self.delivery_attempts.get(destination, 0)
+        max_retries = self.config.direct_delivery_retries
+
+        if attempts >= max_retries and self.config.propagation_fallback_enabled:
+            desired_method = LXMessage.PROPAGATED
+            RNS.log(
+                f"Using propagation for {destination} after {attempts} failed direct attempts",
+                RNS.LOG_INFO,
+            )
+        else:
+            desired_method = LXMessage.DIRECT
+
+        # Use provided stamp_cost or fall back to config
+        final_stamp_cost = (
+            stamp_cost if stamp_cost is not None else self.config.stamp_cost
+        )
+
         lxm = LXMessage(
             lxmf_destination_obj,
             self.local,
             message_bytes,
             title=title_bytes,
-            desired_method=LXMessage.DIRECT,
+            desired_method=desired_method,
             fields=lxmf_fields,
+            stamp_cost=final_stamp_cost,
         )
 
-        # Sign the message if signature verification is enabled
+        # Track attempts for this destination
+        self.delivery_attempts[destination] = attempts + 1
+
+        # Register callbacks to reset counter on success or increment on failure
+        def on_delivery_success(message):
+            if destination in self.delivery_attempts:
+                self.delivery_attempts[destination] = 0
+                RNS.log(
+                    f"Delivery successful to {destination}, reset retry counter",
+                    RNS.LOG_DEBUG,
+                )
+
+        def on_delivery_failure(message):
+            current_attempts = self.delivery_attempts.get(destination, 0)
+            if current_attempts < max_retries:
+                RNS.log(
+                    f"Delivery failed to {destination}, attempt {current_attempts}/{max_retries}",
+                    RNS.LOG_WARNING,
+                )
+            else:
+                RNS.log(
+                    f"Delivery failed to {destination} after {current_attempts} attempts",
+                    RNS.LOG_ERROR,
+                )
+
+        lxm.register_delivery_callback(on_delivery_success)
+        lxm.register_failed_callback(on_delivery_failure)
+
+        # Sign the message (pass-through for LXMF's built-in signing)
         lxm = sign_outgoing_message(self, lxm)
 
-        lxm.try_propagation_on_fail = True
+        # Set propagation fallback if enabled and we're trying direct first
+        if (
+            desired_method == LXMessage.DIRECT
+            and self.config.propagation_fallback_enabled
+        ):
+            lxm.try_propagation_on_fail = True
+
         self.queue.put(lxm)
-        RNS.log(f"Message queued for {destination}", RNS.LOG_DEBUG)
+        RNS.log(
+            f"Message queued for {destination} (method: {desired_method})",
+            RNS.LOG_DEBUG,
+        )
 
     def send_with_attachment(
         self,
@@ -517,11 +592,25 @@ class LXMFBot:
         message: str,
         attachment: Attachment,
         title: str = "Reply",
+        stamp_cost: int | None = None,
     ):
-        """Send a message with an attachment to a destination."""
+        """Send a message with an attachment to a destination.
+
+        Args:
+            destination: The destination hash.
+            message: The message content.
+            attachment: The attachment to send.
+            title: The message title.
+            stamp_cost: Optional stamp cost override.
+
+        """
         attachment_specific_fields = pack_attachment(attachment)
         self.send(
-            destination, message, title=title, lxmf_fields=attachment_specific_fields,
+            destination,
+            message,
+            title=title,
+            lxmf_fields=attachment_specific_fields,
+            stamp_cost=stamp_cost,
         )
 
     def run(self, delay=10):
@@ -584,6 +673,16 @@ class LXMFBot:
         def decorator(func):
             """Registers a function to be called on the first message from a sender."""
             self.first_message_handlers.append(func)
+            return func
+
+        return decorator
+
+    def on_message(self):
+        """Decorator for registering message handlers"""
+
+        def decorator(func):
+            """Registers a function to be called on every message."""
+            self.message_handlers.append(func)
             return func
 
         return decorator
