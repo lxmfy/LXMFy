@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.1.0] - 2025-11-21
+
+### Features
+- **Direct Delivery with retries & Propagation Net Fallback**
+- **Configurable Stamp Cost for bots**
+
+### Codebase Changes
+- **Simplied codebase to just use poetry.** 
+- **Numerous codebase cleanup and improvements.**
+
+### Updates
+- **Update LXMF to 0.9.3**
+- **Update RNS to 1.0.3**
+
 ## [1.0.3] - 2025-11-03
 ### Patch
 - **Updated dependencies**
@@ -470,3 +484,5 @@ bot = LXMFBot(
 [1.0.0]: https://github.com/lxmfy/lxmfy/releases/tag/v1.0.0
 [1.0.1]: https://github.com/lxmfy/lxmfy/releases/tag/v1.0.1
 [1.0.2]: https://github.com/lxmfy/lxmfy/releases/tag/v1.0.2
+[1.0.3]: https://github.com/lxmfy/lxmfy/releases/tag/v1.0.3
+[1.1.0]: https://github.com/lxmfy/lxmfy/releases/tag/v1.1.0
