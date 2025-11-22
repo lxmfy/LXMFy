@@ -133,7 +133,7 @@ from lxmfy import LXMFBot, load_cogs_from_directory
 
 bot = LXMFBot(
     name="LXMFy Test Bot", # Name of the bot that appears on the network.
-    announce=600, # Announce every 600 seconds, set to 0 to disable.
+    announce=5400, # Announce every hour, set to 0 to disable.
     announce_enabled=True, # Set to False to disable all announces (both initial and periodic)
     announce_immediately=True, # Set to False to disable initial announce
     admins=["your_lxmf_hash_here"], # List of admin hashes.
@@ -146,6 +146,13 @@ bot = LXMFBot(
     warning_timeout=300, # Warnings reset after 5 minutes
     signature_verification_enabled=True, # Enable cryptographic signature verification
     require_message_signatures=False, # Allow unsigned messages but log them
+    propagation_fallback_enabled=True, # Enable propagation fallback after direct delivery fails
+    propagation_node="your_propagation_node_hash_here", # Manual propagation node (optional)
+    autopeer_propagation=True, # Auto-discover propagation nodes (optional)
+    autopeer_maxdepth=4, # Max hops for auto-peering (default: 4)
+    enable_propagation_node=False, # Run as propagation node (default: False)
+    message_storage_limit_mb=500, # Storage limit in MB for propagation node (default: 500)
+    direct_delivery_retries=3, # Number of direct delivery attempts before falling back to propagation
 )
 
 # Dynamically load all cogs
@@ -188,6 +195,93 @@ lxmfy signatures enable
 # Get disable instructions
 lxmfy signatures disable
 ```
+
+## Propagation Node Configuration
+
+LXMFy supports three modes for propagation node usage:
+
+### 1. Manual Configuration
+
+Set a specific propagation node by hash:
+
+```python
+bot = LXMFBot(
+    name="MyBot",
+    propagation_fallback_enabled=True,
+    propagation_node="your_propagation_node_hash_here",  # Manual node configuration
+    direct_delivery_retries=3,
+)
+```
+
+### 2. Automatic Discovery (Auto-Peering)
+
+Let the bot automatically discover and use propagation nodes from network announces:
+
+```python
+bot = LXMFBot(
+    name="MyBot",
+    propagation_fallback_enabled=True,
+    autopeer_propagation=True,  # Enable automatic discovery
+    autopeer_maxdepth=4,  # Maximum hop distance for auto-peering (default: 4)
+)
+```
+
+The bot will listen for propagation node announces and automatically peer with suitable nodes within the configured hop depth.
+
+### 3. Run as Propagation Node
+
+Your bot can act as a propagation node itself to store and forward messages:
+
+```python
+bot = LXMFBot(
+    name="MyPropagationBot",
+    enable_propagation_node=True,  # Enable propagation node mode
+    message_storage_limit_mb=500,  # Limit storage to 500 MB (default)
+)
+```
+
+When running as a propagation node, the bot will store messages for offline users and forward them when the recipients come online. The `message_storage_limit_mb` prevents the bot from consuming unlimited disk space. Set to 0 for unlimited storage (not recommended).
+
+### Querying Propagation Status
+
+You can check the current propagation configuration and discovered nodes:
+
+```python
+status = bot.get_propagation_node_status()
+print(f"Current outbound node: {status['current_outbound_node']}")
+print(f"Discovered peers: {status['discovered_peers']}")
+```
+
+### Dynamically Setting Propagation Node
+
+You can change the propagation node at runtime:
+
+```python
+bot.set_propagation_node("new_propagation_node_hash")
+```
+
+### Managing Storage Limits
+
+When running as a propagation node, you can query and adjust storage limits:
+
+```python
+# Get current storage statistics
+stats = bot.get_propagation_storage_stats()
+print(f"Storage used: {stats['storage_size_mb']:.2f} MB")
+print(f"Storage limit: {stats['storage_limit_mb']} MB")
+print(f"Utilization: {stats['utilization_percent']:.1f}%")
+print(f"Messages stored: {stats['message_count']}")
+
+# Change storage limit at runtime
+bot.set_message_storage_limit(megabytes=1000)  # Set to 1 GB
+```
+
+### Important Notes
+
+- Without configuring propagation (manual, auto-peer, or running as a node), messages requiring propagation will fail
+- You can combine modes: e.g., set a manual node AND enable auto-peering as backup
+- When running as a propagation node, your bot can still send and receive messages normally
+- Auto-peering respects the `autopeer_maxdepth` setting to avoid connecting to distant nodes
 
 ## Development
 
