@@ -219,7 +219,8 @@ def verify_incoming_message(bot, message: LXMF.LXMessage, sender: str) -> bool:
             return False
         if message.unverified_reason == LXMF.LXMessage.SOURCE_UNKNOWN:
             logger.debug(
-                "Could not verify message from %s - source identity unknown", sender,
+                "Could not verify message from %s - source identity unknown",
+                sender,
             )
             if sig_manager.require_signatures:
                 logger.warning("Rejected message from %s due to unknown source", sender)
