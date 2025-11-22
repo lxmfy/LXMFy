@@ -28,6 +28,7 @@ from .signatures import (
 )
 from .storage import JSONStorage, SQLiteStorage, Storage
 from .validation import format_validation_results, validate_bot
+from .voice import VoiceCallManager
 
 __all__ = [
     "FIELD_SIGNATURE",
@@ -54,6 +55,7 @@ __all__ = [
     "SignatureManager",
     "Storage",
     "TaskScheduler",
+    "VoiceCallManager",
     "__version__",
     "command",
     "format_validation_results",
