@@ -16,7 +16,8 @@ classifiers = [
 ]
 dependencies = [
     "lxmf>=0.9.3",
-    "rns>=1.0.3"
+    "rns>=1.0.3",
+    "lxst>=0.4.1"
 ]
 
 [project.urls]
