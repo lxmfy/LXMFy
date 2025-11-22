@@ -58,7 +58,7 @@ class TestPrintFunctions:
         """Test print_success function."""
         print_success("Test message")
         mock_print.assert_called_with(
-            f"{Colors.GREEN}{Colors.BOLD}✓ Test message{Colors.ENDC}"
+            f"{Colors.GREEN}{Colors.BOLD}✓ Test message{Colors.ENDC}",
         )
 
     @patch("builtins.print")
@@ -66,7 +66,7 @@ class TestPrintFunctions:
         """Test print_error function."""
         print_error("Test error")
         mock_print.assert_called_with(
-            f"{Colors.RED}{Colors.BOLD}✗ Test error{Colors.ENDC}"
+            f"{Colors.RED}{Colors.BOLD}✗ Test error{Colors.ENDC}",
         )
 
     @patch("builtins.print")
@@ -74,7 +74,7 @@ class TestPrintFunctions:
         """Test print_info function."""
         print_info("Test info")
         mock_print.assert_called_with(
-            f"{Colors.BLUE}{Colors.BOLD}ℹ Test info{Colors.ENDC}"
+            f"{Colors.BLUE}{Colors.BOLD}ℹ Test info{Colors.ENDC}",
         )
 
     @patch("builtins.print")
@@ -82,7 +82,7 @@ class TestPrintFunctions:
         """Test print_warning function."""
         print_warning("Test warning")
         mock_print.assert_called_with(
-            f"{Colors.YELLOW}{Colors.BOLD}⚠ Test warning{Colors.ENDC}"
+            f"{Colors.YELLOW}{Colors.BOLD}⚠ Test warning{Colors.ENDC}",
         )
 
     @patch("builtins.print")
@@ -124,7 +124,10 @@ class TestInputFunctions:
     @patch("lxmfy.cli.print_error")
     @patch("lxmfy.cli.validate_bot_name")
     def test_get_bot_name_invalid_then_valid(
-        self, mock_validate, mock_print_error, mock_input
+        self,
+        mock_validate,
+        mock_print_error,
+        mock_input,
     ):
         """Test get_bot_name with invalid then valid input."""
         mock_validate.side_effect = [ValueError("Invalid"), "validbot"]
@@ -288,7 +291,11 @@ class TestInteractiveFunctions:
     @patch("lxmfy.cli.print_success")
     @patch("lxmfy.cli.print_info")
     def test_interactive_create_basic(
-        self, mock_print_info, mock_print_success, mock_create, mock_input
+        self,
+        mock_print_info,
+        mock_print_success,
+        mock_create,
+        mock_input,
     ):
         """Test interactive_create with basic template."""
         mock_input.side_effect = ["TestBot", "1", "test_bot.py"]
@@ -305,7 +312,11 @@ class TestInteractiveFunctions:
     @patch("lxmfy.cli.print_success")
     @patch("lxmfy.cli.print_info")
     def test_interactive_create_with_cog(
-        self, mock_print_info, mock_print_success, mock_create, mock_input
+        self,
+        mock_print_info,
+        mock_print_success,
+        mock_create,
+        mock_input,
     ):
         """Test interactive_create creates example cog."""
         mock_input.side_effect = ["TestBot", "1", ""]  # Empty output path
@@ -320,7 +331,11 @@ class TestInteractiveFunctions:
     @patch("lxmfy.cli.print_header")
     @patch("lxmfy.cli.get_template_choice")
     def test_interactive_run(
-        self, mock_get_template, mock_print_header, mock_print, mock_input
+        self,
+        mock_get_template,
+        mock_print_header,
+        mock_print,
+        mock_input,
     ):
         """Test interactive_run function."""
         mock_input.side_effect = ["CustomName"]
@@ -352,7 +367,10 @@ class TestMainFunction:
     @patch("lxmfy.cli.print_success")
     @patch("lxmfy.cli.print_info")
     def test_main_create_command(
-        self, mock_print_info, mock_print_success, mock_create
+        self,
+        mock_print_info,
+        mock_print_success,
+        mock_create,
     ):
         """Test main function create command."""
         mock_create.return_value = "testbot.py"
@@ -411,5 +429,5 @@ class TestMainFunction:
         # Should print error about unknown subcommand
         mock_print_error.assert_called_with("Unknown subcommand: invalid")
         mock_print_info.assert_called_with(
-            "Available subcommands: test, enable, disable"
+            "Available subcommands: test, enable, disable",
         )

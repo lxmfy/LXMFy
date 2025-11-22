@@ -2,8 +2,8 @@
 
 from unittest.mock import MagicMock, patch
 
-import pytest
 import LXMF
+import pytest
 import RNS
 
 from lxmfy.signatures import (
@@ -21,7 +21,9 @@ class TestSignatureManager:
         """Test SignatureManager initialization."""
         bot = MagicMock()
         sig_manager = SignatureManager(
-            bot, verification_enabled=True, require_signatures=True
+            bot,
+            verification_enabled=True,
+            require_signatures=True,
         )
 
         assert sig_manager.bot == bot
@@ -55,7 +57,9 @@ class TestSignatureManager:
             b"source:source_hash|dest:dest_hash|content:test content|title:test title"
         )
         with patch.object(
-            sig_manager, "_canonicalize_message", return_value=expected_data
+            sig_manager,
+            "_canonicalize_message",
+            return_value=expected_data,
         ):
             result = sig_manager.sign_message(mock_message, identity)
 
@@ -70,11 +74,15 @@ class TestSignatureManager:
         mock_message = MagicMock()
 
         # Mock the _canonicalize_message to raise an exception
-        with patch.object(
-            sig_manager, "_canonicalize_message", side_effect=Exception("Test error")
+        with (
+            patch.object(
+                sig_manager,
+                "_canonicalize_message",
+                side_effect=Exception("Test error"),
+            ),
+            pytest.raises(Exception, match="Test error"),
         ):
-            with pytest.raises(Exception, match="Test error"):
-                sig_manager.sign_message(mock_message, identity)
+            sig_manager.sign_message(mock_message, identity)
 
     def test_verify_message_signature_success(self):
         """Test successful signature verification."""
@@ -97,7 +105,10 @@ class TestSignatureManager:
         # Verify the signature
         sender_hash = RNS.hexrep(identity.hash, delimit=False)
         result = sig_manager.verify_message_signature(
-            mock_message, signature, sender_hash, identity
+            mock_message,
+            signature,
+            sender_hash,
+            identity,
         )
 
         assert result is True
@@ -120,7 +131,10 @@ class TestSignatureManager:
 
         sender_hash = RNS.hexrep(identity.hash, delimit=False)
         result = sig_manager.verify_message_signature(
-            mock_message, fake_signature, sender_hash, identity
+            mock_message,
+            fake_signature,
+            sender_hash,
+            identity,
         )
 
         assert result is False
@@ -141,7 +155,9 @@ class TestSignatureManager:
         fake_signature = b"fake_signature"
 
         result = sig_manager.verify_message_signature(
-            mock_message, fake_signature, fake_hash
+            mock_message,
+            fake_signature,
+            fake_hash,
         )
 
         assert result is False
@@ -156,10 +172,14 @@ class TestSignatureManager:
 
         # Mock _canonicalize_message to raise exception
         with patch.object(
-            sig_manager, "_canonicalize_message", side_effect=Exception("Test error")
+            sig_manager,
+            "_canonicalize_message",
+            side_effect=Exception("Test error"),
         ):
             result = sig_manager.verify_message_signature(
-                mock_message, b"signature", "fake_hash"
+                mock_message,
+                b"signature",
+                "fake_hash",
             )
             assert result is False
 
@@ -262,7 +282,9 @@ class TestSignatureManager:
         """Test handle_unsigned_message when verification is enabled but not required."""
         bot = MagicMock()
         sig_manager = SignatureManager(
-            bot, verification_enabled=True, require_signatures=False
+            bot,
+            verification_enabled=True,
+            require_signatures=False,
         )
 
         result = sig_manager.handle_unsigned_message("sender_hash", "message_hash")

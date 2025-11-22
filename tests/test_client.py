@@ -161,7 +161,11 @@ class TestClientBotInteraction:
         sent_messages = []
 
         def mock_send(
-            destination, message, title=None, lxmf_fields=None, stamp_cost=None
+            destination,
+            message,
+            title=None,
+            lxmf_fields=None,
+            stamp_cost=None,
         ):
             sent_messages.append(
                 {
@@ -170,7 +174,7 @@ class TestClientBotInteraction:
                     "title": title,
                     "fields": lxmf_fields,
                     "stamp_cost": stamp_cost,
-                }
+                },
             )
 
         original_send = test_bot.send
@@ -254,7 +258,7 @@ class TestClientBotInteraction:
                     "title": title,
                     "fields": lxmf_fields,
                     "stamp_cost": stamp_cost,
-                }
+                },
             )
 
         original_send = test_bot.send
