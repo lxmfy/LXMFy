@@ -60,8 +60,7 @@ class LXMFBot:
         self.message_handlers = []
         self.delivery_callbacks = []
         self.receipts = []
-        self.queue = Queue(maxsize=5)  # Outbound LXMF message queue
-        self.delivery_attempts = {}  # Track delivery attempts per destination
+        self.queue = Queue(maxsize=50)
         self.announce_time = 600
         self.logger = logging.getLogger(__name__)
         self.thread_pool = ThreadPoolExecutor(
@@ -104,6 +103,8 @@ class LXMFBot:
             max_warnings=self.config.max_warnings,
             warning_timeout=self.config.warning_timeout,
         )
+
+        self._load_delivery_attempts()
 
         if not self.config.test_mode:
             identity_file = os.path.join(self.config_path, "identity")
@@ -294,6 +295,8 @@ class LXMFBot:
                     self.send(sender, msg)
                     return
 
+            self._reset_delivery_attempts(sender)
+
     def _process_message(self, message, sender):
         """Process an incoming message."""
         try:
@@ -452,6 +455,29 @@ class LXMFBot:
                 RNS.LOG_INFO,
             )
 
+    def _load_delivery_attempts(self):
+        """Load delivery attempts from storage."""
+        self.delivery_attempts = self.storage.get("delivery_attempts", {})
+
+    def _save_delivery_attempts(self):
+        """Save delivery attempts to storage."""
+        self.storage.set("delivery_attempts", self.delivery_attempts)
+
+    def _reset_delivery_attempts(self, destination: str):
+        """Reset delivery attempts for a destination when they come back online.
+
+        Args:
+            destination: The destination hash.
+
+        """
+        if destination in self.delivery_attempts and self.delivery_attempts[destination] > 0:
+            self.delivery_attempts[destination] = 0
+            self._save_delivery_attempts()
+            RNS.log(
+                f"Reset delivery attempts for {destination} (user came back online)",
+                RNS.LOG_DEBUG,
+            )
+
     def send(
         self,
         destination: str,
@@ -542,13 +568,11 @@ class LXMFBot:
             stamp_cost=final_stamp_cost,
         )
 
-        # Track attempts for this destination
-        self.delivery_attempts[destination] = attempts + 1
-
-        # Register callbacks to reset counter on success or increment on failure
+        # Register callbacks to reset counter on success or track failure
         def on_delivery_success(_message):
             if destination in self.delivery_attempts:
                 self.delivery_attempts[destination] = 0
+                self._save_delivery_attempts()
                 RNS.log(
                     f"Delivery successful to {destination}, reset retry counter",
                     RNS.LOG_DEBUG,
@@ -556,14 +580,17 @@ class LXMFBot:
 
         def on_delivery_failure(_message):
             current_attempts = self.delivery_attempts.get(destination, 0)
-            if current_attempts < max_retries:
+            self.delivery_attempts[destination] = current_attempts + 1
+            self._save_delivery_attempts()
+            
+            if current_attempts + 1 < max_retries:
                 RNS.log(
-                    f"Delivery failed to {destination}, attempt {current_attempts}/{max_retries}",
+                    f"Delivery failed to {destination}, attempt {current_attempts + 1}/{max_retries}",
                     RNS.LOG_WARNING,
                 )
             else:
                 RNS.log(
-                    f"Delivery failed to {destination} after {current_attempts} attempts",
+                    f"Delivery failed to {destination} after {current_attempts + 1} attempts",
                     RNS.LOG_ERROR,
                 )
 
