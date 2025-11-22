@@ -33,6 +33,11 @@ class BotConfig:
         stamp_cost (int): The cost of stamps for outgoing messages. None disables stamps. Defaults to None.
         direct_delivery_retries (int): Number of times to retry direct delivery before falling back to propagation. Defaults to 3.
         propagation_fallback_enabled (bool): Whether to use propagation nodes as fallback after direct delivery fails. Defaults to True.
+        propagation_node (str): The destination hash of the outbound propagation node. If None and autopeer_propagation is True, automatically discovers nodes. Defaults to None.
+        autopeer_propagation (bool): Whether to automatically discover and peer with propagation nodes from announces. Defaults to False.
+        autopeer_maxdepth (int): Maximum hop depth for auto-peering with propagation nodes. None = no limit. Defaults to 4.
+        enable_propagation_node (bool): Whether to run this bot as a propagation node. Defaults to False.
+        message_storage_limit_mb (float): Maximum storage for propagation node messages in megabytes. Only applies when enable_propagation_node is True. Defaults to 500 MB.
         test_mode (bool): Whether to run in test mode (skips RNS initialization). Defaults to False.
 
     """
@@ -62,6 +67,11 @@ class BotConfig:
     stamp_cost: int = None
     direct_delivery_retries: int = 3
     propagation_fallback_enabled: bool = True
+    propagation_node: str = None
+    autopeer_propagation: bool = False
+    autopeer_maxdepth: int = 4
+    enable_propagation_node: bool = False
+    message_storage_limit_mb: float = 500.0
     test_mode: bool = False
 
     def __post_init__(self):
