@@ -381,22 +381,25 @@ rns = ">=1.0.1"
 
 [[package]]
 name = "lxst"
-version = "0.4.1"
+version = "0.4.3"
 description = "Lightweight Extensible Signal Transport for Reticulum"
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=3.11"
 groups = ["main"]
 files = [
-    {file = "lxst-0.4.1-py3-none-any.whl", hash = "sha256:a5e63364785a389d5cc39e3936bdf718c3af8a1cf026503642cebcbdd8b5b029"},
+    {file = "lxst-0.4.3-1-py3-none-any.whl", hash = "sha256:79b7947033c549eaeff25124d500d088ce4046bac8e720bea6504e58b26d1abe"},
+    {file = "lxst-0.4.3-2-py3-none-any.whl", hash = "sha256:5d227ce7e6ab294cf113842f5ff2c8f0c126773863ce0a95833b70943c917cbb"},
+    {file = "lxst-0.4.3-3-py3-none-any.whl", hash = "sha256:3812cc42cb06b4e7995629ae0f8912699ff44b73b4b94f956c74fe8022e13c99"},
+    {file = "lxst-0.4.3-py3-none-any.whl", hash = "sha256:53bf2dbce6e79ad553ceb602b9d7a0d2d929028606dd13974329d72a34531809"},
 ]
 
 [package.dependencies]
 audioop-lts = {version = ">=0.2.1", markers = "python_version >= \"3.13\""}
-lxmf = ">=0.9.1"
+cffi = ">=2.0.0"
+lxmf = ">=0.9.3"
 numpy = ">=2.3.4"
 pycodec2 = ">=4.1.0"
-rns = ">=1.0.3"
-soundcard = ">=0.4.5"
+rns = ">=1.0.4"
 
 [[package]]
 name = "numpy"
@@ -664,14 +667,15 @@ testing = ["process-tests", "pytest-xdist", "virtualenv"]
 
 [[package]]
 name = "rns"
-version = "1.0.3"
+version = "1.0.4"
 description = "Self-configuring, encrypted and resilient mesh networking stack for LoRa, packet radio, WiFi and everything in between"
 optional = false
 python-versions = ">=3.7"
 groups = ["main"]
 files = [
-    {file = "rns-1.0.3-py3-none-any.whl", hash = "sha256:6bafde4c838ad778bf6878967e84c798e34d6ca621b255f59a60f38cb04ac138"},
-    {file = "rns-1.0.3.tar.gz", hash = "sha256:dc794d26c6802bf1f272494ca5fe16c1fb5698c6aa6569f70fcb83d702e0323d"},
+    {file = "rns-1.0.4-1-py3-none-any.whl", hash = "sha256:f1804f8b07a8b8e1c1b61889f929fdb5cfbd57f4c354108c417135f0d67c5ef6"},
+    {file = "rns-1.0.4-py3-none-any.whl", hash = "sha256:7a2b7893410833b42c0fa7f9a9e3369cebb085cdd26bd83f3031fa6c1051653c"},
+    {file = "rns-1.0.4.tar.gz", hash = "sha256:e70667a767fe523bab8e7ea0627447258c4e6763b7756fbba50c6556dbb84399"},
 ]
 
 [package.dependencies]
@@ -708,22 +712,6 @@ files = [
 ]
 
 [[package]]
-name = "soundcard"
-version = "0.4.5"
-description = "Play and record audio without resorting to CPython extensions"
-optional = false
-python-versions = ">=3.5"
-groups = ["main"]
-files = [
-    {file = "soundcard-0.4.5-py3-none-any.whl", hash = "sha256:8a19c3d5486250bb2990dbd91a75ddf9f15cab39f24ff607e5bce812f43b4917"},
-    {file = "soundcard-0.4.5.tar.gz", hash = "sha256:07272ba927e32cafdf634e4a1ca53b9a3218321a60c7d2e08f54b832a56946aa"},
-]
-
-[package.dependencies]
-cffi = "*"
-numpy = ">=1.11"
-
-[[package]]
 name = "typing-extensions"
 version = "4.15.0"
 description = "Backported and Experimental Type Hints for Python 3.9+"
@@ -739,4 +727,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11"
-content-hash = "c063ef54ada550fb1a23f1c9edd0c1029877ae303ceb07b3468fd79f08e74fd1"
+content-hash = "df4311e2a172064481683ca8dcd3e7f11d1f6d3a3b0ed6b91352a48efc2ffd22"
