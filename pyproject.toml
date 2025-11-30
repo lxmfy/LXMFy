@@ -1,6 +1,6 @@
 [project]
 name = "lxmfy"
-version = "1.1.0"
+version = "1.2.0"
 description = "LXMF bot framework for creating bots for the Reticulum Network"
 authors = [{name = "Quad4", email = "rns@quad4.io"}]
 readme = "README.md"
