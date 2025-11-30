@@ -9,65 +9,26 @@ import os
 import re
 import sys
 
+from .colors import (
+    Colors,
+    init_colors,
+    print_error,
+    print_header,
+    print_info,
+    print_menu,
+    print_success,
+    print_warning,
+)
 from .templates import CogTestBot, EchoBot, NoteBot, ReminderBot
-
-
-# Custom colors for CLI
-class Colors:
-    """Custom color codes for CLI output."""
-
-    HEADER = "\033[95m"
-    BLUE = "\033[94m"
-    CYAN = "\033[96m"
-    GREEN = "\033[92m"
-    YELLOW = "\033[93m"
-    RED = "\033[91m"
-    ENDC = "\033[0m"
-    BOLD = "\033[1m"
-    UNDERLINE = "\033[4m"
-
-
-def print_header(text: str) -> None:
-    """Print a formatted header with custom styling."""
-    print(f"\n{Colors.HEADER}{Colors.BOLD}{'=' * 50}{Colors.ENDC}")
-    print(f"{Colors.HEADER}{Colors.BOLD}{text.center(50)}{Colors.ENDC}")
-    print(f"{Colors.HEADER}{Colors.BOLD}{'=' * 50}{Colors.ENDC}\n")
-
-
-def print_success(text: str) -> None:
-    """Print a success message with custom styling."""
-    print(f"{Colors.GREEN}{Colors.BOLD}✓ {text}{Colors.ENDC}")
-
-
-def print_error(text: str) -> None:
-    """Print an error message with custom styling."""
-    print(f"{Colors.RED}{Colors.BOLD}✗ {text}{Colors.ENDC}")
-
-
-def print_info(text: str) -> None:
-    """Print an info message with custom styling."""
-    print(f"{Colors.BLUE}{Colors.BOLD}ℹ {text}{Colors.ENDC}")
-
-
-def print_warning(text: str) -> None:
-    """Print a warning message with custom styling."""
-    print(f"{Colors.YELLOW}{Colors.BOLD}⚠ {text}{Colors.ENDC}")
-
-
-def print_menu() -> None:
-    """Print the interactive menu."""
-    print_header("LXMFy Bot Framework")
-    print(f"{Colors.CYAN}Available Commands:{Colors.ENDC}")
-    print(f"{Colors.BOLD}1.{Colors.ENDC} Create a new bot")
-    print(f"{Colors.BOLD}2.{Colors.ENDC} Run a template bot")
-    print(f"{Colors.BOLD}3.{Colors.ENDC} Exit")
-    print()
 
 
 def get_user_choice() -> str:
     """Get user's choice from the menu."""
     while True:
-        choice = input(f"{Colors.CYAN}Enter your choice (1-3): {Colors.ENDC}")
+        if Colors.is_colors_supported():
+            choice = input(f"{Colors.CYAN}Enter your choice (1-3): {Colors.ENDC}")
+        else:
+            choice = input("Enter your choice (1-3): ")
         if choice in ["1", "2", "3"]:
             return choice
         print_error("Invalid choice. Please enter a number between 1 and 3.")
@@ -76,7 +37,10 @@ def get_user_choice() -> str:
 def get_bot_name() -> str:
     """Get bot name from user input."""
     while True:
-        name = input(f"{Colors.CYAN}Enter bot name: {Colors.ENDC}")
+        if Colors.is_colors_supported():
+            name = input(f"{Colors.CYAN}Enter bot name: {Colors.ENDC}")
+        else:
+            name = input("Enter bot name: ")
         try:
             return validate_bot_name(name)
         except ValueError as ve:
@@ -86,12 +50,20 @@ def get_bot_name() -> str:
 def get_template_choice() -> str:
     """Get template choice from user input."""
     templates = ["basic", "echo", "reminder", "note", "cogtest"]
-    print(f"\n{Colors.CYAN}Available templates:{Colors.ENDC}")
-    for i, template in enumerate(templates, 1):
-        print(f"{Colors.BOLD}{i}.{Colors.ENDC} {template}")
+    if Colors.is_colors_supported():
+        print(f"\n{Colors.CYAN}Available templates:{Colors.ENDC}")
+        for i, template in enumerate(templates, 1):
+            print(f"{Colors.BOLD}{i}.{Colors.ENDC} {template}")
+    else:
+        print("\nAvailable templates:")
+        for i, template in enumerate(templates, 1):
+            print(f"{i}. {template}")
 
     while True:
-        choice = input(f"\n{Colors.CYAN}Select template (1-5): {Colors.ENDC}")
+        if Colors.is_colors_supported():
+            choice = input(f"\n{Colors.CYAN}Select template (1-5): {Colors.ENDC}")
+        else:
+            choice = input("\nSelect template (1-5): ")
         if choice in ["1", "2", "3", "4", "5"]:
             return templates[int(choice) - 1]
         print_error("Invalid choice. Please enter a number between 1 and 5.")
@@ -103,10 +75,16 @@ def interactive_create() -> None:
     bot_name = get_bot_name()
     template = get_template_choice()
 
-    output_path = (
-        input(f"{Colors.CYAN}Enter output path (default: {bot_name}.py): {Colors.ENDC}")
-        or f"{bot_name}.py"
-    )
+    if Colors.is_colors_supported():
+        output_path = (
+            input(f"{Colors.CYAN}Enter output path (default: {bot_name}.py): {Colors.ENDC}")
+            or f"{bot_name}.py"
+        )
+    else:
+        output_path = (
+            input(f"Enter output path (default: {bot_name}.py): ")
+            or f"{bot_name}.py"
+        )
 
     try:
         bot_path = create_from_template(template, output_path, bot_name)
@@ -145,7 +123,10 @@ def interactive_run() -> None:
     print_header("Run Template Bot")
     template = get_template_choice()
 
-    custom_name = input(f"{Colors.CYAN}Enter custom name (optional): {Colors.ENDC}")
+    if Colors.is_colors_supported():
+        custom_name = input(f"{Colors.CYAN}Enter custom name (optional): {Colors.ENDC}")
+    else:
+        custom_name = input("Enter custom name (optional): ")
     if custom_name:
         try:
             custom_name = validate_bot_name(custom_name)
@@ -193,7 +174,10 @@ def interactive_mode() -> None:
             print_success("Goodbye!")
             sys.exit(0)
 
-        input(f"\n{Colors.CYAN}Press Enter to continue...{Colors.ENDC}")
+        if Colors.is_colors_supported():
+            input(f"\n{Colors.CYAN}Press Enter to continue...{Colors.ENDC}")
+        else:
+            input("\nPress Enter to continue...")
 
 
 def sanitize_filename(filename: str) -> str:
@@ -430,6 +414,8 @@ def is_safe_path(path: str, base_path: str = None) -> bool:
 def main() -> None:
     """Main CLI entry point."""
     try:
+        init_colors()
+        
         if len(sys.argv) == 1:
             interactive_mode()
             return

@@ -6,7 +6,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from lxmfy.cli import (
-    Colors,
     create_bot_file,
     create_example_cog,
     create_from_template,
@@ -17,14 +16,17 @@ from lxmfy.cli import (
     interactive_run,
     is_safe_path,
     main,
+    sanitize_filename,
+    validate_bot_name,
+)
+from lxmfy.colors import (
+    Colors,
     print_error,
     print_header,
     print_info,
     print_menu,
     print_success,
     print_warning,
-    sanitize_filename,
-    validate_bot_name,
 )
 
 
@@ -47,49 +49,55 @@ class TestColors:
 class TestPrintFunctions:
     """Test print utility functions."""
 
+    @patch("lxmfy.colors.Colors.is_colors_supported", return_value=True)
     @patch("builtins.print")
-    def test_print_header(self, mock_print):
+    def test_print_header(self, mock_print, mock_colors):
         """Test print_header function."""
         print_header("Test Header")
         mock_print.assert_called()
 
+    @patch("lxmfy.colors.Colors.is_colors_supported", return_value=True)
     @patch("builtins.print")
-    def test_print_success(self, mock_print):
+    def test_print_success(self, mock_print, mock_colors):
         """Test print_success function."""
         print_success("Test message")
         mock_print.assert_called_with(
             f"{Colors.GREEN}{Colors.BOLD}✓ Test message{Colors.ENDC}",
         )
 
+    @patch("lxmfy.colors.Colors.is_colors_supported", return_value=True)
     @patch("builtins.print")
-    def test_print_error(self, mock_print):
+    def test_print_error(self, mock_print, mock_colors):
         """Test print_error function."""
         print_error("Test error")
         mock_print.assert_called_with(
             f"{Colors.RED}{Colors.BOLD}✗ Test error{Colors.ENDC}",
         )
 
+    @patch("lxmfy.colors.Colors.is_colors_supported", return_value=True)
     @patch("builtins.print")
-    def test_print_info(self, mock_print):
+    def test_print_info(self, mock_print, mock_colors):
         """Test print_info function."""
         print_info("Test info")
         mock_print.assert_called_with(
             f"{Colors.BLUE}{Colors.BOLD}ℹ Test info{Colors.ENDC}",
         )
 
+    @patch("lxmfy.colors.Colors.is_colors_supported", return_value=True)
     @patch("builtins.print")
-    def test_print_warning(self, mock_print):
+    def test_print_warning(self, mock_print, mock_colors):
         """Test print_warning function."""
         print_warning("Test warning")
         mock_print.assert_called_with(
             f"{Colors.YELLOW}{Colors.BOLD}⚠ Test warning{Colors.ENDC}",
         )
 
+    @patch("lxmfy.colors.Colors.is_colors_supported", return_value=True)
     @patch("builtins.print")
-    def test_print_menu(self, mock_print):
+    def test_print_menu(self, mock_print, mock_colors):
         """Test print_menu function."""
         print_menu()
-        assert mock_print.call_count > 5  # Should print multiple lines
+        assert mock_print.call_count > 5
 
 
 class TestInputFunctions:
