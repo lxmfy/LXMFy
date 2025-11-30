@@ -1,5 +1,3 @@
-# TODO: Add full-length action commit hashes
-
 name: Test
 
 on:
@@ -22,10 +20,10 @@ jobs:
         python-version: ["3.11", "3.12", "3.13"]
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd  # v5
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -46,7 +44,7 @@ jobs:
       run: poetry run pytest tests/ -v
 
     - name: Upload coverage reports
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238  # v4
       with:
         file: ./htmlcov/coverage.xml
         flags: unittests
