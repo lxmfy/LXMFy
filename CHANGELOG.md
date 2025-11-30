@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.1] - 2025-11-30
+
+### Fixes
+- **Fix Github actions setting on project repo (forced pinned SHA actions broke stuff, oops)**
+
 ## [1.2.0] - 2025-11-30
 
 ### Features
@@ -500,3 +505,4 @@ bot = LXMFBot(
 [1.0.3]: https://github.com/lxmfy/lxmfy/releases/tag/v1.0.3
 [1.1.0]: https://github.com/lxmfy/lxmfy/releases/tag/v1.1.0
 [1.2.0]: https://github.com/lxmfy/lxmfy/releases/tag/v1.2.0
+[1.2.1]: https://github.com/lxmfy/lxmfy/releases/tag/v1.2.1
