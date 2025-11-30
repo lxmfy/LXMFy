@@ -77,13 +77,14 @@ def interactive_create() -> None:
 
     if Colors.is_colors_supported():
         output_path = (
-            input(f"{Colors.CYAN}Enter output path (default: {bot_name}.py): {Colors.ENDC}")
+            input(
+                f"{Colors.CYAN}Enter output path (default: {bot_name}.py): {Colors.ENDC}",
+            )
             or f"{bot_name}.py"
         )
     else:
         output_path = (
-            input(f"Enter output path (default: {bot_name}.py): ")
-            or f"{bot_name}.py"
+            input(f"Enter output path (default: {bot_name}.py): ") or f"{bot_name}.py"
         )
 
     try:
@@ -415,7 +416,7 @@ def main() -> None:
     """Main CLI entry point."""
     try:
         init_colors()
-        
+
         if len(sys.argv) == 1:
             interactive_mode()
             return

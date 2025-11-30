@@ -142,7 +142,7 @@ class LXMFBot:
 
                     if self.config.message_storage_limit_mb > 0:
                         self.router.set_message_storage_limit(
-                            megabytes=self.config.message_storage_limit_mb
+                            megabytes=self.config.message_storage_limit_mb,
                         )
                         RNS.log(
                             f"Set propagation node message storage limit to {self.config.message_storage_limit_mb} MB",
