@@ -6,12 +6,12 @@ on:
     - cron: '0 0 * * 0' # weekly
 jobs:
   security:
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@main
       - name: Run Safety CLI to check for vulnerabilities
-        uses: pyupio/safety-action@7baf6605473beffc874c1313ddf2db085c0cacf2  # v1
+        uses: pyupio/safety-action@c14ed93c5cacd34d2ac287fe5d0622f697d6a5f4  # v1
         with:
           api-key: ${{ secrets.SAFETY_API_KEY }}
