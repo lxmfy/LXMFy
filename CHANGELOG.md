@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.2.0] - 2025-11-30
+
+### Features
+- **Created dedicated colors module for CLI**
+
+### Fixes
+- **Fix interactive cli color support for Windows 10/11**
+
+### Other Changes
+- **Updated dependencies in poetry.lock (rns 1.0.4 and ruff 0.14.7)**
+- **Moved from safety to bearer for security scanning (safety was no longer working)**
+- **Updated rest of github actions to use full-length commit SHAs for better supply chain security**
+
 ## [1.1.0] - 2025-11-21
 
 ### Features
@@ -486,3 +499,4 @@ bot = LXMFBot(
 [1.0.2]: https://github.com/lxmfy/lxmfy/releases/tag/v1.0.2
 [1.0.3]: https://github.com/lxmfy/lxmfy/releases/tag/v1.0.3
 [1.1.0]: https://github.com/lxmfy/lxmfy/releases/tag/v1.1.0
+[1.2.0]: https://github.com/lxmfy/lxmfy/releases/tag/v1.2.0
