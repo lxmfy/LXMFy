@@ -4,7 +4,6 @@
 [![DeepSource](https://app.deepsource.com/gh/lxmfy/LXMFy.svg/?label=active+issues&show_trend=true&token=H2_dIwKdYo9BgJkKMdhIORRD)](https://app.deepsource.com/gh/lxmfy/LXMFy/)
 [![Build Test](https://github.com/lxmfy/LXMFy/actions/workflows/build-test.yml/badge.svg)](https://github.com/lxmfy/LXMFy/actions/workflows/build-test.yml)
 [![Publish Python distribution to PyPI](https://github.com/lxmfy/LXMFy/actions/workflows/publish.yml/badge.svg)](https://github.com/lxmfy/LXMFy/actions/workflows/publish.yml)
-[![Safety](https://github.com/lxmfy/LXMFy/actions/workflows/safety.yml/badge.svg)](https://github.com/lxmfy/LXMFy/actions/workflows/safety.yml)
 [![Test](https://github.com/lxmfy/LXMFy/actions/workflows/test.yml/badge.svg)](https://github.com/lxmfy/LXMFy/actions/workflows/test.yml)
 
 Easily create LXMF bots for the Reticulum Network with this extensible framework.
